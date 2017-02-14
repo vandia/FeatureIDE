@@ -24,7 +24,7 @@ import de.ovgu.featureide.fm.core.Constraint;
 import de.ovgu.featureide.fm.core.FMPoint;
 import de.ovgu.featureide.fm.core.Feature;
 import de.ovgu.featureide.fm.core.FeatureModel;
-import de.ovgu.featureide.fm.core.functional.Functional.IFunction;
+import de.ovgu.featureide.fm.core.base.util.Functional.IFunction;
 
 /**
  * @deprecated For legacy purposes only.

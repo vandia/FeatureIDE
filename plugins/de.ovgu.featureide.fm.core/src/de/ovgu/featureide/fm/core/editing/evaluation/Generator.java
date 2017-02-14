@@ -42,7 +42,7 @@ import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
-import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional;
 
 /**
  * A generator for feature models.

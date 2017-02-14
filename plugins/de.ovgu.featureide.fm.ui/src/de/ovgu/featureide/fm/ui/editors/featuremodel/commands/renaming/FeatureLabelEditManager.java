@@ -35,7 +35,7 @@ import de.ovgu.featureide.fm.core.FMComposerManager;
 import de.ovgu.featureide.fm.core.IFMComposerExtension;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.GUIDefaults;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.editparts.FeatureEditPart;
 

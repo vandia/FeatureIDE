@@ -57,6 +57,7 @@ import de.ovgu.featureide.fm.core.io.ProblemList;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelFormat;
 import de.ovgu.featureide.fm.core.job.AProjectJob;
+import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.fm.core.job.util.JobArguments;
 
@@ -68,16 +69,20 @@ import de.ovgu.featureide.fm.core.job.util.JobArguments;
  */
 public class CreateInterfaceJob extends AProjectJob<CreateInterfaceJob.Arguments, IFeatureModel> {
 
-	public static class Arguments extends JobArguments {
+	public static class Arguments implements JobArguments<IFeatureModel> {
 		private final IFeatureModel featuremodel;
 		private final Collection<String> featureNames;
 		private final String projectName;
 
 		public Arguments(String projectName, IFeatureModel featuremodel, Collection<String> featureNames) {
-			super(Arguments.class);
 			this.projectName = projectName;
 			this.featuremodel = featuremodel;
 			this.featureNames = featureNames;
+		}
+
+		@Override
+		public CreateInterfaceJob createJob() {
+			return new CreateInterfaceJob(this);
 		}
 	}
 

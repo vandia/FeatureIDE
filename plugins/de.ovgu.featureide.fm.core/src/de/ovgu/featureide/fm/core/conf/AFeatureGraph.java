@@ -20,7 +20,7 @@
  */
 package de.ovgu.featureide.fm.core.conf;
 
-import org.prop4j.solver.SatInstance;
+import de.ovgu.featureide.fm.core.cnf.CNF;
 
 public abstract class AFeatureGraph implements IFeatureGraph {
 
@@ -43,10 +43,18 @@ public abstract class AFeatureGraph implements IFeatureGraph {
 		MASK_1_CLEAR = (byte) 0b00001111, //0xf3,
 		MASK_Q_CLEAR = (byte) 0b10101010; //0xf3,
 
-	protected transient SatInstance satInstance;
+	protected CNF satInstance;
 
 	protected int[] index;
 	protected int size;
+	
+	@Override
+	public void copyValues(IFeatureGraph otherGraph) {
+		final AFeatureGraph anotherAGraph = (AFeatureGraph) otherGraph;
+		this.satInstance = anotherAGraph.satInstance;
+		this.index = anotherAGraph.index;
+		this.size = anotherAGraph.size;
+	}
 
 	public static boolean isEdge(byte edge, byte q) {
 		return (edge & q) != EDGE_NONE;
@@ -60,7 +68,7 @@ public abstract class AFeatureGraph implements IFeatureGraph {
 		return isEdge(edge, EDGE_00) || isEdge(edge, EDGE_01) || isEdge(edge, EDGE_10) || isEdge(edge, EDGE_11);
 	}
 
-	public AFeatureGraph(SatInstance satInstance, int[] index) {
+	public AFeatureGraph(CNF satInstance, int[] index) {
 		int count = 0;
 		for (int i = 0; i < index.length; i++) {
 			if (index[i] >= 0) {
@@ -73,26 +81,11 @@ public abstract class AFeatureGraph implements IFeatureGraph {
 		this.index = index;
 	}
 
-	public AFeatureGraph() {
-		this.satInstance = null;
-		this.index = null;
-	}
-
-	public void copyValues(IFeatureGraph otherGraph) {
-		final AFeatureGraph anotherAGraph = (AFeatureGraph) otherGraph;
-		this.size = anotherAGraph.size;
-		this.index = anotherAGraph.index;
-	}
-
-	public void setSatInstance(SatInstance satInstance) {
-		this.satInstance = satInstance;
-	}
-
 	public int getSize() {
 		return size;
 	}
 
-	public SatInstance getSatInstance() {
+	public CNF getSatInstance() {
 		return satInstance;
 	}
 

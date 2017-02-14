@@ -34,13 +34,14 @@ import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
+import de.ovgu.featureide.fm.core.base.util.Functional;
 import de.ovgu.featureide.fm.core.conf.nodes.Variable;
 import de.ovgu.featureide.fm.core.conf.nodes.VariableConfiguration;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.FeatureNotFoundException;
+import de.ovgu.featureide.fm.core.configuration.IConfigurationPropagator;
 import de.ovgu.featureide.fm.core.configuration.SelectableFeature;
 import de.ovgu.featureide.fm.core.configuration.Selection;
-import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
@@ -74,7 +75,7 @@ public class ConfigurationFG extends Configuration {
 
 	private IFeatureGraph featureGraph;
 	private VariableConfiguration variableConfiguration;
-	private ConfigurationChanger propagator;
+	private IConfigurationPropagator propagator;
 
 	/**
 	 * Creates a new configuration object.
@@ -91,7 +92,8 @@ public class ConfigurationFG extends Configuration {
 		this.featureGraph = featureGraph;
 
 		this.variableConfiguration = new VariableConfiguration(featureGraph.getSize());
-		this.propagator = new ConfigurationChanger(featureGraph, featureModel, variableConfiguration, this);
+		// XXX ConfigurationChanger
+//		this.propagator = new ConfigurationChanger(featureGraph, featureModel, variableConfiguration, this);
 
 		this.root = initRoot();
 		
@@ -144,7 +146,7 @@ public class ConfigurationFG extends Configuration {
 		update(false, null);
 	}
 
-	public ConfigurationChanger getPropagator() {
+	public IConfigurationPropagator getPropagator() {
 		return propagator;
 	}
 
@@ -222,7 +224,7 @@ public class ConfigurationFG extends Configuration {
 		return featureList;
 	}
 
-	public LinkedList<List<String>> getSolutions(int max) throws TimeoutException {
+	public List<List<String>> getSolutions(int max) throws TimeoutException {
 		return LongRunningWrapper.runMethod(propagator.getSolutions(max));
 	}
 
@@ -304,7 +306,7 @@ public class ConfigurationFG extends Configuration {
 	 * @return a positive value equal to the number of solutions (if the method terminated in time)</br>
 	 *         or a negative value (if a timeout occured) that indicates that there are more solutions than the absolute value
 	 */
-	public long number(long timeout) {
+	public long number(int timeout) {
 		return LongRunningWrapper.runMethod(propagator.number(timeout));
 	}
 

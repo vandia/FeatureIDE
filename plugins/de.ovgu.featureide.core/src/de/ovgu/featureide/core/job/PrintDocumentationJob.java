@@ -74,7 +74,7 @@ import de.ovgu.featureide.fm.core.job.util.JobArguments;
  */
 public class PrintDocumentationJob extends AProjectJob<PrintDocumentationJob.Arguments, Boolean> {
 	
-	public static class Arguments extends JobArguments {
+	public static class Arguments implements JobArguments<Boolean> {
 		private final String foldername, featureName;
 		private final String[] options;
 		private final IProject project;
@@ -82,12 +82,16 @@ public class PrintDocumentationJob extends AProjectJob<PrintDocumentationJob.Arg
 		private final ADocumentationCommentMerger merger;
 		
 		public Arguments(String foldername, String[] options, ADocumentationCommentMerger merger, String featureName, IProject project) {
-			super(Arguments.class);
 			this.foldername = foldername;
 			this.options = options;
 			this.merger = merger;
 			this.featureName = featureName;
 			this.project = project;			
+		}
+
+		@Override
+		public PrintDocumentationJob createJob() {
+			return new PrintDocumentationJob(this);
 		}
 	}
 	

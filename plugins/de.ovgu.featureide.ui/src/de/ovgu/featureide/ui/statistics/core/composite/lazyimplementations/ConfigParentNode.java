@@ -63,7 +63,7 @@ public class ConfigParentNode extends LazyParent {
 		 * @param priority
 		 *            for the job.
 		 */
-		public void calculate(final long timeout, final int priority) {
+		public void calculate(final int timeout, final int priority) {
 			LongRunningMethod<Boolean> job = new TreeJob(this) {
 				private String calculateConfigs() {
 					boolean ignoreAbstract = description.equals(DESC_CONFIGS);

@@ -48,9 +48,9 @@ import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
+import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional.IConsumer;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
-import de.ovgu.featureide.fm.core.functional.Functional;
-import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
 import de.ovgu.featureide.fm.ui.FMUIPlugin;
 
 /**
@@ -199,7 +199,7 @@ public final class ConstraintTextValidator {
 		SatSolver satsolver = new SatSolver(new Not(check), timeOut);
 
 		try {
-			return !satsolver.isSatisfiable();
+			return !satsolver.hasSolution();
 		} catch (TimeoutException e) {
 			return true;
 		}
@@ -217,7 +217,7 @@ public final class ConstraintTextValidator {
 		NodeReader nodeReader = new NodeReader();
 		SatSolver satsolver = new SatSolver(nodeReader.stringToNode(constraint).clone(), timeout);
 		try {
-			return satsolver.isSatisfiable();
+			return satsolver.hasSolution();
 		} catch (TimeoutException e) {
 			FMUIPlugin.getDefault().logError(e);
 			return true;
@@ -241,7 +241,7 @@ public final class ConstraintTextValidator {
 		SatSolver satsolver = new SatSolver(new Not(node.clone()), timeout);
 
 		try {
-			return !satsolver.isSatisfiable();
+			return !satsolver.hasSolution();
 		} catch (TimeoutException e) {
 
 			return true;

@@ -35,7 +35,7 @@ public class DFSThread extends AWorkerThread<String> {
 
 		public SharedObjects(MatrixFeatureGraph featureGraph) {
 			this.featureGraph = featureGraph;
-			this.complete = new boolean[featureGraph.getSatInstance().getNumberOfVariables()];
+			this.complete = new boolean[featureGraph.getSatInstance().size()];
 		}
 	}
 
@@ -45,13 +45,13 @@ public class DFSThread extends AWorkerThread<String> {
 	public DFSThread(MatrixFeatureGraph featureGraph, IMonitor workMonitor) {
 		super(workMonitor);
 		sharedObjects = new SharedObjects(featureGraph);
-		visited = new byte[featureGraph.getSatInstance().getNumberOfVariables()];
+		visited = new byte[featureGraph.getSatInstance().size()];
 	}
 
 	private DFSThread(DFSThread oldThread) {
 		super(oldThread);
 		this.sharedObjects = oldThread.sharedObjects;
-		visited = new byte[oldThread.sharedObjects.featureGraph.getSatInstance().getNumberOfVariables()];
+		visited = new byte[oldThread.sharedObjects.featureGraph.getSatInstance().size()];
 	}
 
 	@Override

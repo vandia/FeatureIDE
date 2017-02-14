@@ -22,7 +22,7 @@ package de.ovgu.featureide.fm.core.conf;
 
 import java.io.Serializable;
 
-import org.prop4j.solver.SatInstance;
+import de.ovgu.featureide.fm.core.cnf.CNF;
 
 public interface IFeatureGraph extends Serializable {
 
@@ -36,12 +36,12 @@ public interface IFeatureGraph extends Serializable {
 
 	int[] getIndex();
 
-	SatInstance getSatInstance();
-
-	void copyValues(IFeatureGraph otherGraph);
+	CNF getSatInstance();
 
 	byte getValueInternal(int fromIndex, int toIndex, boolean fromSelected);
 
 	int getFeatureIndex(String name);
+
+	void copyValues(IFeatureGraph otherGraph);
 
 }

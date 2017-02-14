@@ -39,11 +39,18 @@ import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
+import de.ovgu.featureide.fm.core.cnf.Nodes;
+import de.ovgu.featureide.fm.core.cnf.CNF;
+import de.ovgu.featureide.fm.core.cnf.CNFCreator;
+import de.ovgu.featureide.fm.core.cnf.manipulator.remove.CNFSilcer;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
 import de.ovgu.featureide.fm.core.io.IFeatureModelFormat;
 import de.ovgu.featureide.fm.core.io.IPersistentFormat;
 import de.ovgu.featureide.fm.core.io.Problem;
 import de.ovgu.featureide.fm.core.io.ProblemList;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
+import de.ovgu.featureide.fm.core.job.monitor.ConsoleMonitor;
+import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
  * Reads / Writes feature models in the DIMACS CNF format.
@@ -125,10 +132,14 @@ public class DIMACSFormat implements IFeatureModelFormat {
 			clauses.add(propNode);
 		}
 		Node cnf = new And(clauses.toArray(new Or[0]));
+		final IMonitor workMonitor = new ConsoleMonitor();
 
-		//		final FeatureRemover remover = new FeatureRemover(cnf, abstractNames, false);
-		//		cnf = remover.createNewClauseList(LongRunningWrapper.runMethod(remover, new ConsoleMonitor()));
+		final CNFCreator clauseCreator = new CNFCreator(featureModel);
+		CNF satInstance = clauseCreator.createNodes();
+		final CNFSilcer slicer = new CNFSilcer(satInstance, abstractNames);
+		final CNF slicedSatInstance = LongRunningWrapper.runMethod(slicer, workMonitor);
 
+		cnf = Nodes.convert(slicedSatInstance);
 		for (Node clause : cnf.getChildren()) {
 			featureModel.addConstraint(factory.createConstraint(featureModel, clause));
 		}

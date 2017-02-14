@@ -65,7 +65,7 @@ import de.ovgu.featureide.fm.core.job.util.JobSequence;
  */
 public class MPLBuildProjectJob extends AProjectJob<MPLBuildProjectJob.Arguments, Boolean> {
 
-	public static class Arguments extends JobArguments {
+	public static class Arguments implements JobArguments<Boolean> {
 
 		private final IFeatureProject externalFeatureProject;
 		private final IFeatureProject rootFeatureProject;
@@ -75,12 +75,16 @@ public class MPLBuildProjectJob extends AProjectJob<MPLBuildProjectJob.Arguments
 
 		public Arguments(IFeatureProject rootFeatureProject, IFeatureProject externalFeatureProject, IFolder buildFolder, Configuration configuration,
 				String varName) {
-			super(Arguments.class);
 			this.rootFeatureProject = rootFeatureProject;
 			this.externalFeatureProject = externalFeatureProject;
 			this.buildF = buildFolder;
 			this.configuration = configuration;
 			this.varName = varName;
+		}
+
+		@Override
+		public MPLBuildProjectJob createJob() {
+			return new MPLBuildProjectJob(this);
 		}
 	}
 
@@ -281,10 +285,10 @@ public class MPLBuildProjectJob extends AProjectJob<MPLBuildProjectJob.Arguments
 
 				// Find Random Solution
 				try {
-					LinkedList<List<String>> solutions = newConfiguration.getSolutions(1);
+					List<List<String>> solutions = newConfiguration.getSolutions(1);
 					if (!solutions.isEmpty()) {
 						newConfiguration.resetValues();
-						List<String> solution = solutions.getFirst();
+						List<String> solution = solutions.get(0);
 						for (String solutionFeatureName : solution) {
 							try {
 								newConfiguration.setManual(solutionFeatureName, Selection.SELECTED);

@@ -87,6 +87,13 @@ import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent.EventType;
+import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional.IBinaryFunction;
+import de.ovgu.featureide.fm.core.base.util.Functional.IConsumer;
+import de.ovgu.featureide.fm.core.base.util.Functional.IFunction;
+import de.ovgu.featureide.fm.core.cnf.LiteralSet;
+import de.ovgu.featureide.fm.core.cnf.Nodes;
+import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.color.ColorPalette;
 import de.ovgu.featureide.fm.core.color.FeatureColor;
 import de.ovgu.featureide.fm.core.color.FeatureColorManager;
@@ -95,10 +102,6 @@ import de.ovgu.featureide.fm.core.configuration.ConfigurationMatrix;
 import de.ovgu.featureide.fm.core.configuration.SelectableFeature;
 import de.ovgu.featureide.fm.core.configuration.Selection;
 import de.ovgu.featureide.fm.core.configuration.TreeElement;
-import de.ovgu.featureide.fm.core.functional.Functional;
-import de.ovgu.featureide.fm.core.functional.Functional.IBinaryFunction;
-import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
-import de.ovgu.featureide.fm.core.functional.Functional.IFunction;
 import de.ovgu.featureide.fm.core.job.IJob;
 import de.ovgu.featureide.fm.core.job.IJob.JobStatus;
 import de.ovgu.featureide.fm.core.job.LongRunningJob;
@@ -587,7 +590,8 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 			final FeatureModelAnalyzer analyzer = configurationEditor.getConfiguration().getFeatureModel().getAnalyser();
 			try {
 				if (!analyzer.isValid()) {
-					displayError(THE_FEATURE_MODEL_FOR_THIS_PROJECT_IS_VOID_COMMA__I_E__COMMA__THERE_IS_NO_VALID_CONFIGURATION__YOU_NEED_TO_CORRECT_THE_FEATURE_MODEL_BEFORE_YOU_CAN_CREATE_OR_EDIT_CONFIGURATIONS_);
+					displayError(
+							THE_FEATURE_MODEL_FOR_THIS_PROJECT_IS_VOID_COMMA__I_E__COMMA__THERE_IS_NO_VALID_CONFIGURATION__YOU_NEED_TO_CORRECT_THE_FEATURE_MODEL_BEFORE_YOU_CAN_CREATE_OR_EDIT_CONFIGURATIONS_);
 					return false;
 				}
 			} catch (TimeoutException e) {
@@ -853,7 +857,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 	 * Colors all features if they lead to a valid configuration if current
 	 * configuration is invalid. deselect:blue, select:green
 	 */
-	protected LongRunningJob<List<Node>> computeColoring(final Display currentDisplay) {
+	protected LongRunningJob<List<LiteralSet>> computeColoring(final Display currentDisplay) {
 		if (!configurationEditor.isAutoSelectFeatures() || configurationEditor.getConfiguration().isValid()) {
 			for (SelectableFeature selectableFeature : configurationEditor.getConfiguration().getFeatures()) {
 				selectableFeature.setRecommendationValue(-1);
@@ -905,11 +909,10 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 			}
 		}
 
-		
-		final LongRunningMethod<List<Node>> jobs = configurationEditor.getConfiguration().getPropagator().findOpenClauses(manualFeatureList);
-		LongRunningJob<List<Node>> job = new LongRunningJob<List<Node>>("FindClauses", jobs); 
+		final LongRunningMethod<List<LiteralSet>> jobs = configurationEditor.getConfiguration().getPropagator().findOpenClauses(manualFeatureList);
+		LongRunningJob<List<LiteralSet>> job = new LongRunningJob<>("FindClauses", jobs);
 		job.schedule();
-		
+
 		job.addJobFinishedListener(new JobFinishListener<List<Node>>() {
 			@Override
 			public void jobFinished(IJob<List<Node>> finishedJob) {
@@ -944,7 +947,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 									return "";
 								}
 								// TODO @Sebastian: might not work anymore
-								final Node groupAbs = feature.getOpenClauses().iterator().next();
+								final LiteralSet groupAbs = feature.getOpenClauses().iterator().next();
 								final int groupRel = feature.getOpenClauseIndexes().iterator().next();
 								final StringBuilder sb = new StringBuilder();
 
@@ -1013,8 +1016,8 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 		}
 		final TreeItem topItem = tree.getTopItem();
 		SelectableFeature feature = (SelectableFeature) (topItem.getData());
-		final LongRunningMethod<List<String>> update = configurationEditor.getConfiguration().getPropagator()
-				.update(redundantManual, feature.getFeature().getName());
+		final LongRunningMethod<List<String>> update = configurationEditor.getConfiguration().getPropagator().update(redundantManual,
+				feature.getFeature().getName());
 		final LongRunningJob<List<String>> job = new LongRunningJob<>("", update);
 		job.setIntermediateFunction(new IConsumer<Object>() {
 			@Override
@@ -1147,22 +1150,22 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 				sb.append("Constraints:\n");
 				sb.append(relConst);
 			}
-			final Collection<Node> openClauses = feature.getOpenClauses();
+			final Collection<LiteralSet> openClauses = feature.getOpenClauses();
 			if (!openClauses.isEmpty()) {
 				if (sb.length() > 0) {
 					sb.append("\n\n");
 				}
 				sb.append("Open Clauses:\n");
-				for (Node clause : openClauses) {
-					sb.append(NodeWriter.nodeToString(clause, NodeWriter.logicalSymbols)).append('\n');
+				for (LiteralSet clause : openClauses) {
+					sb.append(NodeWriter.nodeToString(Nodes.convert(feature.getSatMapping(), clause), NodeWriter.logicalSymbols)).append('\n');
 				}
 			}
 
 			if (sb.length() > 0) {
 				tipItem = item;
 				final Rectangle bounds = item.getBounds();
-				final Point displayPoint = tree.toDisplay(new Point(bounds.x + bounds.width + 12,bounds.y));
-				newToolTip(tree.getShell(), sb, false, displayPoint.x,displayPoint.y);
+				final Point displayPoint = tree.toDisplay(new Point(bounds.x + bounds.width + 12, bounds.y));
+				newToolTip(tree.getShell(), sb, false, displayPoint.x, displayPoint.y);
 			}
 		}
 	}

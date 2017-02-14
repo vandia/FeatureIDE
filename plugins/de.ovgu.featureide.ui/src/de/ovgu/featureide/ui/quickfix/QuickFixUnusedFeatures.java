@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
@@ -81,24 +80,20 @@ class QuickFixUnusedFeatures extends QuickFixMissingConfigurations {
 		final List<Configuration> confs = new LinkedList<Configuration>();
 		final FileHandler<Configuration> writer = new FileHandler<>(ConfigurationManager.getDefaultFormat());
 		Configuration configuration = new Configuration(featureModel, false);
-		try {
-			List<List<String>> solutions = configuration.coverFeatures(unusedFeatures, monitor, true);
-			for (List<String> solution : solutions) {
-				configuration = new Configuration(featureModel, false);
-				for (String feature : solution) {
-					if (!"True".equals(feature)) {
-						configuration.setManual(feature, Selection.SELECTED);
-					}
-				}
-				if (collect) {
-					confs.add(configuration);
-				} else {
-					final IFile configurationFile = getConfigurationFile(project.getConfigFolder());
-					writer.write(Paths.get(configurationFile.getLocationURI()), configuration);
+		List<List<String>> solutions = configuration.coverFeatures(unusedFeatures, monitor, true);
+		for (List<String> solution : solutions) {
+			configuration = new Configuration(featureModel, false);
+			for (String feature : solution) {
+				if (!"True".equals(feature)) {
+					configuration.setManual(feature, Selection.SELECTED);
 				}
 			}
-		} catch (TimeoutException e1) {
-			e1.printStackTrace();
+			if (collect) {
+				confs.add(configuration);
+			} else {
+				final IFile configurationFile = getConfigurationFile(project.getConfigFolder());
+				writer.write(Paths.get(configurationFile.getLocationURI()), configuration);
+			}
 		}
 
 		return confs;

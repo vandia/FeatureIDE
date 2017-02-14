@@ -32,12 +32,9 @@ import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
+import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.Selection;
-import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
-import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator.CNFType;
-import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator.ModelType;
-import de.ovgu.featureide.fm.core.filter.AbstractFeatureFilter;
 import de.ovgu.featureide.fm.core.job.LongRunningJob;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -110,10 +107,12 @@ public class AllConfigrationsGenerator extends AConfigurationGenerator {
 	 * @param monitor
 	 */
 	private void buildAll(IFeature root, IMonitor monitor) {
-		LinkedList<IFeature> selectedFeatures2 = new LinkedList<IFeature>();
+		LinkedList<IFeature> selectedFeatures2 = new LinkedList<>();
 		selectedFeatures2.add(root);
-		rootNode = AdvancedNodeCreator.createNodes(featureModel, new AbstractFeatureFilter(), CNFType.Compact, ModelType.All, true);
-		children = new LinkedList<Node>();
+
+		// XXX use satInstance
+		CNF satInstance = getSatInstance(featureModel);
+		children = new LinkedList<>();
 		build(root, "", selectedFeatures2, monitor);
 	}
 
@@ -135,7 +134,7 @@ public class AllConfigrationsGenerator extends AConfigurationGenerator {
 				children.add(new Literal(feature, true));
 			}
 			try {
-				if (!(new SatSolver(new And(rootNode.clone(), new And(children)), 1000)).isSatisfiable()) {
+				if (!(new SatSolver(new And(rootNode.clone(), new And(children)), 1000)).hasSolution()) {
 					return;
 				}
 			} catch (org.sat4j.specs.TimeoutException e) {

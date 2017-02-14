@@ -24,16 +24,15 @@ import java.util.Collection;
 
 import org.prop4j.Node;
 
+import de.ovgu.featureide.fm.core.cnf.manipulator.remove.CNFSilcer;
 import de.ovgu.featureide.fm.core.conf.worker.base.AWorkerThread;
-import de.ovgu.featureide.fm.core.editing.remove.FeatureRemover;
-import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
-import de.ovgu.featureide.fm.core.job.monitor.ConsoleMonitor;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
- * 
+ * @deprecated Use {@link CNFSilcer} instead.
  * @author Sebastian Krieter
  */
+@Deprecated
 public class RemoveThread extends AWorkerThread<Collection<String>> {
 
 	private static class SharedObjects {
@@ -62,17 +61,17 @@ public class RemoveThread extends AWorkerThread<Collection<String>> {
 
 	@Override
 	protected void work(Collection<String> removeFeatures) {
-		IMonitor wm = new ConsoleMonitor();
-		final FeatureRemover remover = new FeatureRemover(sharedObjects.completeNode, removeFeatures);
-		final Node subNode = remover.createNewClauseList(LongRunningWrapper.runMethod(remover, wm));
-		if (subNode.getChildren().length > 0 && !(subNode.getChildren().length == 1 && subNode.getChildren()[0].getChildren().length == 0)) {
-			addNode(subNode);
-		}
+//		IMonitor wm = new ConsoleMonitor();
+//		final FeatureRemover remover = new FeatureRemover(sharedObjects.completeNode, removeFeatures);
+//		final Node subNode = remover.createNewClauseList(LongRunningWrapper.runMethod(remover, wm));
+//		if (subNode.getChildren().length > 0 && !(subNode.getChildren().length == 1 && subNode.getChildren()[0].getChildren().length == 0)) {
+//			addNode(subNode);
+//		}
 	}
 
-	private synchronized void addNode(Node subNode) {
-		sharedObjects.nodeList.add(subNode);
-	}
+//	private synchronized void addNode(Node subNode) {
+//		sharedObjects.nodeList.add(subNode);
+//	}
 
 	@Override
 	protected RemoveThread newThread() {

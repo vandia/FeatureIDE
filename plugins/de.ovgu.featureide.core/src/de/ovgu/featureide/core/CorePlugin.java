@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 import javax.annotation.CheckForNull;
 
@@ -71,7 +70,6 @@ import org.eclipse.jdt.core.CompletionProposal;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.Signature;
 import org.osgi.framework.BundleContext;
-import org.prop4j.Node;
 
 import de.ovgu.featureide.core.builder.ComposerExtensionManager;
 import de.ovgu.featureide.core.builder.ExtensibleFeatureProjectBuilder;
@@ -106,8 +104,6 @@ import de.ovgu.featureide.fm.core.Logger;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
-import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
-import de.ovgu.featureide.fm.core.editing.cnf.UnkownLiteralException;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelFormat;
 import de.ovgu.featureide.fm.core.job.util.JobArguments;
@@ -822,12 +818,6 @@ public class CorePlugin extends AbstractCorePlugin {
 			arguments.add(new PrintDocumentationJob.Arguments("Docu_SPL", options.split("\\s+"), new SPLMerger(), null, iProject));
 		}
 		FMCorePlugin.getDefault().startJobs(arguments, true);
-	}
-	
-	public static Node removeFeatures(IFeatureModel featureModel, Collection<String> removeFeatures) throws TimeoutException, UnkownLiteralException {
-		final AdvancedNodeCreator nodeCreator = new AdvancedNodeCreator(featureModel, removeFeatures);
-		nodeCreator.setCnfType(AdvancedNodeCreator.CNFType.Regular);
-		return nodeCreator.createNodes();
 	}
 
 }

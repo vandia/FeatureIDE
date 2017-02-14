@@ -20,7 +20,7 @@
  */
 package de.ovgu.featureide.fm.ui.editors.featuremodel.actions.colors;
 
-import static de.ovgu.featureide.fm.core.functional.Functional.toList;
+import static de.ovgu.featureide.fm.core.base.util.Functional.toList;
 import static de.ovgu.featureide.fm.core.localization.StringTable.CHOOSE_ACTION_;
 import static de.ovgu.featureide.fm.core.localization.StringTable.CHOOSE_COLOR_;
 import static de.ovgu.featureide.fm.core.localization.StringTable.COLORATION_DIALOG;

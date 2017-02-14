@@ -42,6 +42,7 @@ import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.core.signature.ProjectSignatures;
 import de.ovgu.featureide.fm.core.io.FileSystem;
 import de.ovgu.featureide.fm.core.job.AProjectJob;
+import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.fm.core.job.util.JobArguments;
 
@@ -50,14 +51,18 @@ import de.ovgu.featureide.fm.core.job.util.JobArguments;
  */
 public class PrintDocumentationStatisticsJob extends AProjectJob<PrintDocumentationStatisticsJob.Arguments, Boolean> {
 	
-	public static class Arguments extends JobArguments {
+	public static class Arguments implements JobArguments<Boolean> {
 		private final String foldername;
 		private final IProject project;
 		
 		public Arguments(String foldername, IProject project) {
-			super(Arguments.class);
 			this.foldername = foldername;
 			this.project = project;			
+		}
+
+		@Override
+		public PrintDocumentationStatisticsJob createJob() {
+			return new PrintDocumentationStatisticsJob(this);
 		}
 	}
 	

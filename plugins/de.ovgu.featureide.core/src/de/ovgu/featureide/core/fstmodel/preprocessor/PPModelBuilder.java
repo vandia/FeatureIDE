@@ -50,7 +50,7 @@ import de.ovgu.featureide.core.signature.base.AbstractFieldSignature;
 import de.ovgu.featureide.core.signature.base.AbstractMethodSignature;
 import de.ovgu.featureide.core.signature.base.AbstractSignature;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
-import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional;
 
 /**
  * Build the FSTModel for preprocessor projects.

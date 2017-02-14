@@ -20,7 +20,7 @@
  */
 package de.ovgu.featureide.fm.core.job.monitor;
 
-import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
+import de.ovgu.featureide.fm.core.base.util.Functional.IConsumer;
 
 /**
  * Decorator for an {@link IMonitor} object that provides synchronized access to the following methods:

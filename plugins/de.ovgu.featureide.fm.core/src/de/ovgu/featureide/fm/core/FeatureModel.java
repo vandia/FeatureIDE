@@ -41,7 +41,7 @@ import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.FeatureUtilsLegacy;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional;
 
 /**
  * The model representation of the feature tree that notifies listeners of

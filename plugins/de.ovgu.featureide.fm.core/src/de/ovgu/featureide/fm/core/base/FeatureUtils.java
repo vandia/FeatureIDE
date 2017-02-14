@@ -20,7 +20,7 @@
  */
 package de.ovgu.featureide.fm.core.base;
 
-import static de.ovgu.featureide.fm.core.functional.Functional.filter;
+import static de.ovgu.featureide.fm.core.base.util.Functional.filter;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -39,7 +39,6 @@ import javax.annotation.Nonnull;
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.prop4j.SatSolver;
-import org.prop4j.solver.SatInstance;
 
 import de.ovgu.featureide.fm.core.ColorList;
 import de.ovgu.featureide.fm.core.ColorschemeTable;
@@ -52,10 +51,11 @@ import de.ovgu.featureide.fm.core.IGraphicItem.GraphicItem;
 import de.ovgu.featureide.fm.core.Operator;
 import de.ovgu.featureide.fm.core.RenamingsManager;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
+import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional.IFunction;
+import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.conf.IFeatureGraph;
 import de.ovgu.featureide.fm.core.filter.ConcreteFeatureFilter;
-import de.ovgu.featureide.fm.core.functional.Functional;
-import de.ovgu.featureide.fm.core.functional.Functional.IFunction;
 
 /**
  * Several convenience methods for handling feature models, features and constraints.
@@ -102,6 +102,13 @@ public final class FeatureUtils {
 		@Override
 		public String invoke(IFeature t) {
 			return t.getName();
+		}
+	};
+
+	public static final IFunction<IFeature, String> GET_OLD_FEATURE_NAME = new IFunction<IFeature, String>() {
+		@Override
+		public String invoke(IFeature t) {
+			return t.getFeatureModel().getRenamingsManager().getOldName(t.getName());
 		}
 	};
 
@@ -308,7 +315,7 @@ public final class FeatureUtils {
 	 * 
 	 * <br/>
 	 * <br/>
-	 * The extraction is done via {@link de.ovgu.featureide.fm.core.functional.Functional#filter(Iterable, de.ovgu.featureide.fm.core.filter.base.IFilter)}
+	 * The extraction is done via {@link de.ovgu.featureide.fm.core.base.util.Functional#filter(Iterable, de.ovgu.featureide.fm.core.filter.base.IFilter)}
 	 * 
 	 * @since 3.0
 	 * @param features An iterable object providing features
@@ -323,7 +330,7 @@ public final class FeatureUtils {
 
 	/**
 	 * Extracts all concrete features from a feature model as a list of strings by calling
-	 * {@link de.ovgu.featureide.fm.core.functional.Functional#mapToStringList(Iterable)} on the result of {@link #extractConcreteFeatures(IFeatureModel)} using
+	 * {@link de.ovgu.featureide.fm.core.base.util.Functional#mapToStringList(Iterable)} on the result of {@link #extractConcreteFeatures(IFeatureModel)} using
 	 * <code>model.getFeatures()</code>.
 	 * 
 	 * @since 3.0
@@ -337,16 +344,16 @@ public final class FeatureUtils {
 		return new ArrayList<String>(Functional.mapToStringList(FeatureUtils.extractConcreteFeatures(model.getFeatures())));
 	}
 
-	public static Iterable<String> extractFeatureNames(Collection<IFeature> features) {
+	public static Iterable<String> extractFeatureNames(Iterable<IFeature> features) {
 		requireNonNull(features);
 
 		return Functional.map(features, GET_FEATURE_NAME);
 	}
 
-	public static Iterable<String> extractFeatureNames(Iterable<IFeature> features) {
+	public static Iterable<String> extractOldFeatureNames(Iterable<IFeature> features) {
 		requireNonNull(features);
 
-		return Functional.map(features, GET_FEATURE_NAME);
+		return Functional.map(features, GET_OLD_FEATURE_NAME);
 	}
 
 	public static final void fire(IConstraint constraint, PropertyChangeEvent event) {
@@ -547,6 +554,18 @@ public final class FeatureUtils {
 		requireNonNull(featureModel);
 
 		return Functional.toList(FeatureUtils.extractFeatureNames(featureModel.getFeatures()));
+	}
+
+	public static final Set<String> getOldFeatureNames(IFeatureModel featureModel) {
+		requireNonNull(featureModel);
+
+		return Functional.toSet(FeatureUtils.extractOldFeatureNames(featureModel.getFeatures()));
+	}
+
+	public static final List<String> getOldFeatureNamesList(IFeatureModel featureModel) {
+		requireNonNull(featureModel);
+
+		return Functional.toList(FeatureUtils.extractOldFeatureNames(featureModel.getFeatures()));
 	}
 
 	public static final List<String> getFeatureNamesPreorder(IFeatureModel featureModel) {
@@ -1394,11 +1413,11 @@ public final class FeatureUtils {
 	}
 
 	public static String[] getFeaturesFromFeatureGraph(IFeatureGraph featureGraph) {
-		final SatInstance satInstance = featureGraph.getSatInstance();
-		String[] featureNames = new String[satInstance.getNumberOfVariables()];
+		final CNF satInstance = featureGraph.getSatInstance();
+		String[] featureNames = new String[satInstance.size()];
 
 		for (int i = 0; i < featureNames.length; i++) {
-			featureNames[i] = (String) satInstance.getVariableObject(i + 1);
+			featureNames[i] = satInstance.getName(i + 1);
 		}
 		return featureNames;
 	}
@@ -1412,13 +1431,13 @@ public final class FeatureUtils {
 	}
 
 	private static String[] getNonCommonFeaturesFromFeatureGraph(IFeatureGraph featureGraph, int mode) {
-		final SatInstance satInstance = featureGraph.getSatInstance();
-		final ArrayList<String> featureNames = new ArrayList<>(satInstance.getNumberOfVariables());
+		final CNF satInstance = featureGraph.getSatInstance();
+		final ArrayList<String> featureNames = new ArrayList<>(satInstance.size());
 
 		final int[] index = featureGraph.getIndex();
 		for (int i = 0; i < index.length; i++) {
 			if (index[i] == mode) {
-				featureNames.add((String) satInstance.getVariableObject(i + 1));
+				featureNames.add(satInstance.getName(i + 1));
 			}
 		}
 		return featureNames.toArray(new String[0]);

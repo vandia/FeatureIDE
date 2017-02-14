@@ -98,7 +98,7 @@ public class ViewContentProvider implements IStructuredContentProvider, ITreeCon
 	 * time in seconds after the calculation is aborted by the SAT solver
 	 */
 	private static final int TIMEOUT = 20000;
-	private static final long TIMEOUT_CONFIGURATION = 10000;
+	private static final int TIMEOUT_CONFIGURATION = 10000;
 
 	private static final int INDEX_HEAD = 0;
 	private static final int INDEX_ADDED = 2;

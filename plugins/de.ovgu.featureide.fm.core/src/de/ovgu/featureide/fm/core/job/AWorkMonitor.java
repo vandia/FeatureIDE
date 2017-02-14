@@ -23,8 +23,8 @@ package de.ovgu.featureide.fm.core.job;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import de.ovgu.featureide.fm.core.functional.Functional;
-import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
+import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional.IConsumer;
 import de.ovgu.featureide.fm.core.job.monitor.AMonitor;
 
 /**

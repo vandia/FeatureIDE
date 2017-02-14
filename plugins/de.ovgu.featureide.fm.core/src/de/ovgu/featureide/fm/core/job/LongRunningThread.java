@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import de.ovgu.featureide.fm.core.Logger;
-import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
+import de.ovgu.featureide.fm.core.base.util.Functional.IConsumer;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.fm.core.job.monitor.NullMonitor;
 import de.ovgu.featureide.fm.core.job.util.JobFinishListener;
@@ -34,7 +34,6 @@ import de.ovgu.featureide.fm.core.job.util.JobFinishListener;
  * 
  * @author Sebastian Krieter
  */
-// TODO Change to Runnable so it can be started more than once
 // TODO Implement prioritization
 public class LongRunningThread<T> extends Thread implements IRunner<T> {
 	protected final List<JobFinishListener<T>> listenerList = new LinkedList<>();

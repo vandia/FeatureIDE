@@ -25,14 +25,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 
 import de.ovgu.featureide.fm.core.FeatureComparator;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
-import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.cnf.Nodes;
+import de.ovgu.featureide.fm.core.cnf.CNFCreator;
 
 /**
  * Defines the content of the feature model class specific for VarexJ.
@@ -86,15 +86,9 @@ public class FeatureModelVarexJ implements IFeatureModelClass {
 		return fields.toString();
 	}
 	
-	private final static String TRUE_FALSE = "  &&  True  &&  !False";
-
 	@Override
 	public String getFormula() {
-		final Node nodes = AdvancedNodeCreator.createCNF(featureModel);
-		String formula = nodes.toString(NodeWriter.javaSymbols);
-		if (formula.contains(TRUE_FALSE)) {
-			formula = formula.substring(0, formula.indexOf(TRUE_FALSE));
-		}
+		String formula = NodeWriter.nodeToString(Nodes.convert(CNFCreator.createNodes(featureModel)), NodeWriter.javaSymbols);
 		return VALID + "return " + formula.toLowerCase(Locale.ENGLISH) + ";\r\n\t}\r\n\r\n";
 	}
 

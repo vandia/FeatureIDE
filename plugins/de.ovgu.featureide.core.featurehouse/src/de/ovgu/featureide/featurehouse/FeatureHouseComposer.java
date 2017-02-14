@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -50,7 +51,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.prop4j.Node;
 import org.prop4j.NodeWriter;
 import org.sat4j.specs.TimeoutException;
 
@@ -86,8 +86,10 @@ import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
+import de.ovgu.featureide.fm.core.cnf.Nodes;
+import de.ovgu.featureide.fm.core.cnf.CNFCreator;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
-import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
+import de.ovgu.featureide.fm.core.io.FileSystem;
 import de.ovgu.featureide.fm.core.io.UnsupportedModelException;
 import de.ovgu.featureide.fm.core.job.IJob;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
@@ -630,19 +632,14 @@ public class FeatureHouseComposer extends ComposerExtensionClass {
 		composer = new FSTGenComposerExtension();
 		composer.addCompositionErrorListener(compositionErrorListener);
 		try {
+			String input = NodeWriter.nodeToString(Nodes.convert(CNFCreator.createNodes(featureProject.getFeatureModel())), NodeWriter.javaSymbols);
+			input = input.replace("!", "! ");
+			
 			IFile cnfFile = featureProject.getSourceFolder().getFile("model.cnf");
-			Node nodes = AdvancedNodeCreator.createCNF(featureProject.getFeatureModel());
-			String input = nodes.toString(NodeWriter.javaSymbols);
-			input = input.replaceAll("!", "! ");
-			InputStream cnfSource = new ByteArrayInputStream(input.getBytes(Charset.availableCharsets().get("UTF-8")));
 			try {
-				if (cnfFile.exists()) {
-					cnfFile.setContents(cnfSource, false, true, null);
-				} else {
-					cnfFile.create(cnfSource, true, null);
-				}
-				cnfFile.setDerived(true);
-			} catch (CoreException e) {
+				FileSystem.write(Paths.get(cnfFile.getLocationURI()), input);
+				cnfFile.setDerived(true, null);
+			} catch (IOException e) {
 				LOGGER.logError(e);
 			}
 

@@ -22,16 +22,11 @@ package de.ovgu.featureide.ui.actions.generator.configuration;
 
 import java.util.List;
 
-import org.prop4j.Node;
-import org.prop4j.analyses.PairWiseConfigurationGenerator;
-import org.prop4j.solver.SatInstance;
-
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
+import de.ovgu.featureide.fm.core.cnf.CNF;
+import de.ovgu.featureide.fm.core.cnf.generator.PairWiseConfigurationGenerator;
 import de.ovgu.featureide.fm.core.configuration.Selection;
-import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
-import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator.CNFType;
-import de.ovgu.featureide.fm.core.filter.AbstractFeatureFilter;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.ui.actions.generator.ConfigurationBuilder;
@@ -51,26 +46,18 @@ public class IncLingConfigurationGenerator extends AConfigurationGenerator {
 
 	@Override
 	public Void execute(IMonitor monitor) throws Exception {
-		callConfigurationGenerator(featureModel, (int) builder.configurationNumber, monitor);
+		final CNF satInstance = getSatInstance(featureModel);
+
+		PairWiseConfigurationGenerator gen = getGenerator(satInstance, (int) builder.configurationNumber);
+		exec(satInstance, gen, monitor);
 		return null;
 	}
-	
-	private void callConfigurationGenerator(IFeatureModel fm, int solutionCount, IMonitor monitor) {
-		final AdvancedNodeCreator advancedNodeCreator = new AdvancedNodeCreator(fm, new AbstractFeatureFilter());
-		advancedNodeCreator.setCnfType(CNFType.Regular);
-		advancedNodeCreator.setIncludeBooleanValues(false);
 
-		Node createNodes = advancedNodeCreator.createNodes();
-		SatInstance satInstance = new SatInstance(createNodes);
-		PairWiseConfigurationGenerator gen = getGenerator(satInstance, solutionCount);
-		exec(satInstance, gen, monitor);
-	}
-
-	protected PairWiseConfigurationGenerator getGenerator(SatInstance solver, int solutionCount) {
+	protected PairWiseConfigurationGenerator getGenerator(CNF solver, int solutionCount) {
 		return new PairWiseConfigurationGenerator(solver, solutionCount);
 	}
 
-	protected void exec(final SatInstance satInstance, final PairWiseConfigurationGenerator as, IMonitor monitor) {
+	protected void exec(final CNF satInstance, final PairWiseConfigurationGenerator as, IMonitor monitor) {
 		final Thread consumer = new Thread() {
 			@Override
 			public void run() {
@@ -85,7 +72,7 @@ public class IncLingConfigurationGenerator extends AConfigurationGenerator {
 				}
 				foundConfigurations += as.q.size();
 				builder.configurationNumber = foundConfigurations;
-				for (org.prop4j.analyses.PairWiseConfigurationGenerator.Configuration c : as.q) {
+				for (PairWiseConfigurationGenerator.Configuration c : as.q) {
 					generateConfiguration(satInstance.convertToString(c.getModel()));
 				}
 			}

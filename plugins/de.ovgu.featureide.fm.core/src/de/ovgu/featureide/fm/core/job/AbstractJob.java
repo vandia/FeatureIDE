@@ -30,7 +30,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 
 import de.ovgu.featureide.fm.core.Logger;
 import de.ovgu.featureide.fm.core.PluginID;
-import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
+import de.ovgu.featureide.fm.core.base.util.Functional.IConsumer;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor.MethodCancelException;
 import de.ovgu.featureide.fm.core.job.monitor.ProgressMonitor;

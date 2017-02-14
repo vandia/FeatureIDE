@@ -20,7 +20,7 @@
  */
 package de.ovgu.featureide.fm.core.conf;
 
-import org.prop4j.solver.SatInstance;
+import de.ovgu.featureide.fm.core.cnf.CNF;
 
 public class ListFeatureGraph extends AFeatureGraph {
 
@@ -28,7 +28,7 @@ public class ListFeatureGraph extends AFeatureGraph {
 
 	private final int[][] adjList;
 
-	public ListFeatureGraph(SatInstance satInstance, int[] index) {
+	public ListFeatureGraph(CNF satInstance, int[] index) {
 		super(satInstance, index);
 		adjList = new int[size][4];
 	}

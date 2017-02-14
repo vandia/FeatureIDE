@@ -285,15 +285,17 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 		}
 	}
 
+	// XXX Clause: FG
 	private IFeatureGraph loadFeatureGraph(IPath file) {
-		final IFeatureGraph featureGraph = new MatrixFeatureGraph();
-		final FeatureGraphFormat format = new FeatureGraphFormat();
-		Path path = Paths.get(file.toFile().toURI());
-		if (FileHandler.load(path, featureGraph, format).containsError()) {
-			return null;
-		} else {
-			return featureGraph;
-		}
+		return null;
+//		final IFeatureGraph featureGraph = new MatrixFeatureGraph();
+//		final FeatureGraphFormat format = new FeatureGraphFormat();
+//		Path path = Paths.get(file.toFile().toURI());
+//		if (FileHandler.load(path, featureGraph, format).containsError()) {
+//			return null;
+//		} else {
+//			return featureGraph;
+//		}
 	}
 
 	/**

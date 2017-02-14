@@ -181,7 +181,7 @@ public class FeatureDependencies {
     	} else {
     		nodeNeg = new Not((new Implies(node, new Not(featureName))));
     	}
-    	return !new SatSolver(nodeNeg, 2500).isSatisfiable();
+    	return !new SatSolver(nodeNeg, 2500).hasSolution();
     }
     
     /**

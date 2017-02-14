@@ -22,7 +22,7 @@ package de.ovgu.featureide.fm.core.conf;
 
 import java.util.Arrays;
 
-import org.prop4j.solver.SatInstance;
+import de.ovgu.featureide.fm.core.cnf.CNF;
 
 public class MatrixFeatureGraph extends AFeatureGraph {
 
@@ -30,20 +30,16 @@ public class MatrixFeatureGraph extends AFeatureGraph {
 
 	private byte[] adjMatrix;
 
-	public MatrixFeatureGraph(SatInstance satInstance, int[] index) {
+	public MatrixFeatureGraph(CNF satInstance, int[] index) {
 		super(satInstance, index);
 		adjMatrix = new byte[size * size];
-	}
-
-	public MatrixFeatureGraph() {
-		super();
 	}
 
 	@Override
 	public void copyValues(IFeatureGraph otherGraph) {
 		super.copyValues(otherGraph);
-		final MatrixFeatureGraph matrixGraph = (MatrixFeatureGraph) otherGraph;
-		adjMatrix = Arrays.copyOf(matrixGraph.adjMatrix, matrixGraph.adjMatrix.length);
+		final byte[] adjMatrix2 = ((MatrixFeatureGraph) otherGraph).adjMatrix;
+		adjMatrix = Arrays.copyOf(adjMatrix2, adjMatrix2.length);
 	}
 
 	@Override

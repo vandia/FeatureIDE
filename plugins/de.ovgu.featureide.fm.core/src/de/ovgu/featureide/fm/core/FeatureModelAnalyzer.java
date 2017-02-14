@@ -20,7 +20,7 @@
  */
 package de.ovgu.featureide.fm.core;
 
-import static de.ovgu.featureide.fm.core.functional.Functional.map;
+import static de.ovgu.featureide.fm.core.base.util.Functional.map;
 import static de.ovgu.featureide.fm.core.localization.StringTable.ANALYZE;
 import static de.ovgu.featureide.fm.core.localization.StringTable.CALCULATE_INDETRMINATE_HIDDEN_FEATURES;
 import static de.ovgu.featureide.fm.core.localization.StringTable.CALCULATE_INDETRMINATE_HIDDEN_FEATURES_FOR;
@@ -44,7 +44,6 @@ import org.prop4j.Node;
 import org.prop4j.Not;
 import org.prop4j.Or;
 import org.prop4j.SatSolver;
-import org.prop4j.analyses.FeatureModelAnalysis;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
@@ -55,14 +54,15 @@ import de.ovgu.featureide.fm.core.base.IFeatureModelElement;
 import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
+import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.base.util.Functional.IFunction;
+import de.ovgu.featureide.fm.core.cnf.analysis.FeatureModelAnalysis;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
 import de.ovgu.featureide.fm.core.editing.NodeCreator;
 import de.ovgu.featureide.fm.core.explanations.DeadFeatureExplanationCreator;
 import de.ovgu.featureide.fm.core.explanations.Explanation;
 import de.ovgu.featureide.fm.core.explanations.FalseOptionalFeatureExplanationCreator;
 import de.ovgu.featureide.fm.core.explanations.RedundantConstraintExplanationCreator;
-import de.ovgu.featureide.fm.core.functional.Functional;
-import de.ovgu.featureide.fm.core.functional.Functional.IFunction;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.fm.core.job.monitor.NullMonitor;
@@ -195,7 +195,7 @@ public class FeatureModelAnalyzer {
 	}
 
 	public boolean isValid() throws TimeoutException {
-		return new SatSolver(AdvancedNodeCreator.createCNF(fm), 1000, false).isSatisfiable();
+		return new SatSolver(AdvancedNodeCreator.createCNF(fm), 1000, false).hasSolution();
 	}
 
 	/**
@@ -227,7 +227,7 @@ public class FeatureModelAnalyzer {
 			condition = new Implies(conjunct(a), condition);
 		// FM => (A => B)
 		Implies finalFormula = new Implies(featureModel, condition);
-		return !new SatSolver(new Not(finalFormula), 1000).isSatisfiable();
+		return !new SatSolver(new Not(finalFormula), 1000).hasSolution();
 	}
 
 	public boolean checkIfFeatureCombinationNotPossible(IFeature a, Collection<IFeature> b) throws TimeoutException {
@@ -239,7 +239,7 @@ public class FeatureModelAnalyzer {
 		for (IFeature f : b) {
 			Node node = new And(new And(featureModel, new Literal(NodeCreator.getVariable(f, fm.clone(null)))),
 					new Literal(NodeCreator.getVariable(a, fm.clone(null))));
-			notValid &= !new SatSolver(node, 1000).isSatisfiable();
+			notValid &= !new SatSolver(node, 1000).hasSolution();
 		}
 		return notValid;
 	}
@@ -256,7 +256,7 @@ public class FeatureModelAnalyzer {
 		// FM => (condition)
 		Implies finalFormula = new Implies(featureModel, condition.clone());
 		try {
-			return !new SatSolver(new Not(finalFormula), 1000).isSatisfiable();
+			return !new SatSolver(new Not(finalFormula), 1000).hasSolution();
 		} catch (TimeoutException e) {
 			Logger.logError(e);
 			return false;
@@ -330,7 +330,7 @@ public class FeatureModelAnalyzer {
 			condition = new Implies(conjunct(context), condition);
 
 		Implies finalFormula = new Implies(featureModel, condition);
-		return !new SatSolver(new Not(finalFormula), 1000).isSatisfiable();
+		return !new SatSolver(new Not(finalFormula), 1000).hasSolution();
 	}
 
 	/**
@@ -374,7 +374,7 @@ public class FeatureModelAnalyzer {
 			condition = new And(conjunct(context), condition);
 
 		Node finalFormula = new And(featureModel, condition);
-		return new SatSolver(finalFormula, 1000).isSatisfiable();
+		return new SatSolver(finalFormula, 1000).hasSolution();
 	}
 
 	/**
@@ -396,7 +396,7 @@ public class FeatureModelAnalyzer {
 
 		Node featureModel = NodeCreator.createNodes(fm);
 		Node finalFormula = new And(featureModel, conjunct(features));
-		return new SatSolver(finalFormula, 1000).isSatisfiable();
+		return new SatSolver(finalFormula, 1000).hasSolution();
 	}
 
 	@Deprecated

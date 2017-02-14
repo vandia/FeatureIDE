@@ -214,6 +214,7 @@ public class Configuration implements Cloneable {
 		return root;
 	}
 
+	// TODO Rename to getSelectableFeature
 	public SelectableFeature getSelectablefeature(String name) {
 		return table.get(name);
 	}
@@ -238,7 +239,7 @@ public class Configuration implements Cloneable {
 		return result;
 	}
 
-	public LinkedList<List<String>> getSolutions(int max) throws TimeoutException {
+	public List<List<String>> getSolutions(int max) throws TimeoutException {
 		return LongRunningWrapper.runMethod(propagator.getSolutions(max));
 	}
 
@@ -287,11 +288,11 @@ public class Configuration implements Cloneable {
 	}
 
 	public void leadToValidConfiguration(List<SelectableFeature> featureList, IMonitor workMonitor) {
-		LongRunningWrapper.runMethod(propagator.leadToValidConfiguration(featureList));
+		LongRunningWrapper.runMethod(propagator.findOpenClauses(featureList));
 	}
 
 	public void leadToValidConfiguration(List<SelectableFeature> featureList, int mode, IMonitor workMonitor) {
-		LongRunningWrapper.runMethod(propagator.leadToValidConfiguration(featureList, mode));
+		LongRunningWrapper.runMethod(propagator.findOpenClauses(featureList));
 	}
 
 	/**
@@ -327,7 +328,7 @@ public class Configuration implements Cloneable {
 	 * @return a positive value equal to the number of solutions (if the method terminated in time)</br>
 	 *         or a negative value (if a timeout occured) that indicates that there are more solutions than the absolute value
 	 */
-	public long number(long timeout) {
+	public long number(int timeout) {
 		return LongRunningWrapper.runMethod(propagator.number(timeout));
 	}
 
@@ -397,8 +398,8 @@ public class Configuration implements Cloneable {
 	 * @param features The features that should be covered.
 	 * @param selection true is the features should be selected, false otherwise.
 	 */
-	public List<List<String>> coverFeatures(Collection<String> features, IMonitor monitor, boolean selection) throws TimeoutException {
-		return propagator.coverFeatures(features, selection, monitor);
+	public List<List<String>> coverFeatures(Collection<String> features, IMonitor monitor, boolean selection) {
+		return LongRunningWrapper.runMethod(propagator.coverFeatures(features, selection));
 
 	}
 

@@ -18,34 +18,33 @@
  *
  * See http://featureide.cs.ovgu.de/ for further information.
  */
-package de.ovgu.featureide.fm.core.annotation;
+package de.ovgu.featureide.fm.core.cnf;
+
+import java.util.List;
 
 /**
- * @author Marcus Pinnecke
+ * Represents an instance of a satisfiability problem in CNF.</br>
+ * Use a {@link ISatSolverProvider solver provider} or the {@link #getSolver()}
+ * method to get a {@link BasicSolver solver} for this problem.
+ * 
+ * @author Sebastian Krieter
  */
-public class LogService {
-	
-	private static LogService INSTANCE = null;
-	
-	private LogService() {
-		
-	}
-	
-	public static LogService getInstance() {
-		if (INSTANCE == null)
-			INSTANCE = new LogService();
-		return INSTANCE;
-	}
-	
-	public enum LogLevel { DEBUG }
-	
-	public void log(LogLevel level, String message) {
-		switch (level) {
-		case DEBUG: 
-			System.out.println(message);
-			break;
-		default: throw new RuntimeException("Unknown log level " + level.toString());
-		}
-	}
+public interface IVariables extends Cloneable {
+
+	List<String> convertToString(LiteralSet model);
+
+	List<String> convertToString(LiteralSet model, boolean includePositive, boolean includeNegative);
+
+	int size();
+
+	int getVariable(String varName);
+
+	int getVariable(String varName, boolean sign);
+
+	String getName(final int x);
+
+	String[] getNames();
+
+	IVariables clone();
 
 }

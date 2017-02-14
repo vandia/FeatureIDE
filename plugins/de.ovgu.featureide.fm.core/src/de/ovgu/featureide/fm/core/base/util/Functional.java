@@ -18,7 +18,7 @@
  *
  * See http://www.fosd.de/featureide/ for further information.
  */
-package de.ovgu.featureide.fm.core.functional;
+package de.ovgu.featureide.fm.core.base.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -438,7 +438,7 @@ public abstract class Functional {
 	 * @since 3.0
 	 */
 	public static <T> Set<T> toSet(final Iterable<T> source) {
-		HashSet<T> retval = new HashSet<T>();
+		HashSet<T> retval = new HashSet<>();
 		for (T t : source) {
 			retval.add(t);
 		}
