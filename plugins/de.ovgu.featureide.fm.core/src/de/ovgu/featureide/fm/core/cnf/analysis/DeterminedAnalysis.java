@@ -20,8 +20,6 @@
  */
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +42,7 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  */
 public class DeterminedAnalysis extends AbstractAnalysis<LiteralSet> {
 
-	private LiteralSet variables;
+	private int[] variables;
 
 	public DeterminedAnalysis(CNF satInstance) {
 		this(satInstance, null);
@@ -52,24 +50,23 @@ public class DeterminedAnalysis extends AbstractAnalysis<LiteralSet> {
 
 	public DeterminedAnalysis(CNF satInstance, LiteralSet variables) {
 		super(satInstance);
-		this.variables = variables;
+		this.variables = variables.getLiterals();
 	}
 
 	public DeterminedAnalysis(ISatSolver2 solver, LiteralSet variables) {
 		super(solver);
-		this.variables = variables;
+		this.variables = variables.getLiterals();
 	}
 
 	public LiteralSet analyze(IMonitor monitor) throws Exception {
-		requireNonNull(variables);
-		monitor.setRemainingWork(variables.getLiterals().length + 1);
+		monitor.setRemainingWork(variables.length + 1);
 
 		final VecInt resultList = new VecInt();
 		final ModifiableSatSolver modSolver = new ModifiableSatSolver(solver.getSatInstance());
 		final List<LiteralSet> clauses = solver.getSatInstance().getClauses();
 		final List<LiteralSet> relevantClauses = new ArrayList<>();
 
-		for (int literal : variables.getLiterals()) {
+		for (int literal : variables) {
 			for (LiteralSet clause : clauses) {
 				if (clause.contains(literal)) {
 					final LiteralSet newClause = LiteralSet.cleanLiteralSet(clause, literal);
