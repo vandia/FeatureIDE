@@ -24,6 +24,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import javax.annotation.CheckForNull;
+
 /**
  * Clause of a CNF.
  * 
@@ -53,9 +55,19 @@ public class LiteralSet implements Cloneable, Serializable {
 		return literals;
 	}
 
-	public boolean contains(int literalID) {
-		for (int curLiteralID : literals) {
-			if (Math.abs(curLiteralID) == literalID) {
+
+	public boolean containsLiteral(int literal) {
+		for (int curLiteral : literals) {
+			if (curLiteral == literal) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean contains(int variable) {
+		for (int curLiteral : literals) {
+			if (Math.abs(curLiteral) == variable) {
 				return true;
 			}
 		}
@@ -143,50 +155,72 @@ public class LiteralSet implements Cloneable, Serializable {
 			return uniqueVarArray;
 		}
 	}
+	
+	/**
+	 * Constructs a new array of literals that contains no duplicates and unwanted literals.
+	 * Also checks whether the array contains a literal and its negation.
+	 * 
+	 * @param literalArray The initial literal array. 
+	 * @param unwantedVariables An array of variables that should be removed.
+	 * @return A new literal array or {@code null}, if the initial set contained a literal and its negation.
+	 * 
+	 * @see #cleanLiteralSet(LiteralSet, int...)
+	 */
+	@CheckForNull
+	public static int[] cleanLiteralArray(int[] literalArray, int... unwantedVariables) {
+		final HashSet<Integer> newLiteralSet = new HashSet<>(literalArray.length << 1);
 
-	public static int[] cleanLiteralArray(int[] newLiterals, int... unwantedLiterals) {
-		final HashSet<Integer> literalSet = new HashSet<>(newLiterals.length << 1);
-
-		outer: for (int literal : newLiterals) {
-			for (int i = 0; i < unwantedLiterals.length; i++) {
-				if (unwantedLiterals[i] == Math.abs(literal)) {
+		outer: for (int literal : literalArray) {
+			for (int i = 0; i < unwantedVariables.length; i++) {
+				if (unwantedVariables[i] == Math.abs(literal)) {
 					continue outer;
 				}
 			}
-			if (literalSet.contains(-literal)) {
+			if (newLiteralSet.contains(-literal)) {
 				return null;
 			} else {
-				literalSet.add(literal);
+				newLiteralSet.add(literal);
 			}
 		}
 
-		int[] uniqueVarArray = new int[literalSet.size()];
+		int[] uniqueVarArray = new int[newLiteralSet.size()];
 		int i = 0;
-		for (int lit : literalSet) {
+		for (int lit : newLiteralSet) {
 			uniqueVarArray[i++] = lit;
 		}
 		return uniqueVarArray;
 	}
 	
-	public static LiteralSet cleanLiteralArray(LiteralSet newLiterals, int... unwantedLiterals) {
-		final HashSet<Integer> literalSet = new HashSet<>(newLiterals.getLiterals().length << 1);
+	/**
+	 * Constructs a new {@link LiteralSet} that contains no duplicates and unwanted literals.
+	 * Also checks whether the set contains a literal and its negation.
+	 * 
+	 * @param literalSet The initial literal set. 
+	 * @param unwantedVariables An array of variables that should be removed.
+	 * @return A new literal set or {@code null}, if the initial set contained a literal and its negation.
+	 * 
+	 * @see #cleanLiteralArray(int[], int...)
+	 */
+	@CheckForNull
+	public static LiteralSet cleanLiteralSet(LiteralSet literalSet, int... unwantedVariables) {
+		final HashSet<Integer> newLiteralSet = new HashSet<>(literalSet.getLiterals().length << 1);
 
-		outer: for (int literal : newLiterals.getLiterals()) {
-			for (int i = 0; i < unwantedLiterals.length; i++) {
-				if (unwantedLiterals[i] == Math.abs(literal)) {
+		outer: for (int literal : literalSet.getLiterals()) {
+			for (int i = 0; i < unwantedVariables.length; i++) {
+				if (unwantedVariables[i] == Math.abs(literal)) {
 					continue outer;
 				}
 			}
-			if (literalSet.contains(-literal)) {
+			if (newLiteralSet.contains(-literal)) {
 				return null;
 			} else {
-				literalSet.add(literal);
+				newLiteralSet.add(literal);
 			}
 		}
 
-		int[] uniqueVarArray = new int[literalSet.size()];
+		int[] uniqueVarArray = new int[newLiteralSet.size()];
 		int i = 0;
-		for (int lit : literalSet) {
+		for (int lit : newLiteralSet) {
 			uniqueVarArray[i++] = lit;
 		}
 		return new LiteralSet(uniqueVarArray);

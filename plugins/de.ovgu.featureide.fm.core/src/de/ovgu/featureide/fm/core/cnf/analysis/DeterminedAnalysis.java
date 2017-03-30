@@ -22,6 +22,7 @@ package de.ovgu.featureide.fm.core.cnf.analysis;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.sat4j.core.VecInt;
@@ -65,14 +66,13 @@ public class DeterminedAnalysis extends AbstractAnalysis<LiteralSet> {
 
 		final VecInt resultList = new VecInt();
 		final ModifiableSatSolver modSolver = new ModifiableSatSolver(solver.getSatInstance());
+		final List<LiteralSet> clauses = solver.getSatInstance().getClauses();
+		final List<LiteralSet> relevantClauses = new ArrayList<>();
 
 		for (int literal : variables.getLiterals()) {
-			final List<LiteralSet> clauses = solver.getSatInstance().getClauses();
-			final List<LiteralSet> relevantClauses = solver.getSatInstance().getClauses();
-
 			for (LiteralSet clause : clauses) {
 				if (clause.contains(literal)) {
-					final LiteralSet newClause = LiteralSet.cleanLiteralArray(clause, literal);
+					final LiteralSet newClause = LiteralSet.cleanLiteralSet(clause, literal);
 					if (newClause != null) {
 						relevantClauses.add(newClause);
 					}
@@ -97,6 +97,7 @@ public class DeterminedAnalysis extends AbstractAnalysis<LiteralSet> {
 				throw new AssertionError(hasSolution);
 			}
 			modSolver.removeLastClauses(relevantClauses.size());
+			relevantClauses.clear();
 
 			monitor.step();
 		}
