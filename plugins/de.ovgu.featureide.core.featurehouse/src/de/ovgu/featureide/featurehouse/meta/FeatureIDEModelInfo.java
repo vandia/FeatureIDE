@@ -129,7 +129,7 @@ public class FeatureIDEModelInfo implements FeatureModelInfo {
 			if (!rootFeature.getName().equals(featureName)){
 				Configuration config = new Configuration(featureModel);
 				config.setManual(rootFeature.getName(), Selection.SELECTED);
-				if (config.getSelectablefeature(featureName).getAutomatic() != Selection.SELECTED)
+				if (config.getSelectableFeature(featureName).getAutomatic() != Selection.SELECTED)
 					return false;
 			} 
 		}
@@ -159,7 +159,7 @@ public class FeatureIDEModelInfo implements FeatureModelInfo {
 				for (IFeature feat : currentConfig.getUnSelectedFeatures())
 					config.setManual(feat.getName(),Selection.UNSELECTED);
 				config.setManual(rootFeature.getName(), Selection.SELECTED);
-				if (config.getSelectablefeature(featureName).getAutomatic() != Selection.SELECTED)
+				if (config.getSelectableFeature(featureName).getAutomatic() != Selection.SELECTED)
 					return false;
 			} 
 		}
@@ -228,7 +228,7 @@ public class FeatureIDEModelInfo implements FeatureModelInfo {
 	public boolean canBeSelected(String featureName) {
 		if (!fm)
 			return true;
-		SelectableFeature feature = currentConfig.getSelectablefeature(featureName);
+		SelectableFeature feature = currentConfig.getSelectableFeature(featureName);
 		Selection oldManual = feature.getManual();
 		try{
 			currentConfig.setManual(feature, Selection.SELECTED);
@@ -243,7 +243,7 @@ public class FeatureIDEModelInfo implements FeatureModelInfo {
 	public boolean canBeEliminated(String featureName) {
 		if (!fm)
 			return true;
-		SelectableFeature feature = currentConfig.getSelectablefeature(featureName);
+		SelectableFeature feature = currentConfig.getSelectableFeature(featureName);
 		Selection oldManual = feature.getManual();
 		try{
 			currentConfig.setManual(feature, Selection.UNSELECTED);
@@ -258,14 +258,14 @@ public class FeatureIDEModelInfo implements FeatureModelInfo {
 	public boolean isAlwaysSelected(String featureName) {
 		if (!fm)
 			return false;
-		return currentConfig.getSelectablefeature(featureName).getSelection() == Selection.SELECTED;
+		return currentConfig.getSelectableFeature(featureName).getSelection() == Selection.SELECTED;
 	}
 
 	@Override
 	public boolean isAlwaysEliminated(String featureName) {
 		if (!fm)
 			return false;
-		return currentConfig.getSelectablefeature(featureName).getSelection() == Selection.UNSELECTED;
+		return currentConfig.getSelectableFeature(featureName).getSelection() == Selection.UNSELECTED;
 	}
 
 	@Override

@@ -540,7 +540,7 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 					configurationUpdate = true;
 					configFolder.accept(new IResourceVisitor() {
 						private final String suffix = "." + composer.getConfigurationExtension();
-						private final Configuration config = new Configuration(model, Configuration.PARAM_LAZY);
+						private final Configuration config = new Configuration(model);
 						private final FileHandler<Configuration> handler = new FileHandler<>(config);
 
 						@Override
@@ -1039,7 +1039,7 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 			@Override
 			public Boolean execute(IMonitor workMonitor) throws Exception {
 				workMonitor.setRemainingWork(2);
-				final Configuration config = new Configuration(featureModelManager.getObject(), false, false);
+				final Configuration config = new Configuration(featureModelManager.getObject());
 				final FileHandler<Configuration> reader = new FileHandler<>(config);
 				try {
 					IMonitor subTask = workMonitor.subTask(1);
@@ -1135,7 +1135,7 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 		final List<IFile> configurations = getAllConfigurations();
 
 		final boolean[][] selections = new boolean[configurations.size()][concreteFeatures.size()];
-		final Configuration configuration = new Configuration(featureModelManager.getObject(), Configuration.PARAM_IGNOREABSTRACT);
+		final Configuration configuration = new Configuration(featureModelManager.getObject());
 		final FileHandler<Configuration> reader = new FileHandler<>(configuration);
 
 		int row = 0;
@@ -1149,7 +1149,7 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 
 			int column = 0;
 			for (String feature : concreteFeatures) {
-				final SelectableFeature selectablefeature = configuration.getSelectablefeature(feature);
+				final SelectableFeature selectablefeature = configuration.getSelectableFeature(feature);
 				if (selectablefeature != null) {
 					currentRow[column] = selectablefeature.getSelection() == Selection.SELECTED;
 				}

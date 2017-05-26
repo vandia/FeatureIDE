@@ -1,5 +1,5 @@
 /* FeatureIDE - A Framework for Feature-Oriented Software Development
- * Copyright (C) 2005-2016  FeatureIDE team, University of Magdeburg, Germany
+ * Copyright (C) 2005-2017  FeatureIDE team, University of Magdeburg, Germany
  *
  * This file is part of FeatureIDE.
  * 
@@ -18,30 +18,28 @@
  *
  * See http://featureide.cs.ovgu.de/ for further information.
  */
-package de.ovgu.featureide.fm.core.conf;
+package de.ovgu.featureide.fm.core.cnf;
 
-import java.io.Serializable;
+/**
+ * 
+ * @author Sebastian Krieter
+ */
+public interface IInternalVariables {
 
-import de.ovgu.featureide.fm.core.cnf.CNF;
+	boolean checkClause(LiteralSet orgClause);
 
-public interface IFeatureGraph extends Serializable {
+	LiteralSet convertToInternal(LiteralSet orgClause);
 
-	boolean setEdge(int from, int to, byte edgeType);
+	int[] convertToInternal(int[] orgLiterals);
 
-	byte getEdge(int fromIndex, int toIndex);
+	int convertToInternal(int orgLiteral);
+	
+	LiteralSet convertToOriginal(LiteralSet internalClause);
 
-	byte getValue(int fromIndex, int toIndex, boolean fromSelected);
+	int[] convertToOriginal(int[] internalLiterals);
 
-	int getSize();
-
-	int[] getIndex();
-
-	CNF getSatInstance();
-
-	byte getValueInternal(int fromIndex, int toIndex, boolean fromSelected);
-
-	int getFeatureIndex(String name);
-
-	void copyValues(IFeatureGraph otherGraph);
+	int convertToOriginal(int internalLiteral);
+	
+	int getNumberOfVariables();
 
 }

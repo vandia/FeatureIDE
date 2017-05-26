@@ -56,7 +56,7 @@ public class Variables implements Serializable, IVariables {
 		}
 	}
 
-	private Variables(Variables oldSatMapping) {
+	protected Variables(Variables oldSatMapping) {
 		this.intToVar = Arrays.copyOf(oldSatMapping.intToVar, oldSatMapping.intToVar.length);
 		this.varToInt = new HashMap<>(oldSatMapping.varToInt);
 	}

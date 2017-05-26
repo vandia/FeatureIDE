@@ -1,5 +1,5 @@
 /* FeatureIDE - A Framework for Feature-Oriented Software Development
- * Copyright (C) 2005-2016  FeatureIDE team, University of Magdeburg, Germany
+ * Copyright (C) 2005-2017  FeatureIDE team, University of Magdeburg, Germany
  *
  * This file is part of FeatureIDE.
  * 
@@ -18,23 +18,45 @@
  *
  * See http://featureide.cs.ovgu.de/ for further information.
  */
-package de.ovgu.featureide.fm.core.conf;
-
-import java.util.List;
-
-import de.ovgu.featureide.fm.core.job.LongRunningMethod;
+package de.ovgu.featureide.fm.core.cnf;
 
 /**
- * TODO description
  * 
  * @author Sebastian Krieter
  */
-public interface IConfigurationChanger {
+public class DefaultInternalVariables implements IInternalVariables {
 
-	LongRunningMethod<List<String>> update(boolean redundantManual, String startFeatureName);
+	public boolean checkClause(LiteralSet orgClause) {
+		return true;
+	}
 
-	void setNewValue(int index, int value, boolean manual);
+	public LiteralSet convertToInternal(LiteralSet orgClause) {
+		return orgClause;
+	}
 
-	void reset();
+	public int[] convertToInternal(int[] orgLiterals) {
+		return orgLiterals;
+	}
+
+	public int convertToInternal(int orgLiteral) {
+		return orgLiteral;
+	}
+
+	public LiteralSet convertToOriginal(LiteralSet internalClause) {
+		return internalClause;
+	}
+
+	public int[] convertToOriginal(int[] internalLiterals) {
+		return internalLiterals;
+	}
+
+	public int convertToOriginal(int internalLiteral) {
+		return internalLiteral;
+	}
+
+	@Override
+	public int getNumberOfVariables() {
+		return 0;
+	}
 
 }

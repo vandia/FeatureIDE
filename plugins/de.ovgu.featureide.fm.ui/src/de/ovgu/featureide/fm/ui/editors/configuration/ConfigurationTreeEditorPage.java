@@ -94,6 +94,8 @@ import de.ovgu.featureide.fm.core.base.util.Functional.IFunction;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.Nodes;
 import de.ovgu.featureide.fm.core.cnf.CNF;
+import de.ovgu.featureide.fm.core.cnf.Clause;
+import de.ovgu.featureide.fm.core.cnf.Nodes;
 import de.ovgu.featureide.fm.core.color.ColorPalette;
 import de.ovgu.featureide.fm.core.color.FeatureColor;
 import de.ovgu.featureide.fm.core.color.FeatureColorManager;
@@ -526,7 +528,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 			return;
 		}
 		final boolean valid = configurationEditor.getConfiguration().isValid();
-		if (configurationEditor.getConfiguration().getPropagator() == null) {
+		if (configurationEditor.getPropagator() == null) {
 			return;
 		}
 		final LongRunningJob<Long> job = new LongRunningJob<>("", configurationEditor.getConfiguration().getPropagator().number(250));

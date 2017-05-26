@@ -20,9 +20,6 @@
  */
 package de.ovgu.featureide.fm.core.cnf.solver;
 
-import org.sat4j.core.VecInt;
-import org.sat4j.specs.ISolver;
-
 import de.ovgu.featureide.fm.core.base.util.RingList;
 
 /**
@@ -38,19 +35,9 @@ public interface ISatSolver2 extends ISimpleSatSolver {
 		NEGATIVE, ORG, POSITIVE, RANDOM
 	}
 
-	void assignmentReplaceLast(int x);
-
-	VecInt getAssignment();
-
-	int[] getAssignmentArray();
-
-	int[] getAssignmentArray(int from, int to);
-
 	RingList<int[]> getSolutionList();
 
 	void useSolutionList(int size);
-
-	ISolver getInternalSolver();
 
 	ISatSolver2 clone();
 
@@ -72,6 +59,20 @@ public interface ISatSolver2 extends ISimpleSatSolver {
 
 	void assignmentPush(int x);
 
+	void assignmentPushAll(int[] literals);
+
+	void assignmentReplaceLast(int x);
+
 	void assignmentClear(int size);
+
+	void asignmentEnsure(int size);
+
+	int assignmentGet(int i);
+
+	int[] getAssignmentArray();
+
+	int[] getAssignmentArray(int from, int to);
+
+	int getAssignmentSize();
 
 }

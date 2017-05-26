@@ -53,8 +53,6 @@ import de.ovgu.featureide.fm.core.RenamingsManager;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.base.util.Functional;
 import de.ovgu.featureide.fm.core.base.util.Functional.IFunction;
-import de.ovgu.featureide.fm.core.cnf.CNF;
-import de.ovgu.featureide.fm.core.conf.IFeatureGraph;
 import de.ovgu.featureide.fm.core.filter.ConcreteFeatureFilter;
 
 /**
@@ -1410,37 +1408,6 @@ public final class FeatureUtils {
 			}
 		}
 		return stringBuilder.toString();
-	}
-
-	public static String[] getFeaturesFromFeatureGraph(IFeatureGraph featureGraph) {
-		final CNF satInstance = featureGraph.getSatInstance();
-		String[] featureNames = new String[satInstance.size()];
-
-		for (int i = 0; i < featureNames.length; i++) {
-			featureNames[i] = satInstance.getName(i + 1);
-		}
-		return featureNames;
-	}
-
-	public static String[] getCoreFeaturesFromFeatureGraph(IFeatureGraph featureGraph) {
-		return getNonCommonFeaturesFromFeatureGraph(featureGraph, -1);
-	}
-
-	public static String[] getDeadFeaturesFromFeatureGraph(IFeatureGraph featureGraph) {
-		return getNonCommonFeaturesFromFeatureGraph(featureGraph, -2);
-	}
-
-	private static String[] getNonCommonFeaturesFromFeatureGraph(IFeatureGraph featureGraph, int mode) {
-		final CNF satInstance = featureGraph.getSatInstance();
-		final ArrayList<String> featureNames = new ArrayList<>(satInstance.size());
-
-		final int[] index = featureGraph.getIndex();
-		for (int i = 0; i < index.length; i++) {
-			if (index[i] == mode) {
-				featureNames.add(satInstance.getName(i + 1));
-			}
-		}
-		return featureNames.toArray(new String[0]);
 	}
 
 }

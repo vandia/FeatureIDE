@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.sat4j.specs.IConstr;
 
-import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.CNF;
+import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 
 /**
  * Finds certain solutions of propositional formulas.

@@ -29,7 +29,6 @@ import org.sat4j.minisat.orders.PositiveLiteralSelectionStrategy;
 import org.sat4j.minisat.orders.RSATPhaseSelectionStrategy;
 import org.sat4j.minisat.orders.RandomLiteralSelectionStrategy;
 import org.sat4j.minisat.orders.VarOrderHeap;
-import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.base.util.RingList;
@@ -73,18 +72,33 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 	}
 
 	@Override
+	public void asignmentEnsure(int size) {
+		assignment.ensure(size);
+	}
+
+	@Override
 	public void assignmentPop() {
 		assignment.pop();
 	}
 
 	@Override
 	public void assignmentPush(int x) {
-		assignment.push(x);
+		assignment.push(internalMapping.convertToInternal(x));
+	}
+
+	@Override
+	public void assignmentPushAll(int[] x) {
+		assignment.pushAll(new VecInt(internalMapping.convertToInternal(x)));
 	}
 
 	@Override
 	public void assignmentReplaceLast(int x) {
-		assignment.pop().unsafePush(x);
+		assignment.pop().unsafePush(internalMapping.convertToInternal(x));
+	}
+
+	@Override
+	public int getAssignmentSize() {
+		return assignment.size();
 	}
 
 	@Override
@@ -102,23 +116,18 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 	}
 
 	@Override
-	public VecInt getAssignment() {
-		return assignment;
-	}
-
-	@Override
 	public int[] getAssignmentArray() {
-		return Arrays.copyOf(assignment.toArray(), assignment.size());
+		return internalMapping.convertToOriginal(assignment.toArray());
 	}
 
 	@Override
 	public int[] getAssignmentArray(int from, int to) {
-		return Arrays.copyOfRange(assignment.toArray(), from, to);
+		return internalMapping.convertToOriginal(Arrays.copyOfRange(assignment.toArray(), from, to));
 	}
 
 	@Override
-	public ISolver getInternalSolver() {
-		return solver;
+	public int assignmentGet(int i) {
+		return internalMapping.convertToOriginal(assignment.get(i));
 	}
 
 	@Override
@@ -159,7 +168,7 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 	@Override
 	public SatResult hasSolution(int... assignment) {
 		final int[] unitClauses = new int[assignment.length];
-		System.arraycopy(assignment, 0, unitClauses, 0, unitClauses.length);
+		System.arraycopy(internalMapping.convertToInternal(assignment), 0, unitClauses, 0, unitClauses.length);
 
 		try {
 			if (solver.isSatisfiable(new VecInt(unitClauses), false)) {
@@ -216,7 +225,7 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 				solver.setOrder(new VarOrderHeap2(new RandomLiteralSelectionStrategy(), order));
 				break;
 			default:
-				assert false;
+				throw new AssertionError(strategy);
 			}
 		}
 	}

@@ -84,7 +84,7 @@ public class AtomicSetAnalysis extends AbstractAnalysis<List<LiteralSet>> {
 					}
 				}
 			}
-			final int fixedSize = solver.getAssignment().size();
+			final int fixedSize = solver.getAssignmentSize();
 			result.add(new LiteralSet(solver.getAssignmentArray(0, fixedSize)));
 
 			for (int i = 0; i < model1.length; i++) {
@@ -171,7 +171,7 @@ public class AtomicSetAnalysis extends AbstractAnalysis<List<LiteralSet>> {
 						}
 					}
 
-					result.add(new LiteralSet(solver.getAssignmentArray(fixedSize, solver.getAssignment().size())));
+					result.add(new LiteralSet(solver.getAssignmentArray(fixedSize, solver.getAssignmentSize())));
 					solver.assignmentClear(fixedSize);
 				}
 			}

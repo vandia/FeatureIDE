@@ -59,7 +59,7 @@ public class CoreDeadAnalysis extends AbstractAnalysis<LiteralSet> {
 	}
 
 	public LiteralSet analyze(IMonitor monitor) throws Exception {
-		final int initialAssignmentLength = solver.getAssignment().size();
+		final int initialAssignmentLength = solver.getAssignmentSize();
 		solver.setSelectionStrategy(SelectionStrategy.POSITIVE);
 		int[] model1 = solver.findSolution();
 
@@ -79,7 +79,7 @@ public class CoreDeadAnalysis extends AbstractAnalysis<LiteralSet> {
 			}
 
 			for (int i = 0; i < initialAssignmentLength; i++) {
-				model1[Math.abs(solver.getAssignment().get(i)) - 1] = 0;
+				model1[Math.abs(solver.assignmentGet(i)) - 1] = 0;
 			}
 
 			SatUtils.updateSolution(model1, model2);
@@ -109,7 +109,7 @@ public class CoreDeadAnalysis extends AbstractAnalysis<LiteralSet> {
 			}
 		}
 
-		return new LiteralSet(solver.getAssignmentArray(initialAssignmentLength, solver.getAssignment().size()));
+		return new LiteralSet(solver.getAssignmentArray(initialAssignmentLength, solver.getAssignmentSize()));
 	}
 
 	public LiteralSet getVariables() {

@@ -97,7 +97,6 @@ public class ModifiableSatSolver extends AdvancedSatSolver {
 
 	protected void configureSolver(Solver<?> solver) {
 		solver.setTimeoutMs(1000);
-		solver.newVar(satInstance.size());
 		solver.setDBSimplificationAllowed(false);
 		solver.setVerbose(false);
 	}

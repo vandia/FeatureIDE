@@ -20,8 +20,6 @@
  */
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
-import org.sat4j.core.VecInt;
-
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
@@ -59,7 +57,7 @@ public abstract class AbstractAnalysis<T> implements LongRunningMethod<T> {
 			return null;
 		}
 		if (assumptions != null) {
-			solver.getAssignment().pushAll(new VecInt(assumptions.getLiterals()));
+			solver.assignmentPushAll(assumptions.getLiterals());
 		}
 		assumptions = new LiteralSet(solver.getAssignmentArray());
 

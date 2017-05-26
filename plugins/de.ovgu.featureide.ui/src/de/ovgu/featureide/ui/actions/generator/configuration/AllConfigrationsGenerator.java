@@ -63,7 +63,7 @@ public class AllConfigrationsGenerator extends AConfigurationGenerator {
 		number = new LongRunningJob<>(IConfigurationBuilderBasics.JOB_TITLE_COUNT_CONFIGURATIONS, new LongRunningMethod<Boolean>() {
 			@Override
 			public Boolean execute(IMonitor workMonitor) throws Exception {
-				builder.configurationNumber = Math.min(new Configuration(featureModel, false, false).number(1000000), builder.configurationNumber);
+				builder.configurationNumber = Math.min(new Configuration(featureModel).number(1000000), builder.configurationNumber);
 				if (builder.configurationNumber < 0) {
 					UIPlugin.getDefault().logWarning(StringTable.SATSOLVER_COMPUTATION_TIMEOUT);
 					builder.configurationNumber = Math.min(Integer.MAX_VALUE, builder.configurationNumber);
@@ -110,7 +110,6 @@ public class AllConfigrationsGenerator extends AConfigurationGenerator {
 		LinkedList<IFeature> selectedFeatures2 = new LinkedList<>();
 		selectedFeatures2.add(root);
 
-		// XXX use satInstance
 		CNF satInstance = getSatInstance(featureModel);
 		children = new LinkedList<>();
 		build(root, "", selectedFeatures2, monitor);
@@ -166,7 +165,7 @@ public class AllConfigrationsGenerator extends AConfigurationGenerator {
 					}
 				}
 				for (String f : selectedFeatures3) {
-					if (configuration.getSelectablefeature(f).getSelection() != Selection.SELECTED) {
+					if (configuration.getSelectableFeature(f).getSelection() != Selection.SELECTED) {
 						return;
 					}
 				}

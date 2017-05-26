@@ -132,14 +132,14 @@ public class DIMACSFormat implements IFeatureModelFormat {
 			clauses.add(propNode);
 		}
 		Node cnf = new And(clauses.toArray(new Or[0]));
-		final IMonitor workMonitor = new ConsoleMonitor();
-
-		final CNFCreator clauseCreator = new CNFCreator(featureModel);
-		CNF satInstance = clauseCreator.createNodes();
-		final CNFSilcer slicer = new CNFSilcer(satInstance, abstractNames);
-		final CNF slicedSatInstance = LongRunningWrapper.runMethod(slicer, workMonitor);
-
-		cnf = Nodes.convert(slicedSatInstance);
+//		final IMonitor workMonitor = new ConsoleMonitor();
+//
+//		final CNFCreator clauseCreator = new CNFCreator(featureModel);
+//		CNF satInstance = clauseCreator.createNodes();
+//		final CNFSilcer slicer = new CNFSilcer(satInstance, abstractNames);
+//		final CNF slicedSatInstance = LongRunningWrapper.runMethod(slicer, workMonitor);
+//
+//		cnf = Nodes.convert(slicedSatInstance);
 		for (Node clause : cnf.getChildren()) {
 			featureModel.addConstraint(factory.createConstraint(featureModel, clause));
 		}

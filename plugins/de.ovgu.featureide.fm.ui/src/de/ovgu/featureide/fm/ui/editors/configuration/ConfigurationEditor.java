@@ -58,16 +58,15 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import de.ovgu.featureide.fm.core.FMCorePlugin;
+import de.ovgu.featureide.fm.core.FeatureProject;
 import de.ovgu.featureide.fm.core.ModelMarkerHandler;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent.EventType;
 import de.ovgu.featureide.fm.core.base.event.IEventListener;
-import de.ovgu.featureide.fm.core.conf.ConfigurationFG;
-import de.ovgu.featureide.fm.core.conf.IFeatureGraph;
-import de.ovgu.featureide.fm.core.conf.MatrixFeatureGraph;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.ConfigurationMatrix;
+import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
 import de.ovgu.featureide.fm.core.io.FeatureGraphFormat;
 import de.ovgu.featureide.fm.core.io.IPersistentFormat;
 import de.ovgu.featureide.fm.core.io.Problem;
@@ -108,6 +107,7 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 
 	ModelMarkerHandler<IFile> markerHandler;
 
+	public FeatureProject featureProject;
 	public ConfigurationManager configurationManager;
 	public FeatureModelManager featureModelManager;
 
@@ -240,19 +240,19 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 
 		final Configuration c;
 
-		final IFeatureGraph fg = loadFeatureGraph(res.getLocation().removeLastSegments(1).append("model.fg"));
-		if (fg == null) {
-			c = new Configuration(featureModelManager.getObject(), Configuration.PARAM_IGNOREABSTRACT | Configuration.PARAM_LAZY);
-			configurationManager = FileManagerMap.<Configuration, ConfigurationManager> getInstance(file.getLocation().toOSString());
-			if (configurationManager != null) {
-				configurationManager.setConfiguration(c);
-				configurationManager.read();
-			} else {
-				configurationManager = ConfigurationManager.getInstance(c, file.getLocation().toOSString());
-			}
-		} else {
-			c = new ConfigurationFG(featureModelManager.getObject(), fg, ConfigurationFG.PARAM_IGNOREABSTRACT | ConfigurationFG.PARAM_LAZY);
-		}
+//		final IFeatureGraph fg = loadFeatureGraph(res.getLocation().removeLastSegments(1).append("model.fg"));
+//		if (fg == null) {
+//			c = new Configuration(featureModelManager.getObject(), Configuration.PARAM_IGNOREABSTRACT | Configuration.PARAM_LAZY);
+//			configurationManager = FileManagerMap.<Configuration, ConfigurationManager> getInstance(file.getLocation().toOSString());
+//			if (configurationManager != null) {
+//				configurationManager.setConfiguration(c);
+//				configurationManager.read();
+//			} else {
+//				configurationManager = ConfigurationManager.getInstance(c, file.getLocation().toOSString());
+//			}
+//		} else {
+//			c = new ConfigurationFG(featureModelManager.getObject(), fg, ConfigurationFG.PARAM_IGNOREABSTRACT | ConfigurationFG.PARAM_LAZY);
+//		}
 
 		final ProblemList lastProblems = configurationManager.getLastProblems();
 		createModelFileMarkers(lastProblems);
@@ -286,11 +286,10 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 	}
 
 	// XXX Clause: FG
-	private IFeatureGraph loadFeatureGraph(IPath file) {
+	private IFeatureGraph loadFeatureGraph(Path path) {
 		return null;
 //		final IFeatureGraph featureGraph = new MatrixFeatureGraph();
 //		final FeatureGraphFormat format = new FeatureGraphFormat();
-//		Path path = Paths.get(file.toFile().toURI());
 //		if (FileHandler.load(path, featureGraph, format).containsError()) {
 //			return null;
 //		} else {
@@ -630,6 +629,15 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 
 	private void setContainsError(boolean containsError) {
 		this.containsError = containsError;
+	}
+
+	/* (non-Javadoc)
+	 * @see de.ovgu.featureide.fm.ui.editors.configuration.IConfigurationEditor#getPropagator()
+	 */
+	@Override
+	public ConfigurationPropagator getPropagator() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

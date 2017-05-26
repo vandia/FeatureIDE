@@ -194,13 +194,12 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 		solver.useSolutionList(Math.min(solver.getSatInstance().size(), ISatSolver2.MAX_SOLUTION_BUFFER));
 
 		findInvalid();
-		IVecInt orgBackbone = solver.getAssignment();
 		final int featureCount = solver.getSatInstance().size();
 
-		final int numberOfFixedFeatures = orgBackbone.size();
+		final int numberOfFixedFeatures = solver.getAssignmentSize();
 		final boolean[] featuresUsedOrg = new boolean[featureCount];
-		for (int i = 0; i < orgBackbone.size(); i++) {
-			featuresUsedOrg[Math.abs(orgBackbone.get(i)) - 1] = true;
+		for (int i = 0; i < numberOfFixedFeatures; i++) {
+			featuresUsedOrg[Math.abs(solver.assignmentGet(i)) - 1] = true;
 		}
 
 		featureIndexArray = new FeatureIndex[numVariables - numberOfFixedFeatures];

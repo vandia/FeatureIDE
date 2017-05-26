@@ -66,7 +66,7 @@ public class OneWiseConfigurationGenerator extends AbstractAnalysis<List<Literal
 	public List<LiteralSet> analyze(IMonitor monitor) throws Exception {
 		final ArrayList<LiteralSet> coverArray = new ArrayList<>();
 
-		final int initialAssignmentLength = solver.getAssignment().size();
+		final int initialAssignmentLength = solver.getAssignmentSize();
 		if (coverMode == 1) {
 			solver.setSelectionStrategy(SelectionStrategy.POSITIVE);
 		} else {

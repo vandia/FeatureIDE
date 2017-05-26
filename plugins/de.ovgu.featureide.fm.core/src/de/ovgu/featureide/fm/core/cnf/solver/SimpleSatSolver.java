@@ -31,8 +31,12 @@ import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.IConstr;
 import org.sat4j.specs.TimeoutException;
 
-import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.CNF;
+import de.ovgu.featureide.fm.core.cnf.DefaultInternalVariables;
+import de.ovgu.featureide.fm.core.cnf.IInternalVariables;
+import de.ovgu.featureide.fm.core.cnf.LiteralSet;
+import de.ovgu.featureide.fm.core.cnf.SlicedVariables;
+import de.ovgu.featureide.fm.core.cnf.Variables;
 
 /**
  * Light version of a sat solver with reduced functionality.
@@ -42,15 +46,20 @@ import de.ovgu.featureide.fm.core.cnf.CNF;
 public class SimpleSatSolver implements ISimpleSatSolver {
 
 	protected final CNF satInstance;
+	protected final IInternalVariables internalMapping;
 	protected final Solver<?> solver;
 
 	public SimpleSatSolver(CNF satInstance) {
 		this.satInstance = satInstance;
+		final Variables mapping = satInstance.getMapping();
+		internalMapping = (mapping instanceof SlicedVariables) ? ((SlicedVariables) mapping).getInternalVariables() : new DefaultInternalVariables();
+
 		this.solver = newSolver();
 	}
 
 	protected SimpleSatSolver(SimpleSatSolver oldSolver) {
 		this.satInstance = oldSolver.satInstance;
+		this.internalMapping = oldSolver.internalMapping;
 		this.solver = newSolver();
 	}
 
@@ -61,7 +70,7 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 
 	protected IConstr addClauseInternal(Solver<?> solver, LiteralSet mainClause) {
 		try {
-			final int[] literals = mainClause.getLiterals();
+			final int[] literals = internalMapping.convertToInternal(mainClause.getLiterals());
 			assert checkClauseValidity(literals);
 			return solver.addClause(new VecInt(Arrays.copyOf(literals, literals.length)));
 		} catch (ContradictionException e) {
@@ -98,7 +107,7 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 
 	@Override
 	public int[] getSolution() {
-		return solver.model();
+		return internalMapping.convertToOriginal(solver.model());
 	}
 
 	@Override
@@ -118,7 +127,7 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	@Override
 	public SatResult hasSolution(int... assignment) {
 		final int[] unitClauses = new int[assignment.length];
-		System.arraycopy(assignment, 0, unitClauses, 0, unitClauses.length);
+		System.arraycopy(internalMapping.convertToInternal(assignment), 0, unitClauses, 0, unitClauses.length);
 
 		try {
 			if (solver.isSatisfiable(new VecInt(unitClauses), false)) {
@@ -139,7 +148,7 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 
 	@Override
 	public void removeLastClause() {
-		removeLastClauses(1);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -181,7 +190,6 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	 */
 	protected void configureSolver(Solver<?> solver) {
 		solver.setTimeoutMs(1000);
-		solver.newVar(satInstance.size());
 		solver.setDBSimplificationAllowed(true);
 		solver.setVerbose(false);
 	}
@@ -191,6 +199,7 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	 * Initializes the order instance.
 	 */
 	protected void initSolver(Solver<?> solver) {
+		solver.newVar(satInstance.size());
 		final List<LiteralSet> clauses = satInstance.getClauses();
 		if (!clauses.isEmpty()) {
 			solver.setExpectedNumberOfClauses(clauses.size());

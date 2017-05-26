@@ -122,8 +122,8 @@ public class PrintDocumentationJob extends AProjectJob<PrintDocumentationJob.Arg
 
 		final int[] featureIDs = projectSignatures.getFeatureIDs();
 		if (arguments.merger instanceof VariantMerger) {
-			final Configuration conf = new Configuration(featureProject.getFeatureModel(),
-					Configuration.PARAM_LAZY | Configuration.PARAM_IGNOREABSTRACT);
+			// TODO !!! ignore abstract features (below)
+			final Configuration conf = new Configuration(featureProject.getFeatureModel());
 			try {
 				final IFile file = featureProject.getCurrentConfiguration();
 				FileHandler.load(Paths.get(file.getLocationURI()), conf, ConfigurationManager.getFormat(file.getName()));

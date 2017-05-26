@@ -168,6 +168,10 @@ public abstract class AFileManager<T> implements IFileManager, IEventManager {
 	public String getAbsolutePath() {
 		return absolutePath;
 	}
+	
+	public Path getPath() {
+		return path;
+	}
 
 	@Override
 	public String toString() {

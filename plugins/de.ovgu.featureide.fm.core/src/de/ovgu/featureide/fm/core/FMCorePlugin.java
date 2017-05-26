@@ -24,10 +24,21 @@ import static de.ovgu.featureide.fm.core.localization.StringTable.PRINTED_OUTPUT
 import static de.ovgu.featureide.fm.core.localization.StringTable.READING_MODEL_FILE___;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+
+import javax.annotation.CheckForNull;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -45,11 +56,14 @@ import de.ovgu.featureide.fm.core.base.impl.ExtendedFeatureModel.UsedModel;
 import de.ovgu.featureide.fm.core.base.impl.ExtendedFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
 import de.ovgu.featureide.fm.core.base.impl.FMFormatManager;
+import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.io.EclipseFileSystem;
 import de.ovgu.featureide.fm.core.io.FileSystem;
 import de.ovgu.featureide.fm.core.io.IConfigurationFormat;
 import de.ovgu.featureide.fm.core.io.IFeatureModelFormat;
 import de.ovgu.featureide.fm.core.io.IPersistentFormat;
+import de.ovgu.featureide.fm.core.io.ProblemList;
+import de.ovgu.featureide.fm.core.io.manager.ConfigurationManager;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.core.io.manager.FileManagerMap;
 import de.ovgu.featureide.fm.core.io.velvet.VelvetFeatureModelFormat;
@@ -77,17 +91,20 @@ public class FMCorePlugin extends AbstractCorePlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		
+
 		FileSystem.INSTANCE = new EclipseFileSystem();
 		LongRunningWrapper.INSTANCE = new LongRunningEclipse();
-		
-		FMFactoryManager.setExtensionLoader(new EclipseExtensionLoader<>(PluginID.PLUGIN_ID, IFeatureModelFactory.extensionPointID, IFeatureModelFactory.extensionID, IFeatureModelFactory.class));
-		FMFormatManager.setExtensionLoader(new EclipseExtensionLoader<>(PluginID.PLUGIN_ID, IFeatureModelFormat.extensionPointID, IFeatureModelFormat.extensionID, IFeatureModelFormat.class));
-		ConfigFormatManager.setExtensionLoader(new EclipseExtensionLoader<>(PluginID.PLUGIN_ID, IConfigurationFormat.extensionPointID, IConfigurationFormat.extensionID, IConfigurationFormat.class));
 
-//		ConfigFormatManager.setExtensionLoader(new CoreExtensionLoader<>(new DefaultFormat(), new FeatureIDEFormat(), new EquationFormat(), new ExpressionFormat()));
-//		FMFormatManager.setExtensionLoader(new CoreExtensionLoader<>(new XmlFeatureModelFormat(), new SimpleVelvetFeatureModelFormat(), new DIMACSFormat(), new SXFMFormat(), new GuidslFormat()));
-//		FMFactoryManager.setExtensionLoader(new CoreExtensionLoader<>(new DefaultFeatureModelFactory(), new ExtendedFeatureModelFactory()));
+		FMFactoryManager.setExtensionLoader(new EclipseExtensionLoader<>(PluginID.PLUGIN_ID, IFeatureModelFactory.extensionPointID,
+				IFeatureModelFactory.extensionID, IFeatureModelFactory.class));
+		FMFormatManager.setExtensionLoader(new EclipseExtensionLoader<>(PluginID.PLUGIN_ID, IFeatureModelFormat.extensionPointID,
+				IFeatureModelFormat.extensionID, IFeatureModelFormat.class));
+		ConfigFormatManager.setExtensionLoader(new EclipseExtensionLoader<>(PluginID.PLUGIN_ID, IConfigurationFormat.extensionPointID,
+				IConfigurationFormat.extensionID, IConfigurationFormat.class));
+
+		//		ConfigFormatManager.setExtensionLoader(new CoreExtensionLoader<>(new DefaultFormat(), new FeatureIDEFormat(), new EquationFormat(), new ExpressionFormat()));
+		//		FMFormatManager.setExtensionLoader(new CoreExtensionLoader<>(new XmlFeatureModelFormat(), new SimpleVelvetFeatureModelFormat(), new DIMACSFormat(), new SXFMFormat(), new GuidslFormat()));
+		//		FMFactoryManager.setExtensionLoader(new CoreExtensionLoader<>(new DefaultFeatureModelFactory(), new ExtendedFeatureModelFactory()));
 
 		Logger.logger = new EclipseLogger();
 		FMFactoryManager.factoryWorkspaceProvider = new EclipseFactoryWorkspaceProvider();
@@ -231,6 +248,71 @@ public class FMCorePlugin extends AbstractCorePlugin {
 				}
 			}
 		}
+	}
+
+	private static HashMap<Path, FeatureProject> featureProjectMap;
+
+	public static void addProject(Path root, Path featureModel, Path configurations) {
+		final FeatureModelManager featureModelManager = FeatureModelManager.getInstance(featureModel);
+		final ArrayList<ConfigurationManager> configurationManagerList = new ArrayList<>();
+		try {
+			Files.walkFileTree(configurations, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					final Configuration c = new Configuration(featureModelManager.getObject());
+					ConfigurationManager configurationManager = FileManagerMap.<Configuration, ConfigurationManager> getInstance(file.toString());
+					if (configurationManager != null) {
+						configurationManager.setConfiguration(c);
+						configurationManager.read();
+					} else {
+						configurationManager = ConfigurationManager.getInstance(c, file.toString());
+					}
+
+					final ProblemList lastProblems = configurationManager.getLastProblems();
+					if (lastProblems.containsError()) {
+						FileManagerMap.remove(file.toString());
+					} else {
+						configurationManagerList.add(configurationManager);
+					}
+					return FileVisitResult.CONTINUE;
+				}
+
+			});
+		} catch (IOException e) {
+			getDefault().logError(e);
+		}
+		FeatureProject data = new FeatureProject(featureModelManager, configurationManagerList);
+		featureProjectMap.put(root, data);
+	}
+
+	@CheckForNull
+	public static FeatureProject removeProject(Path root) {
+		return featureProjectMap.remove(root);
+	}
+
+	/**
+	 * returns an unmodifiable Collection of all ProjectData items, or <code>null</code> if plugin is not loaded
+	 * 
+	 * @return
+	 */
+	public static Collection<FeatureProject> getFeatureProjects() {
+		return Collections.unmodifiableCollection(featureProjectMap.values());
+	}
+
+	/**
+	 * returns the ProjectData object associated with the given resource
+	 * 
+	 * @param res
+	 * @return <code>null</code> if there is no associated project, no active
+	 *         instance of this plug-in or resource is the workspace root
+	 */
+	@CheckForNull
+	public static FeatureProject getProject(Path root) {
+		return featureProjectMap.get(root);
+	}
+
+	public static boolean hasProjectData(Path root) {
+		return featureProjectMap.containsKey(root);
 	}
 
 }

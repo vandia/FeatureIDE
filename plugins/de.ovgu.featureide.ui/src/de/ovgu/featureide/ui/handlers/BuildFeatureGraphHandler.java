@@ -40,7 +40,7 @@ public class BuildFeatureGraphHandler extends AFeatureProjectHandler {
 	protected void endAction() {
 		for (IFeatureProject project : projectList) {
 			final Path path = Paths.get(project.getProject().getFile("model.fg").getLocationURI());
-			// TODO use new FG API
+			// TODO !!! use new FG API
 //			final IRunner<IFeatureGraph> runner = LongRunningWrapper.getRunner(new FGBuilder(CNFCreator.createNodes(project.getFeatureModel())));
 //			runner.addJobFinishedListener(new JobFinishListener<IFeatureGraph>() {
 //				@Override

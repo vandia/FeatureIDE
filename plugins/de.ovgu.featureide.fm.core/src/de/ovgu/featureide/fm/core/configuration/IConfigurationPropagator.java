@@ -44,8 +44,6 @@ public interface IConfigurationPropagator {
 	 */
 	LongRunningMethod<Boolean> isValid();
 	
-	boolean isLoaded();
-	
 	LongRunningMethod<Void> resolve();
 
 	/**
@@ -56,8 +54,6 @@ public interface IConfigurationPropagator {
 
 	LongRunningMethod<Boolean> canBeValid();
 
-	LongRunningMethod<Void> load();
-
 	/**
 	 * Counts the number of possible solutions.
 	 * 
@@ -66,7 +62,7 @@ public interface IConfigurationPropagator {
 	 */
 	LongRunningMethod<Long> number(int timeout);
 
-	LongRunningMethod<List<String>> update(boolean redundantManual, String startFeatureName);
+	LongRunningMethod<Void> update(boolean redundantManual, String startFeatureName);
 	
 	LongRunningMethod<List<LiteralSet>> findOpenClauses(List<SelectableFeature> featureList);
 
