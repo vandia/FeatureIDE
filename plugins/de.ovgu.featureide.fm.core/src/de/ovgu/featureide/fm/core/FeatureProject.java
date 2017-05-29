@@ -68,6 +68,16 @@ public class FeatureProject {
 		return new ConfigurationPropagator(formula, configurationManagerList.get(index).getObject());
 	}
 
+	@Deprecated
+	public static ConfigurationPropagator getPropagator(Configuration configuration, boolean includeAbstractFeatures) {
+		return new ConfigurationPropagator(configuration, includeAbstractFeatures);
+	}
+
+	@Deprecated
+	public static ConfigurationPropagator getPropagator(IFeatureModel featureModel, boolean includeAbstractFeatures) {
+		return new ConfigurationPropagator(new Configuration(featureModel), includeAbstractFeatures);
+	}
+
 	//	private IFeatureGraph modalImplicationGraph;
 
 	// TODO try to save and load everything

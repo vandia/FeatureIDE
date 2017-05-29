@@ -34,6 +34,7 @@ import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureProject;
 import de.ovgu.featureide.fm.core.Logger;
+import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
@@ -43,6 +44,7 @@ import de.ovgu.featureide.fm.core.cnf.generator.OneWiseConfigurationGenerator;
 import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
+import de.ovgu.featureide.fm.core.io.manager.VirtualFileManager;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -386,23 +388,44 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 	private final FeatureModelFormula formula;
 	private final Configuration configuration;
 
-//	private CNF clauses = null, clausesWithoutHidden = null;
-
 	private boolean includeAbstractFeatures;
 
-	public ConfigurationPropagator(FeatureModelFormula formula, Configuration configuration) {
+	public ConfigurationPropagator(FeatureModelFormula formula, Configuration configuration, boolean includeAbstractFeatures) {
 		this.formula = formula;
 		this.configuration = configuration;
+		this.includeAbstractFeatures = includeAbstractFeatures;
+	}
+
+	public ConfigurationPropagator(FeatureModelFormula formula, Configuration configuration) {
+		this(formula, configuration, true);
 	}
 
 	/**
-	 * @deprecated Use {@link #ConfigurationPropagator(FeatureModelFormula, Configuration)} instead and receive a {@link FeatureModelFormula} instance from a {@link FeatureProject}.
+	 * @deprecated Use {@link #ConfigurationPropagator(FeatureModelFormula, Configuration)} instead and receive a {@link FeatureModelFormula} instance from a
+	 *             {@link FeatureProject}.
 	 * @param configuration
 	 */
 	@Deprecated
 	public ConfigurationPropagator(Configuration configuration) {
-		this.formula = new FeatureModelFormula(new configuration);
-		this.configuration = configuration;
+		this(configuration, true);
+	}
+
+	/**
+	 * @deprecated Use {@link #ConfigurationPropagator(FeatureModelFormula, Configuration)} instead and receive a {@link FeatureModelFormula} instance from a
+	 *             {@link FeatureProject}.
+	 * @param configuration
+	 */
+	@Deprecated
+	public ConfigurationPropagator(Configuration configuration, boolean includeAbstractFeatures) {
+		this(new FeatureModelFormula(new VirtualFileManager<IFeatureModel>(configuration.getFeatureModel(), null)), configuration, includeAbstractFeatures);
+	}
+
+	public boolean isIncludeAbstractFeatures() {
+		return includeAbstractFeatures;
+	}
+
+	public void setIncludeAbstractFeatures(boolean includeAbstractFeatures) {
+		this.includeAbstractFeatures = includeAbstractFeatures;
 	}
 
 	private AdvancedSatSolver getSolverForCurrentConfiguration(boolean deselectUndefinedFeatures, boolean includeHiddenFeatures) {
@@ -481,7 +504,8 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 	/**
 	 * Counts the number of possible solutions.
 	 * 
-	 * @return a positive value equal to the number of solutions (if the method terminated in time)</br>
+	 * @param timeout The timeout in milliseconds.
+	 * @return A positive value equal to the number of solutions (if the method terminated in time)</br>
 	 *         or a negative value (if a timeout occurred) that indicates that there are more solutions than the absolute value
 	 */
 	@Override

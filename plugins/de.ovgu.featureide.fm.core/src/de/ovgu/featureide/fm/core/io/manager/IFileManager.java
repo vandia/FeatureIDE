@@ -44,4 +44,6 @@ public interface IFileManager<T> extends IEventManager {
 
 	void dispose();
 
+	T getObject();
+
 }

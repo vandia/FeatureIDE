@@ -24,7 +24,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import de.ovgu.featureide.fm.core.FeatureProject;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 
 /**
  * Tests about the calculation of the number of valid configurations.
@@ -126,8 +128,10 @@ public class TNumberOfConfigurations extends AbstractConfigurationTest {
 	public void testAbstract() {
 		IFeatureModel fm = loadXML(
 				"<and mandatory=\"true\" name=\"S\"><feature abstract=\"true\" name=\"C\"/></and>");
-		Configuration c = new Configuration(fm,true,true);
-		assertEquals(2, c.number());
+//		Configuration c = new Configuration(fm,true,true);
+		final ConfigurationPropagator c = FeatureProject.getPropagator(fm, true);
+		LongRunningWrapper.runMethod(c.update(false, null));
+		assertEquals(2L, LongRunningWrapper.runMethod(c.number(1000)).longValue());
 	}
 	
 	@Test
@@ -135,7 +139,7 @@ public class TNumberOfConfigurations extends AbstractConfigurationTest {
 		IFeatureModel fm = loadXML(
 				"<and mandatory=\"true\" name=\"S\"><feature abstract=\"true\" name=\"C\"/></and>");
 		Configuration c = new Configuration(fm,true,false);
-		assertEquals(1, c.number());
+		assertEquals(1, c.number(1000));
 	}
 	
 	

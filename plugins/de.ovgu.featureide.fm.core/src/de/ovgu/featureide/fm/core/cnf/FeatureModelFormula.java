@@ -23,9 +23,10 @@ package de.ovgu.featureide.fm.core.cnf;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.IEventListener;
-import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
+import de.ovgu.featureide.fm.core.io.manager.IFileManager;
 
 /**
  * 
@@ -44,11 +45,11 @@ public class FeatureModelFormula implements IEventListener {
 	}
 
 	private final Lock cnfLock = new ReentrantLock();
-	private final FeatureModelManager fmManager;
+	private final IFileManager<IFeatureModel> fmManager;
 
 	private FeatureModelCNF cnf;
 
-	public FeatureModelFormula(FeatureModelManager fmManager) {
+	public FeatureModelFormula(IFileManager<IFeatureModel> fmManager) {
 		this.fmManager = fmManager;
 		fmManager.addListener(this);
 	}
