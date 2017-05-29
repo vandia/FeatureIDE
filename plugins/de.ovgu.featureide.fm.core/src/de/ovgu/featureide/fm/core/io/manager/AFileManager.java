@@ -41,7 +41,7 @@ import de.ovgu.featureide.fm.core.io.ProblemList;
  * 
  * @author Sebastian Krieter
  */
-public abstract class AFileManager<T> implements IFileManager, IEventManager {
+public abstract class AFileManager<T> implements IFileManager<T>, IEventManager {
 
 	public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 

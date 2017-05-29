@@ -67,4 +67,9 @@ public class ConfigurationManager extends AFileManager<Configuration> {
 		persist();
 	}
 
+	@Override
+	public boolean externalSave(Runnable externalSaveMethod) {
+		return true;
+	}
+
 }

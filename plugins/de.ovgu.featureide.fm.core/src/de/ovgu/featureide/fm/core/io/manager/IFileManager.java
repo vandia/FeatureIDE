@@ -30,7 +30,7 @@ import de.ovgu.featureide.fm.core.io.Problem;
  * 
  * @author Sebastian Krieter
  */
-public interface IFileManager extends IEventManager {
+public interface IFileManager<T> extends IEventManager {
 
 	String getAbsolutePath();
 
@@ -39,6 +39,8 @@ public interface IFileManager extends IEventManager {
 	boolean read();
 
 	boolean save();
+
+	boolean externalSave(Runnable externalSaveMethod);
 
 	void dispose();
 
