@@ -75,4 +75,6 @@ public interface ISatSolver2 extends ISimpleSatSolver {
 
 	int getAssignmentSize();
 
+	int[] getContradictoryAssignment();
+
 }

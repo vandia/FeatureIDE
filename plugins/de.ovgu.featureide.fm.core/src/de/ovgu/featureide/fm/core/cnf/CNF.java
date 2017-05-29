@@ -35,14 +35,14 @@ public class CNF implements Serializable, IVariables {
 	private static final long serialVersionUID = -5140589732063007073L;
 
 	protected final ClauseList clauses;
-	protected final Variables variables;
+	protected final IVariables variables;
 
-	public CNF(Variables mapping, List<LiteralSet> clauses) {
+	public CNF(IVariables mapping, List<LiteralSet> clauses) {
 		this.variables = mapping;
 		this.clauses = new ClauseList(clauses);
 	}
 
-	public CNF(Variables mapping) {
+	public CNF(IVariables mapping) {
 		this.variables = mapping;
 		this.clauses = new ClauseList();
 	}
@@ -82,7 +82,7 @@ public class CNF implements Serializable, IVariables {
 		return variables.convertToString(model, includePositive, includeNegative);
 	}
 
-	public Variables getMapping() {
+	public IVariables getMapping() {
 		return variables;
 	}
 

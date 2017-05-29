@@ -79,10 +79,10 @@ class QuickFixUnusedFeatures extends QuickFixMissingConfigurations {
 		monitor.setRemainingWork(unusedFeatures.size());
 		final List<Configuration> confs = new LinkedList<Configuration>();
 		final FileHandler<Configuration> writer = new FileHandler<>(ConfigurationManager.getDefaultFormat());
-		Configuration configuration = new Configuration(featureModel, false);
+		Configuration configuration = new Configuration(featureModel);
 		List<List<String>> solutions = configuration.coverFeatures(unusedFeatures, monitor, true);
 		for (List<String> solution : solutions) {
-			configuration = new Configuration(featureModel, false);
+			configuration = new Configuration(featureModel);
 			for (String feature : solution) {
 				if (!"True".equals(feature)) {
 					configuration.setManual(feature, Selection.SELECTED);

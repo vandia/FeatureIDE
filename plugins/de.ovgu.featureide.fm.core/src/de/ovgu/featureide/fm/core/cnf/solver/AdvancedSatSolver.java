@@ -29,6 +29,7 @@ import org.sat4j.minisat.orders.PositiveLiteralSelectionStrategy;
 import org.sat4j.minisat.orders.RSATPhaseSelectionStrategy;
 import org.sat4j.minisat.orders.RandomLiteralSelectionStrategy;
 import org.sat4j.minisat.orders.VarOrderHeap;
+import org.sat4j.specs.IVecInt;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.base.util.RingList;
@@ -181,6 +182,12 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 			e.printStackTrace();
 			return SatResult.TIMEOUT;
 		}
+	}
+
+	@Override
+	public int[] getContradictoryAssignment() {
+		final IVecInt unsatExplanation = solver.unsatExplanation();
+		return internalMapping.convertToOriginal(Arrays.copyOf(unsatExplanation.toArray(), unsatExplanation.size()));
 	}
 
 	@Override

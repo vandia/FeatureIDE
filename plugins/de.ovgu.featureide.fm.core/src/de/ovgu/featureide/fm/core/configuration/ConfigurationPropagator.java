@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 import org.prop4j.Literal;
@@ -33,16 +32,17 @@ import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.IVecInt;
 import org.sat4j.specs.TimeoutException;
 
+import de.ovgu.featureide.fm.core.FeatureProject;
 import de.ovgu.featureide.fm.core.Logger;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.analysis.CoreDeadAnalysis;
 import de.ovgu.featureide.fm.core.cnf.analysis.CountSolutionsAnalysis;
 import de.ovgu.featureide.fm.core.cnf.generator.GetSolutionsAnalysis;
 import de.ovgu.featureide.fm.core.cnf.generator.OneWiseConfigurationGenerator;
 import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -54,22 +54,12 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  */
 public class ConfigurationPropagator implements IConfigurationPropagator {
 
-	private static final int TIMEOUT = 1000;
-
-	// TODO fix monitor values
-	private final FeatureModelFormula formula;
-	private final Configuration configuration;
-
-//	private CNF clauses = null, clausesWithoutHidden = null;
-
-	private boolean includeAbstractFeatures;
-
 	public class IsValidMethod implements LongRunningMethod<Boolean> {
-		private final boolean includeUndefinedFeatures;
+		private final boolean deselectUndefinedFeatures;
 		private final boolean includeHiddenFeatures;
 
 		public IsValidMethod(boolean includeUndefinedFeatures, boolean includeHiddenFeatures) {
-			this.includeUndefinedFeatures = includeUndefinedFeatures;
+			this.deselectUndefinedFeatures = includeUndefinedFeatures;
 			this.includeHiddenFeatures = includeHiddenFeatures;
 		}
 
@@ -78,7 +68,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 			if (formula == null) {
 				return false;
 			}
-			final AdvancedSatSolver solver = getSolverForCurrentConfiguration(includeUndefinedFeatures, includeHiddenFeatures);
+			final AdvancedSatSolver solver = getSolverForCurrentConfiguration(deselectUndefinedFeatures, includeHiddenFeatures);
 
 			final SatResult satResult = solver.hasSolution();
 			switch (satResult) {
@@ -102,78 +92,23 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 
 			// Reset all automatic values
 			configuration.resetAutomaticValues();
-
-			final List<SelectableFeature> manualSelected = getManualSelected();
-			workMonitor.setRemainingWork(manualSelected.size() + configuration.features.size() + 1);
-
-			final AdvancedSatSolver solver = new AdvancedSatSolver(formula.getClausesWithoutHidden());
-
-			workMonitor.step();
-
-			removeRedundantManual(workMonitor, manualSelected, solver);
-
-			int[] relevantFeatures = new int[manualSelected.size()];
-			int index = 0;
-			for (SelectableFeature selectableFeature : manualSelected) {
-				relevantFeatures[index++] = clausesWithoutHidden.getVariable(selectableFeature.getName());
-			}
-
-			final LiteralSet result = new CoreDeadAnalysis(solver, new LiteralSet(relevantFeatures)).analyze(workMonitor);
-			for (int featureIndex : result.getLiterals()) {
-				configuration.getSelectableFeature(clausesWithoutHidden.getName(featureIndex))
-						.setAutomatic(featureIndex < 0 ? Selection.UNSELECTED : Selection.SELECTED);
-			}
-
-			return null;
-		}
-
-		private void removeRedundantManual(IMonitor workMonitor, final List<SelectableFeature> manualSelected, final AdvancedSatSolver solver)
-				throws AssertionError {
-			for (Iterator<SelectableFeature> iterator = manualSelected.iterator(); iterator.hasNext();) {
-				final SelectableFeature next = iterator.next();
-				solver.assignmentPush(clausesWithoutHidden.getVariable(next.getName(), next.getSelection() == Selection.SELECTED));
-
-				final SatResult satResult = solver.hasSolution();
-				switch (satResult) {
-				case FALSE:
-				case TIMEOUT:
-					next.setManual(Selection.UNDEFINED);
-					iterator.remove();
-					solver.assignmentPop();
-					break;
-				case TRUE:
-					break;
-				default:
-					throw new AssertionError(satResult);
+			
+			final AdvancedSatSolver solver = getSolverForCurrentConfiguration(false, true);
+			
+			final SatResult satResult = solver.hasSolution();
+			switch (satResult) {
+			case FALSE:
+			case TIMEOUT:
+				final int[] contradictoryAssignment = solver.getContradictoryAssignment();
+				for (int i : contradictoryAssignment) {
+					configuration.setManual(solver.getSatInstance().getName(i), Selection.UNDEFINED);
 				}
-				workMonitor.worked();
+			case TRUE:
+				return null;
+			default:
+				throw new AssertionError(satResult);
 			}
 		}
-
-	}
-
-	private List<SelectableFeature> getUndefined() {
-		final List<SelectableFeature> undefined = new ArrayList<>();
-		for (SelectableFeature feature : configuration.features) {
-			if (feature.getSelection() == Selection.UNDEFINED) {
-				undefined.add(feature);
-			}
-		}
-		return undefined;
-	}
-
-	private List<SelectableFeature> getManualSelected() {
-		final List<SelectableFeature> manualSelected = new ArrayList<>();
-		for (SelectableFeature feature : configuration.features) {
-			if (feature.getManual() != Selection.UNDEFINED) {
-				manualSelected.add(feature);
-			}
-		}
-		return manualSelected;
-	}
-
-	public Resolve resolve() {
-		return new Resolve();
 	}
 
 	public class CountSolutionsMethod implements LongRunningMethod<Long> {
@@ -195,36 +130,6 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 
 	}
 
-	private AdvancedSatSolver getSolverForCurrentConfiguration(boolean deselectUndefinedFeatures, boolean includeHiddenFeatures) {
-		final AdvancedSatSolver solver = getSolver(includeHiddenFeatures);
-		for (SelectableFeature feature : configuration.features) {
-			if ((deselectUndefinedFeatures || feature.getSelection() != Selection.UNDEFINED)
-					&& (includeAbstractFeatures || feature.getFeature().getStructure().isConcrete())
-					&& (includeHiddenFeatures || !feature.getFeature().getStructure().hasHiddenParent())) {
-				solver.assignmentPush(solver.getSatInstance().getVariable(feature.getFeature().getName(), feature.getSelection() == Selection.SELECTED));
-			}
-		}
-		return solver;
-	}
-	
-	private AdvancedSatSolver getSolver(boolean includeHiddenFeatures) {
-		final CNF satInstance;
-		if (includeAbstractFeatures) {
-			if (includeHiddenFeatures) {
-				satInstance = formula.getCNF();
-			} else {
-				satInstance = formula.getClausesWithoutHidden();
-			}
-		} else {
-			if (includeHiddenFeatures) {
-				satInstance = formula.getClausesWithoutAbstract();
-			} else {
-				satInstance = formula.getClausesWithoutAbstractAndHidden();
-			}
-		}
-		return new AdvancedSatSolver(satInstance);
-	}
-
 	public class FindOpenClauses implements LongRunningMethod<List<LiteralSet>> {
 
 		private List<SelectableFeature> featureList;
@@ -237,6 +142,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 			if (formula == null) {
 				return Collections.emptyList();
 			}
+			final CNF clausesWithoutHidden = formula.getClausesWithoutHidden();
 			final boolean[] results = new boolean[clausesWithoutHidden.size() + 1];
 			final List<LiteralSet> openClauses = new ArrayList<>();
 
@@ -324,7 +230,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 			final AdvancedSatSolver solver = getSolverForCurrentConfiguration(false, false);
 			final List<LiteralSet> result = new GetSolutionsAnalysis(solver, max).analyze(monitor);
 			for (LiteralSet is : result) {
-				resultList.add(clausesWithoutHidden.convertToString(is));
+				resultList.add(solver.getSatInstance().convertToString(is));
 			}
 
 			return resultList;
@@ -348,9 +254,10 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 
 		@Override
 		public List<List<String>> execute(IMonitor workMonitor) throws Exception {
-			if (clauses == null) {
+			if (formula == null) {
 				return null;
 			}
+			final CNF clausesWithoutHidden = formula.getClausesWithoutHidden();
 			final OneWiseConfigurationGenerator oneWiseConfigurationGenerator = new OneWiseConfigurationGenerator(
 					getSolverForCurrentConfiguration(false, false));
 			oneWiseConfigurationGenerator.setCoverMode(selection ? 1 : 0);
@@ -383,7 +290,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 
 		@Override
 		public Void execute(IMonitor workMonitor) {
-			if (clauses == null) {
+			if (formula == null) {
 				return null;
 			}
 			workMonitor.setRemainingWork(configuration.features.size() + 3);
@@ -421,7 +328,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 			}
 
 			for (int i : impliedFeatures) {
-				final SelectableFeature feature = configuration.getSelectableFeature((String) rootNode.getVariableObject(i));
+				final SelectableFeature feature = configuration.getSelectableFeature((String) formula.getCNF().getName(i));
 				configuration.setAutomatic(feature, i > 0 ? Selection.SELECTED : Selection.UNSELECTED);
 				workMonitor.invoke(feature);
 				manualLiteralSet.add(new Literal(feature.getFeature().getName(), feature.getManual() == Selection.SELECTED));
@@ -475,14 +382,67 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 
 	}
 
+	// TODO fix monitor values
+	private final FeatureModelFormula formula;
+	private final Configuration configuration;
+
+//	private CNF clauses = null, clausesWithoutHidden = null;
+
+	private boolean includeAbstractFeatures;
+
 	public ConfigurationPropagator(FeatureModelFormula formula, Configuration configuration) {
 		this.formula = formula;
 		this.configuration = configuration;
 	}
 
+	/**
+	 * @deprecated Use {@link #ConfigurationPropagator(FeatureModelFormula, Configuration)} instead and receive a {@link FeatureModelFormula} instance from a {@link FeatureProject}.
+	 * @param configuration
+	 */
+	@Deprecated
+	public ConfigurationPropagator(Configuration configuration) {
+		this.formula = new FeatureModelFormula(new configuration);
+		this.configuration = configuration;
+	}
+
+	private AdvancedSatSolver getSolverForCurrentConfiguration(boolean deselectUndefinedFeatures, boolean includeHiddenFeatures) {
+		final AdvancedSatSolver solver = getSolver(includeHiddenFeatures);
+		for (SelectableFeature feature : configuration.features) {
+			if ((deselectUndefinedFeatures || feature.getSelection() != Selection.UNDEFINED)
+					&& (includeAbstractFeatures || feature.getFeature().getStructure().isConcrete())
+					&& (includeHiddenFeatures || !feature.getFeature().getStructure().hasHiddenParent())) {
+				solver.assignmentPush(solver.getSatInstance().getVariable(feature.getFeature().getName(), feature.getSelection() == Selection.SELECTED));
+			}
+		}
+		return solver;
+	}
+	
+	private AdvancedSatSolver getSolver(boolean includeHiddenFeatures) {
+		final CNF satInstance;
+		if (includeAbstractFeatures) {
+			if (includeHiddenFeatures) {
+				satInstance = formula.getCNF();
+			} else {
+				satInstance = formula.getClausesWithoutHidden();
+			}
+		} else {
+			if (includeHiddenFeatures) {
+				satInstance = formula.getClausesWithoutAbstract();
+			} else {
+				satInstance = formula.getClausesWithoutAbstractAndHidden();
+			}
+		}
+		return new AdvancedSatSolver(satInstance);
+	}
+
 	@Override
 	public LongRunningMethod<Boolean> canBeValid() {
 		return new IsValidMethod(false, true);
+	}
+
+	@Override
+	public Resolve resolve() {
+		return new Resolve();
 	}
 
 	/**
