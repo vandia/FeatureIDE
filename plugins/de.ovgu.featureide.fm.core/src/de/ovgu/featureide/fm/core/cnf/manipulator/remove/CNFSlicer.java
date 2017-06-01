@@ -31,13 +31,16 @@ import java.util.Set;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.cnf.CNF;
-import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.ClauseLengthComparatorDsc;
+import de.ovgu.featureide.fm.core.cnf.LiteralSet;
+import de.ovgu.featureide.fm.core.cnf.SlicedVariables;
 import de.ovgu.featureide.fm.core.cnf.Variables;
 import de.ovgu.featureide.fm.core.cnf.manipulator.AbstractManipulator;
 import de.ovgu.featureide.fm.core.cnf.manipulator.remove.heuristic.AFeatureOrderHeuristic;
 import de.ovgu.featureide.fm.core.cnf.manipulator.remove.heuristic.MinimumClauseHeuristic;
 import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver;
+import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
+import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
 import de.ovgu.featureide.fm.core.cnf.solver.SimpleSatSolver;
 import de.ovgu.featureide.fm.core.editing.cnf.UnkownLiteralException;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -47,14 +50,11 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class CNFSilcer extends AbstractManipulator {
+public class CNFSlicer extends AbstractManipulator {
 
 	protected static final Comparator<LiteralSet> lengthComparator = new ClauseLengthComparatorDsc();
 
 	protected final CNF cnfCopy;
-
-	//	protected final boolean includeBooleanValues;
-	//	protected final boolean regularCNF;
 
 	protected final List<DeprecatedClause> newDirtyClauseList = new ArrayList<>();
 	protected final List<DeprecatedClause> newCleanClauseList = new ArrayList<>();
@@ -63,12 +63,8 @@ public class CNFSilcer extends AbstractManipulator {
 	protected final Set<DeprecatedClause> dirtyClauseSet = new HashSet<>();
 	protected final Set<DeprecatedClause> cleanClauseSet = new HashSet<>();
 
-	//	protected final Collection<String> cleanFeatures = new HashSet<>();
 	protected final Iterable<String> dirtyFeatures;
 	private int numberOfDirtyFeatures = 0;
-
-	//	protected Map<Object, Integer> idMap;
-	//	protected String[] featureNameArray;
 
 	protected int[] helper;
 	protected DeprecatedFeature[] map;
@@ -83,71 +79,22 @@ public class CNFSilcer extends AbstractManipulator {
 	protected int dirtyListNegIndex = 0;
 	protected int newDirtyListDelIndex = 0;
 
-	public CNFSilcer(CNF orgCNF, Iterable<String> dirtyFeatures) {
+	public CNFSlicer(CNF orgCNF, Iterable<String> dirtyFeatures) {
 		super(orgCNF);
 		this.dirtyFeatures = dirtyFeatures;
 		this.cnfCopy = new CNF(orgCNF, false);
 	}
 
-	//	public FeatureRemover(SatInstance2 cnf, Collection<String> dirtyFeatures, boolean includeBooleanValues) {
-	//		this(cnf, dirtyFeatures, includeBooleanValues, false);
-	//	}
-
-	//	public FeatureRemover(SatInstance2 cnf, Collection<String> dirtyFeatures, boolean includeBooleanValues, boolean regularCNF) {
-	//		this.fmNode = cnf;
-	//		this.dirtyFeatures = dirtyFeatures;
-	//		this.includeBooleanValues = includeBooleanValues;
-	//		this.regularCNF = regularCNF;
-	//	}
-
-	//	public final Node createNewClauseList(Collection<? extends Clause> clauses) {
-	//		final int newClauseSize = clauses.size();
-	//		final Node[] newClauses;
-	//		if (includeBooleanValues) {
-	//			newClauses = new Node[newClauseSize + 3];
-	//
-	//			// Create clause that contains all clean features
-	//			final Node[] allLiterals = new Node[cleanFeatures.size() + 1];
-	//			int i = 0;
-	//			for (String featureName : cleanFeatures) {
-	//				allLiterals[i++] = new Literal(featureName);
-	//			}
-	//			allLiterals[i] = new Literal(NodeCreator.varTrue);
-	//
-	//			newClauses[newClauseSize] = new Or(allLiterals);
-	//			if (regularCNF) {
-	//				newClauses[newClauseSize + 1] = new Or(new Literal(NodeCreator.varTrue, true));
-	//				newClauses[newClauseSize + 2] = new Or(new Literal(NodeCreator.varFalse, false));
-	//			} else {
-	//				newClauses[newClauseSize + 1] = new Literal(NodeCreator.varTrue, true);
-	//				newClauses[newClauseSize + 2] = new Literal(NodeCreator.varFalse, false);
-	//			}
-	//		} else {
-	//			newClauses = new Node[newClauseSize];
-	//		}
-	//		int j = 0;
-	//		for (Clause newClause : clauses) {
-	//			final int[] newClauseLiterals = newClause.getLiterals();
-	//			final Literal[] literals = new Literal[newClauseLiterals.length];
-	//			int i = literals.length;
-	//			for (int k = 0; k < literals.length; k++) {
-	//				final int child = newClauseLiterals[k];
-	//				literals[--i] = new Literal(featureNameArray[Math.abs(child)], child > 0);
-	//			}
-	//			newClauses[j++] = new Or(literals);
-	//		}
-	//		return new And(newClauses);
-	//	}
-
 	protected CNF manipulate(IMonitor workMonitor) throws TimeoutException, UnkownLiteralException {
 		// Collect all features in the prop node and remove TRUE and FALSE
 		init();
 
-		final String[] variableObjects = Arrays.copyOf(orgCNF.getNames(), orgCNF.size());
-		map = new DeprecatedFeature[orgCNF.size() + 1];
+		final String[] names = orgCNF.getVariables().getNames();
+		final String[] variableObjects = Arrays.copyOf(names, names.length);
+		map = new DeprecatedFeature[orgCNF.getVariables().size() + 1];
 		numberOfDirtyFeatures = 0;
 		for (String curFeature : dirtyFeatures) {
-			final int id = orgCNF.getVariable(curFeature);
+			final int id = orgCNF.getVariables().getVariable(curFeature);
 			if (id != 0) {
 				map[id] = new DeprecatedFeature(curFeature, id);
 				variableObjects[id] = null;
@@ -162,12 +109,14 @@ public class CNFSilcer extends AbstractManipulator {
 				slicedFeatureList.add(object);
 			}
 		}
-		final Variables mapping = new Variables(slicedFeatureList);
+		SlicedVariables mapping = new SlicedVariables((Variables) orgCNF.getVariables(), slicedFeatureList);
 
 		// Initialize lists and sets
 		createClauseLists();
 
-		prepareHeuristics();
+		if (!prepareHeuristics()) {
+			return new CNF(mapping, orgCNF.getClauses());
+		}
 
 		while (heuristic.hasNext()) {
 			workMonitor.checkCancel();
@@ -201,15 +150,6 @@ public class CNFSilcer extends AbstractManipulator {
 
 		release();
 
-		for (LiteralSet clause : cleanClauseList) {
-			final int[] literals = clause.getLiterals();
-			for (int i = 0; i < literals.length; i++) {
-				final int l = literals[i];
-				final int variable = mapping.getVariable(orgCNF.getName(l));
-				literals[i] = l > 0 ? variable : -variable;
-			}
-		}
-
 		return new CNF(mapping, cleanClauseList);
 	}
 
@@ -233,15 +173,6 @@ public class CNFSilcer extends AbstractManipulator {
 			}
 		}
 	}
-
-	//	private int[] convert(Literal[] newChildren) {
-	//		final int[] literals = new int[newChildren.length];
-	//		for (int j = 0; j < newChildren.length; j++) {
-	//			final Literal child = newChildren[j];
-	//			literals[j] = fmNode.getVariable(child.var.toString());
-	//		}
-	//		return literals;
-	//	}
 
 	private void createClauseLists() {
 		for (LiteralSet clause : orgCNF.getClauses()) {
@@ -286,54 +217,6 @@ public class CNFSilcer extends AbstractManipulator {
 			}
 		}
 	}
-
-	//	private DeprecatedClause getClause(Node andChild) {
-	//		int absoluteValueCount = 0;
-	//		boolean valid = true;
-	//
-	//		final Literal[] children = Arrays.copyOf(andChild.getChildren(), andChild.getChildren().length, Literal[].class);
-	//		for (int j = 0; j < children.length; j++) {
-	//			final Literal literal = children[j];
-	//
-	//			// sort out obvious tautologies
-	//			if (literal.var.equals(NodeCreator.varTrue)) {
-	//				if (literal.positive) {
-	//					valid = false;
-	//				} else {
-	//					absoluteValueCount++;
-	//					children[j] = null;
-	//				}
-	//			} else if (literal.var.equals(NodeCreator.varFalse)) {
-	//				if (literal.positive) {
-	//					absoluteValueCount++;
-	//					children[j] = null;
-	//				} else {
-	//					valid = false;
-	//				}
-	//			}
-	//		}
-	//
-	//		if (valid) {
-	//			if (absoluteValueCount > 0) {
-	//				if (children.length == absoluteValueCount) {
-	//					throw new RuntimeException("Model is void!");
-	//				}
-	//				Literal[] newChildren = new Literal[children.length - absoluteValueCount];
-	//				int k = 0;
-	//				for (int j = 0; j < children.length; j++) {
-	//					final Literal literal = children[j];
-	//					if (literal != null) {
-	//						newChildren[k++] = literal;
-	//					}
-	//				}
-	//				return DeprecatedClause.createClause(convert(newChildren));
-	//			} else {
-	//				return DeprecatedClause.createClause(convert(children));
-	//			}
-	//		} else {
-	//			return null;
-	//		}
-	//	}
 
 	private void init() {
 		release();
@@ -474,11 +357,16 @@ public class CNFSilcer extends AbstractManipulator {
 		}
 	}
 
-	protected void prepareHeuristics() {
+	protected boolean prepareHeuristics() {
 		heuristic = new MinimumClauseHeuristic(map, numberOfDirtyFeatures);
 		first = true;
-		newSolver = new SimpleSatSolver(cnfCopy);
-		newSolver.addClauses(cleanClauseList);
+		try {
+			newSolver = new SimpleSatSolver(cnfCopy);
+//		newSolver.addClauses(cleanClauseList);
+		} catch (RuntimeContradictionException e) {
+			return false;
+		}
+		return newSolver.hasSolution() == SatResult.TRUE;
 	}
 
 	protected void release() {

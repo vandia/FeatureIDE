@@ -34,7 +34,7 @@ import java.util.List;
  * 
  * @author Sebastian Krieter
  */
-public class Variables implements Serializable, IVariables {
+public class Variables implements Serializable, IVariables, IInternalVariables {
 
 	private static final long serialVersionUID = -1767212780361483105L;
 
@@ -68,6 +68,11 @@ public class Variables implements Serializable, IVariables {
 
 	@Override
 	public List<String> convertToString(LiteralSet model, boolean includePositive, boolean includeNegative) {
+		return convertToString(model, includePositive, includeNegative, true);
+	}
+
+	@Override
+	public List<String> convertToString(LiteralSet model, boolean includePositive, boolean includeNegative, boolean markNegative) {
 		final List<String> resultList = new ArrayList<>();
 		for (int var : model.getLiterals()) {
 			if (var > 0) {
@@ -76,7 +81,11 @@ public class Variables implements Serializable, IVariables {
 				}
 			} else {
 				if (includeNegative) {
-					resultList.add("-" + intToVar[Math.abs(var)]);
+					if (markNegative) {
+						resultList.add("-" + intToVar[Math.abs(var)]);
+					} else {
+						resultList.add(intToVar[Math.abs(var)]);
+					}
 				}
 			}
 		}
@@ -92,8 +101,8 @@ public class Variables implements Serializable, IVariables {
 	public int getVariable(String varName) {
 		final Integer var = varToInt.get(varName);
 		return var == null ? 0 : var;
-	}	
-	
+	}
+
 	@Override
 	public int getVariable(String varName, boolean sign) {
 		final Integer variable = varToInt.get(varName);
@@ -130,6 +139,34 @@ public class Variables implements Serializable, IVariables {
 		if (obj == null || getClass() != obj.getClass())
 			return false;
 		return Arrays.equals(intToVar, ((Variables) obj).intToVar);
+	}
+
+	public boolean checkClause(LiteralSet orgClause) {
+		return true;
+	}
+
+	public LiteralSet convertToInternal(LiteralSet orgClause) {
+		return orgClause;
+	}
+
+	public int[] convertToInternal(int[] orgLiterals) {
+		return orgLiterals;
+	}
+
+	public int convertToInternal(int orgLiteral) {
+		return orgLiteral;
+	}
+
+	public LiteralSet convertToOriginal(LiteralSet internalClause) {
+		return internalClause;
+	}
+
+	public int[] convertToOriginal(int[] internalLiterals) {
+		return internalLiterals;
+	}
+
+	public int convertToOriginal(int internalLiteral) {
+		return internalLiteral;
 	}
 
 }

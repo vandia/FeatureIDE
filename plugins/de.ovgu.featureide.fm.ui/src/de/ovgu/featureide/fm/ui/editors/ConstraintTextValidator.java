@@ -43,14 +43,15 @@ import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureComparator;
 import de.ovgu.featureide.fm.core.FeatureStatus;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
-import de.ovgu.featureide.fm.core.base.util.Functional;
-import de.ovgu.featureide.fm.core.base.util.Functional.IConsumer;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
+import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
 import de.ovgu.featureide.fm.ui.FMUIPlugin;
 
 /**
@@ -84,14 +85,14 @@ public final class ConstraintTextValidator {
 			if (constraint != null) {
 				clonedModel.removeConstraint(constraint);
 			}
-			deadFeaturesBefore = clonedModel.getAnalyser().getDeadFeatures();
+			deadFeaturesBefore = ProjectManager.getAnalyzer(clonedModel).getDeadFeatures();
 			clonedModel.addConstraint(new Constraint(clonedModel, propNode));
 			clonedModel.handleModelDataChanged();
 		}
 
 		final SortedSet<IFeature> deadFeaturesAfter = new TreeSet<IFeature>(new FeatureComparator(true));
 
-		for (IFeature l : clonedModel.getAnalyser().getDeadFeatures()) {
+		for (IFeature l : ProjectManager.getAnalyzer(clonedModel).getDeadFeatures()) {
 			if (!deadFeaturesBefore.contains(l)) {
 				deadFeaturesAfter.add(l);
 
@@ -155,7 +156,7 @@ public final class ConstraintTextValidator {
 			if (input.contains(feature.getName())) {
 				//if (feature.getFeatureStatus() != FeatureStatus.FALSE_OPTIONAL) {
 				clonedModel.addConstraint(new Constraint(clonedModel, propNode));
-				clonedModel.getAnalyser().analyzeFeatureModel(null);
+				ProjectManager.getAnalyzer(clonedModel).analyzeFeatureModel(null);
 				if (clonedModel.getFeature(feature.getName()).getProperty().getFeatureStatus() == FeatureStatus.FALSE_OPTIONAL && !list.contains(feature))
 					list.add(feature);
 				//}
@@ -443,7 +444,7 @@ public final class ConstraintTextValidator {
 	 *            * @throws TimeoutException
 	 */
 	private boolean voidsModel(final IConstraint constraint, String input, IFeatureModel model) throws TimeoutException {
-		if (!model.getAnalyser().isValid()) {
+		if (!ProjectManager.getAnalyzer(model).isValid()) {
 
 			return false;
 		}
@@ -463,7 +464,7 @@ public final class ConstraintTextValidator {
 			clonedModel.handleModelDataChanged();
 		}
 
-		return (!clonedModel.getAnalyser().isValid());
+		return (!ProjectManager.getAnalyzer(clonedModel).isValid());
 
 	}
 }

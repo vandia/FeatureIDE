@@ -23,6 +23,7 @@ package de.ovgu.featureide.ui.statistics.core.composite.lazyimplementations;
 import static de.ovgu.featureide.fm.core.localization.StringTable.CALCULATING;
 import static de.ovgu.featureide.fm.core.localization.StringTable.MORE_THAN;
 
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
@@ -69,7 +70,7 @@ public class ConfigParentNode extends LazyParent {
 			LongRunningMethod<Boolean> job = new TreeJob(this) {
 				private String calculateConfigs() {
 					boolean includeAbstract = description.equals(DESC_CONFIGS);
-					if (!includeAbstract && innerModel.getAnalyser().countConcreteFeatures() == 0) {
+					if (!includeAbstract && ProjectManager.getAnalyzer(innerModel).countConcreteFeatures() == 0) {
 						// case: there is no concrete feature so there is only one program variant,
 						// without this the calculation least much to long
 						return "1";

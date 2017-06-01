@@ -27,6 +27,7 @@ import org.eclipse.jface.action.Action;
 
 import de.ovgu.featureide.fm.core.ConstraintAttribute;
 import de.ovgu.featureide.fm.core.FeatureStatus;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
@@ -44,21 +45,21 @@ public class AutomatedCalculationsAction extends Action {
 	public AutomatedCalculationsAction(GraphicalViewerImpl viewer, IFeatureModel featureModel) {
 		super(AUTOMATED_CALCULATIONS);
 		this.featureModel = featureModel;
-		setChecked(featureModel.getAnalyser().runCalculationAutomatically);
+		setChecked(ProjectManager.getAnalyzer(featureModel).runCalculationAutomatically);
 	}
 
 	@Override
 	public void run() {
-		if (featureModel.getAnalyser().runCalculationAutomatically) {
+		if (ProjectManager.getAnalyzer(featureModel).runCalculationAutomatically) {
 			for (IFeature f : featureModel.getFeatures()) {
 				f.getProperty().setFeatureStatus(FeatureStatus.NORMAL, false);
 			}
 			for (IConstraint c : featureModel.getConstraints()) {
 				c.setConstraintAttribute(ConstraintAttribute.NORMAL, false);
 			}
-			featureModel.getAnalyser().runCalculationAutomatically = false;
+			ProjectManager.getAnalyzer(featureModel).runCalculationAutomatically = false;
 		} else {
-			featureModel.getAnalyser().runCalculationAutomatically = true;
+			ProjectManager.getAnalyzer(featureModel).runCalculationAutomatically = true;
 		}
 		featureModel.handleModelDataChanged();
 	}

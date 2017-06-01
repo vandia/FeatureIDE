@@ -32,11 +32,8 @@ import org.sat4j.specs.IConstr;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.cnf.CNF;
-import de.ovgu.featureide.fm.core.cnf.DefaultInternalVariables;
 import de.ovgu.featureide.fm.core.cnf.IInternalVariables;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.SlicedVariables;
-import de.ovgu.featureide.fm.core.cnf.Variables;
 
 /**
  * Light version of a sat solver with reduced functionality.
@@ -45,15 +42,17 @@ import de.ovgu.featureide.fm.core.cnf.Variables;
  */
 public class SimpleSatSolver implements ISimpleSatSolver {
 
+	// XXX: Must be initialized here (is used in ModifiableSatSolver)
+	protected final ArrayList<IConstr> constrList = new ArrayList<>();
+
 	protected final CNF satInstance;
 	protected final IInternalVariables internalMapping;
 	protected final Solver<?> solver;
 
-	public SimpleSatSolver(CNF satInstance) {
-		this.satInstance = satInstance;
-		final Variables mapping = satInstance.getMapping();
-		internalMapping = (mapping instanceof SlicedVariables) ? ((SlicedVariables) mapping).getInternalVariables() : new DefaultInternalVariables();
 
+	public SimpleSatSolver(CNF satInstance) throws RuntimeContradictionException {
+		this.satInstance = satInstance;
+		this.internalMapping = satInstance.getInternalVariables();
 		this.solver = newSolver();
 	}
 
@@ -64,11 +63,11 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	}
 
 	@Override
-	public IConstr addClause(LiteralSet mainClause) {
+	public IConstr addClause(LiteralSet mainClause) throws RuntimeContradictionException {
 		return addClauseInternal(solver, mainClause);
 	}
 
-	protected IConstr addClauseInternal(Solver<?> solver, LiteralSet mainClause) {
+	protected IConstr addClauseInternal(Solver<?> solver, LiteralSet mainClause) throws RuntimeContradictionException {
 		try {
 			final int[] literals = internalMapping.convertToInternal(mainClause.getLiterals());
 			assert checkClauseValidity(literals);
@@ -79,11 +78,11 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	}
 
 	@Override
-	public List<IConstr> addClauses(Iterable<? extends LiteralSet> clauses) {
+	public List<IConstr> addClauses(Iterable<? extends LiteralSet> clauses) throws RuntimeContradictionException {
 		return addClauses(solver, clauses);
 	}
 
-	protected List<IConstr> addClauses(Solver<?> solver, Iterable<? extends LiteralSet> clauses) {
+	protected List<IConstr> addClauses(Solver<?> solver, Iterable<? extends LiteralSet> clauses) throws RuntimeContradictionException {
 		final ArrayList<IConstr> constrList = new ArrayList<>();
 		for (LiteralSet clause : clauses) {
 			constrList.add(addClauseInternal(solver, clause));
@@ -164,14 +163,14 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	private boolean checkClauseValidity(final int[] literals) {
 		for (int i = 0; i < literals.length; i++) {
 			final int l = literals[i];
-			if (l == 0 || Math.abs(l) > satInstance.size()) {
+			if (l == 0 || Math.abs(l) > satInstance.getVariables().size()) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	protected final Solver<?> newSolver() {
+	protected final Solver<?> newSolver() throws RuntimeContradictionException {
 		final Solver<?> solver = createSolver();
 		configureSolver(solver);
 		initSolver(solver);
@@ -198,8 +197,8 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	 * Add clauses to the solver.
 	 * Initializes the order instance.
 	 */
-	protected void initSolver(Solver<?> solver) {
-		solver.newVar(satInstance.size());
+	protected void initSolver(Solver<?> solver) throws RuntimeContradictionException {
+		solver.newVar(satInstance.getVariables().size());
 		final List<LiteralSet> clauses = satInstance.getClauses();
 		if (!clauses.isEmpty()) {
 			solver.setExpectedNumberOfClauses(clauses.size());

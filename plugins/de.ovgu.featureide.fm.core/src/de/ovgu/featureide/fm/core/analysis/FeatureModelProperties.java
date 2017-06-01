@@ -1,5 +1,5 @@
 /* FeatureIDE - A Framework for Feature-Oriented Software Development
- * Copyright (C) 2005-2017  FeatureIDE team, University of Magdeburg, Germany
+ * Copyright (C) 2005-2016  FeatureIDE team, University of Magdeburg, Germany
  *
  * This file is part of FeatureIDE.
  * 
@@ -18,45 +18,38 @@
  *
  * See http://featureide.cs.ovgu.de/ for further information.
  */
-package de.ovgu.featureide.fm.core.cnf;
+package de.ovgu.featureide.fm.core.analysis;
+
+import de.ovgu.featureide.fm.core.FeatureStatus;
+import de.ovgu.featureide.fm.core.base.IFeature;
+import de.ovgu.featureide.fm.core.base.IFeatureModel;
 
 /**
+ * All additional properties of an {@link IFeature}.
  * 
  * @author Sebastian Krieter
+ * @author Marcus Pinnecke *
  */
-public class DefaultInternalVariables implements IInternalVariables {
+public class FeatureModelProperties {
 
-	public boolean checkClause(LiteralSet orgClause) {
-		return true;
+	protected final IFeatureModel featureModel;
+
+	protected FeatureStatus status = FeatureStatus.NORMAL;
+
+	public FeatureModelProperties(IFeatureModel featureModel) {
+		this.featureModel = featureModel;
 	}
 
-	public LiteralSet convertToInternal(LiteralSet orgClause) {
-		return orgClause;
+	public IFeatureModel getFeatureModel() {
+		return featureModel;
 	}
 
-	public int[] convertToInternal(int[] orgLiterals) {
-		return orgLiterals;
+	public FeatureStatus getFeatureStatus() {
+		return status;
 	}
 
-	public int convertToInternal(int orgLiteral) {
-		return orgLiteral;
-	}
-
-	public LiteralSet convertToOriginal(LiteralSet internalClause) {
-		return internalClause;
-	}
-
-	public int[] convertToOriginal(int[] internalLiterals) {
-		return internalLiterals;
-	}
-
-	public int convertToOriginal(int internalLiteral) {
-		return internalLiteral;
-	}
-
-	@Override
-	public int getNumberOfVariables() {
-		return 0;
+	public void setFeatureStatus(FeatureStatus status) {
+		this.status = status;
 	}
 
 }

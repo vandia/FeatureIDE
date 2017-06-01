@@ -87,7 +87,8 @@ public class CNFCreator implements LongRunningMethod<CNF> {
 			return new CNF(new Variables(Collections.<String> emptyList()));
 		}
 
-		final CNF s = new FeatureModelCNF(featureModel, useOldNames);
+		final CNF cnf = new FeatureModelCNF(featureModel, useOldNames);
+		final Variables vars = cnf.getVariables();
 
 		monitor.setTaskName("Creating Formula");
 		monitor.setRemainingWork(2);
@@ -96,15 +97,15 @@ public class CNFCreator implements LongRunningMethod<CNF> {
 
 		switch (modelType) {
 		case All:
-			andChildren1 = createStructuralNodes(s);
-			andChildren2 = createConstraintNodes(s);
+			andChildren1 = createStructuralNodes(vars);
+			andChildren2 = createConstraintNodes(vars);
 			break;
 		case OnlyConstraints:
 			andChildren1 = Collections.emptyList();
-			andChildren2 = createConstraintNodes(s);
+			andChildren2 = createConstraintNodes(vars);
 			break;
 		case OnlyStructure:
-			andChildren1 = createStructuralNodes(s);
+			andChildren1 = createStructuralNodes(vars);
 			andChildren2 = Collections.emptyList();
 			break;
 		case NONE:
@@ -115,12 +116,12 @@ public class CNFCreator implements LongRunningMethod<CNF> {
 		}
 		monitor.step();
 
-		s.addClauses(andChildren1);
-		s.addClauses(andChildren2);
+		cnf.addClauses(andChildren1);
+		cnf.addClauses(andChildren2);
 
 		monitor.step();
 
-		return s;
+		return cnf;
 	}
 
 	@Override
@@ -160,7 +161,7 @@ public class CNFCreator implements LongRunningMethod<CNF> {
 		this.useOldNames = useOldNames;
 	}
 
-	private List<LiteralSet> createConstraintNodes(CNF s) {
+	private List<LiteralSet> createConstraintNodes(Variables s) {
 		final List<LiteralSet> clauses = new ArrayList<>(featureModel.getConstraints().size());
 		for (IConstraint constraint : featureModel.getConstraints()) {
 			final Node node = constraint.getNode();
@@ -181,7 +182,7 @@ public class CNFCreator implements LongRunningMethod<CNF> {
 		}
 	}
 
-	private List<LiteralSet> createStructuralNodes(CNF s) {
+	private List<LiteralSet> createStructuralNodes(Variables s) {
 		final IFeature root = FeatureUtils.getRoot(featureModel);
 		if (root != null) {
 			final List<LiteralSet> clauses = new ArrayList<>(featureModel.getNumberOfFeatures());

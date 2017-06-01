@@ -28,11 +28,13 @@ import java.util.Locale;
 import org.prop4j.NodeWriter;
 
 import de.ovgu.featureide.fm.core.FeatureComparator;
+import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.base.util.Functional;
-import de.ovgu.featureide.fm.core.cnf.Nodes;
 import de.ovgu.featureide.fm.core.cnf.CNFCreator;
+import de.ovgu.featureide.fm.core.cnf.Nodes;
+import de.ovgu.featureide.fm.core.functional.Functional;
 
 /**
  * Defines the content of the feature model class specific for VarexJ.
@@ -68,10 +70,12 @@ public class FeatureModelVarexJ implements IFeatureModelClass {
 	@Override
 	public String getFeatureFields() {
 		StringBuilder fields = new StringBuilder();
-		final List<List<IFeature>> deadCoreList = featureModel.getAnalyser().analyzeFeatures();
+		final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(featureModel);
+		final List<IFeature> coreList = analyzer.getCoreFeatures();
+		final List<IFeature> deadList = analyzer.getDeadFeatures();
 		for (IFeature feature : features) {
-			final boolean isCoreFeature = deadCoreList.get(0).contains(feature);
-			final boolean isDeadFeature = deadCoreList.get(1).contains(feature);
+			final boolean isCoreFeature = coreList.contains(feature);
+			final boolean isDeadFeature = deadList.contains(feature);
 			if (!isCoreFeature && !isDeadFeature) {
 				fields.append(ANNOTATION);
 			}

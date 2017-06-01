@@ -39,6 +39,8 @@ public abstract class AbstractAnalysis<T> implements LongRunningMethod<T> {
 
 	protected LiteralSet assumptions = null;
 
+	private T result;
+
 	public AbstractAnalysis(CNF satInstance) {
 		try {
 			this.solver = new AdvancedSatSolver(satInstance);
@@ -63,14 +65,15 @@ public abstract class AbstractAnalysis<T> implements LongRunningMethod<T> {
 
 		monitor.checkCancel();
 		try {
-			return analyze(monitor);
+			result = analyze(monitor);
+			return result;
 		} catch (Throwable e) {
 			throw e;
 		} finally {
 			solver.assignmentClear(0);
 		}
 	}
-	
+
 	protected abstract T analyze(IMonitor monitor) throws Exception;
 
 	public LiteralSet getAssumptions() {
@@ -79,6 +82,10 @@ public abstract class AbstractAnalysis<T> implements LongRunningMethod<T> {
 
 	public void setAssumptions(LiteralSet assumptions) {
 		this.assumptions = assumptions;
+	}
+
+	public AnalysisResult<T> getResult() {
+		return new AnalysisResult<>(this.getClass().getName(), assumptions, result);
 	}
 
 }

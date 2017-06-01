@@ -30,10 +30,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.sat4j.core.VecInt;
-import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.IConstr;
-import org.sat4j.specs.IVecInt;
 
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
@@ -41,6 +38,7 @@ import de.ovgu.featureide.fm.core.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.cnf.analysis.AbstractAnalysis;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2.SelectionStrategy;
+import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -178,7 +176,7 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 	public PairWiseConfigurationGenerator(CNF satInstance, int maxNumber) {
 		super(satInstance);
 		this.maxNumber = maxNumber;
-		this.numVariables = this.solver.getSatInstance().size();
+		this.numVariables = this.solver.getSatInstance().getVariables().size();
 	}
 
 	@Override
@@ -191,10 +189,10 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 			tempConfigurationList.clear();
 		}
 
-		solver.useSolutionList(Math.min(solver.getSatInstance().size(), ISatSolver2.MAX_SOLUTION_BUFFER));
+		solver.useSolutionList(Math.min(solver.getSatInstance().getVariables().size(), ISatSolver2.MAX_SOLUTION_BUFFER));
 
 		findInvalid();
-		final int featureCount = solver.getSatInstance().size();
+		final int featureCount = solver.getSatInstance().getVariables().size();
 
 		final int numberOfFixedFeatures = solver.getAssignmentSize();
 		final boolean[] featuresUsedOrg = new boolean[featureCount];
@@ -725,7 +723,7 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 			if (!tempConfigurationList.isEmpty() && config.isBetterThan(tempConfigurationList.getLast())) {
 				while (config.isBetterThan(tempConfigurationList.getLast()) && ((count - lesserCount) > finalCount)) {
 					final Configuration lastConfig = tempConfigurationList.removeLast();
-					solver.getInternalSolver().removeConstr(lastConfig.getBlockingClauseConstraint());
+					solver.removeClause(lastConfig.getBlockingClauseConstraint());
 					lesserCount++;
 				}
 			}
@@ -797,8 +795,8 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 		time = System.nanoTime();
 
 		try {
-			config.setBlockingClauseConstraint(solver.getInternalSolver().addBlockingClause(new VecInt(SatUtils.negateSolution(curModel))));
-		} catch (ContradictionException e) {
+			solver.addClause(new LiteralSet(SatUtils.negateSolution(curModel)));
+		} catch (RuntimeContradictionException e) {
 			return true;
 		}
 

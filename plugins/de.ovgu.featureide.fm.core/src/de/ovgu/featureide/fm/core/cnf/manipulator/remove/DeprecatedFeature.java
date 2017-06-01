@@ -21,7 +21,7 @@
 package de.ovgu.featureide.fm.core.cnf.manipulator.remove;
 
 /**
- * Representation of a feature that will be removed from a feature model by the {@link CNFSilcer}.
+ * Representation of a feature that will be removed from a feature model by the {@link CNFSlicer}.
  * 
  * @author Sebastian Krieter
  */

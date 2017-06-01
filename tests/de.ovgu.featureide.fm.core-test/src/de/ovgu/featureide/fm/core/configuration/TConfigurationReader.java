@@ -30,8 +30,10 @@ import java.io.InputStream;
 
 import org.junit.Test;
 
+import de.ovgu.featureide.fm.core.FeatureProject;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 
 /**
  * Test class for the {@link ConfigurationReader}.
@@ -80,13 +82,24 @@ public class TConfigurationReader {
 		return fm;
 	}
 
+	private boolean isValid(Configuration configuration) {
+		final ConfigurationPropagator propagator = FeatureProject.getPropagator(configuration, true);
+		return LongRunningWrapper.runMethod(propagator.isValid());
+	}
+
+	private boolean isValidAfterUpdate(Configuration configuration) {
+		final ConfigurationPropagator propagator = FeatureProject.getPropagator(configuration, true);
+		LongRunningWrapper.runMethod(propagator.update());
+		return LongRunningWrapper.runMethod(propagator.isValid());
+	}
+
 	@Test
 	public void isValidConfiguration() {
 		final Configuration c = new Configuration(FM_test_1);
 		final DefaultFormat r = new DefaultFormat();
 		r.read(c, "C#");
 
-		assertFalse(c.isValid());
+		assertFalse(isValid(c));
 	}
 
 	@Test
@@ -96,17 +109,17 @@ public class TConfigurationReader {
 		c.setManual("Python Ruby", Selection.SELECTED);
 		c.setManual("Bash   script   ", Selection.UNSELECTED);
 		c.setManual("C++", Selection.SELECTED);
-		assertFalse(c.isValid());
+		assertFalse(isValidAfterUpdate(c));
 	}
 
 	@Test
 	public void isValidConfiguration3() {
-		Configuration c = new Configuration(FM_test_1, true);
+		Configuration c = new Configuration(FM_test_1);
 		c.setManual("C#", Selection.SELECTED);
 		c.setManual("Python Ruby", Selection.SELECTED);
 		c.setManual("Bash   script   ", Selection.SELECTED);
 		c.setManual("C++", Selection.SELECTED);
-		assertTrue(c.isValid());
+		assertTrue(isValidAfterUpdate(c));
 	}
 
 	@Test
@@ -114,7 +127,7 @@ public class TConfigurationReader {
 		Configuration c = new Configuration(FM_test_1);
 		final DefaultFormat r = new DefaultFormat();
 		r.read(c, "C# \njute \n \"Bash   script   \"");
-		assertFalse(c.isValid());
+		assertFalse(isValid(c));
 	}
 
 	@Test
@@ -122,7 +135,7 @@ public class TConfigurationReader {
 		Configuration c = new Configuration(FM_test_1);
 		final DefaultFormat r = new DefaultFormat();
 		r.read(c, "C# \njute \n \"Bash   script   \" \"Python Ruby\"");
-		assertTrue(c.isValid());
+		assertTrue(isValid(c));
 	}
 
 	@Test
@@ -130,7 +143,7 @@ public class TConfigurationReader {
 		Configuration c = new Configuration(FM_test_1);
 		final DefaultFormat r = new DefaultFormat();
 		r.read(c, "C# \njute \n \"Bash   script   \" \n\"Python Ruby\" \n\"C++\"");
-		assertTrue(c.isValid());
+		assertTrue(isValid(c));
 	}
 
 	@Test
@@ -138,7 +151,7 @@ public class TConfigurationReader {
 		Configuration c = new Configuration(FM_test_1);
 		final DefaultFormat r = new DefaultFormat();
 		r.read(c, "C# \njute \n \"Bash   script    \n\"Python Ruby\" \n\"C++\"");
-		assertFalse(c.isValid());
+		assertFalse(isValid(c));
 	}
 
 	@Test
@@ -146,7 +159,7 @@ public class TConfigurationReader {
 		Configuration c = new Configuration(FM_test_1);
 		final DefaultFormat r = new DefaultFormat();
 		r.read(c, "C# \nj ute \n \"Bash   script    \"\n\"Python Ruby\" \n\"C++\"");
-		assertFalse(c.isValid());
+		assertFalse(isValid(c));
 	}
 
 	@Test
@@ -154,7 +167,7 @@ public class TConfigurationReader {
 		Configuration c = new Configuration(FM_test_1);
 		final DefaultFormat r = new DefaultFormat();
 		r.read(c, "C# \njute \n \"Bash   script   \" Python Ruby\" \n\"C++\"");
-		assertFalse(c.isValid());
+		assertFalse(isValid(c));
 	}
 
 	@Test
@@ -162,6 +175,6 @@ public class TConfigurationReader {
 		Configuration c = new Configuration(FM_test_1);
 		final DefaultFormat r = new DefaultFormat();
 		r.read(c, "jute \"Bash   script   \" \"Python C# Ruby\" \"C++\"");
-		assertTrue(c.isValid());
+		assertTrue(isValid(c));
 	}
 }

@@ -28,6 +28,15 @@ import java.util.Arrays;
  */
 public class SatUtils {
 
+	public static LiteralSet negateSolution(LiteralSet solution) {
+		final int[] literals = solution.getLiterals();
+		int[] negSolution = Arrays.copyOf(literals, literals.length);
+		for (int i = 0; i < negSolution.length; i++) {
+			negSolution[i] = -negSolution[i];
+		}
+		return new LiteralSet(negSolution);
+	}
+
 	public static int[] negateSolution(int[] solution) {
 		int[] negSolution = Arrays.copyOf(solution, solution.length);
 		for (int i = 0; i < negSolution.length; i++) {

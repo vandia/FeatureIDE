@@ -42,31 +42,25 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  */
 public class DeterminedAnalysis extends AbstractAnalysis<LiteralSet> {
 
-	private int[] variables;
+	private LiteralSet variables;
 
 	public DeterminedAnalysis(CNF satInstance) {
-		this(satInstance, null);
-	}
-
-	public DeterminedAnalysis(CNF satInstance, LiteralSet variables) {
 		super(satInstance);
-		this.variables = variables.getLiterals();
 	}
 
-	public DeterminedAnalysis(ISatSolver2 solver, LiteralSet variables) {
+	public DeterminedAnalysis(ISatSolver2 solver) {
 		super(solver);
-		this.variables = variables.getLiterals();
 	}
 
 	public LiteralSet analyze(IMonitor monitor) throws Exception {
-		monitor.setRemainingWork(variables.length + 1);
+		monitor.setRemainingWork(variables.getLiterals().length + 1);
 
 		final VecInt resultList = new VecInt();
 		final ModifiableSatSolver modSolver = new ModifiableSatSolver(solver.getSatInstance());
 		final List<LiteralSet> clauses = solver.getSatInstance().getClauses();
 		final List<LiteralSet> relevantClauses = new ArrayList<>();
 
-		for (int literal : variables) {
+		for (int literal : variables.getLiterals()) {
 			for (LiteralSet clause : clauses) {
 				if (clause.contains(literal)) {
 					final LiteralSet newClause = LiteralSet.cleanLiteralSet(clause, literal);
@@ -113,6 +107,14 @@ public class DeterminedAnalysis extends AbstractAnalysis<LiteralSet> {
 		default:
 			throw new AssertionError(hasSolution);
 		}
+	}
+
+	public LiteralSet getVariables() {
+		return variables;
+	}
+
+	public void setVariables(LiteralSet variables) {
+		this.variables = variables;
 	}
 
 }

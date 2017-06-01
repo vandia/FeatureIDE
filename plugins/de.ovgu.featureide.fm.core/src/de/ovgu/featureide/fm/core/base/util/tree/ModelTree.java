@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.functional.Functional;
 
 /**
  * Tree element.

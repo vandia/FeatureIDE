@@ -39,7 +39,7 @@ public class SatInstanceProperties {
 
 	public SatInstanceProperties(CNF satInstance) {
 		this.satInstance = satInstance;
-		this.varProperties = new ArrayList<>(satInstance.size());
+		this.varProperties = new ArrayList<>(satInstance.getVariables().size());
 	}
 
 }

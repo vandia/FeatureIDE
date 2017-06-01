@@ -83,18 +83,12 @@ import org.prop4j.NodeWriter;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent.EventType;
-import de.ovgu.featureide.fm.core.base.util.Functional;
-import de.ovgu.featureide.fm.core.base.util.Functional.IBinaryFunction;
-import de.ovgu.featureide.fm.core.base.util.Functional.IConsumer;
-import de.ovgu.featureide.fm.core.base.util.Functional.IFunction;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.Nodes;
-import de.ovgu.featureide.fm.core.cnf.CNF;
-import de.ovgu.featureide.fm.core.cnf.Clause;
 import de.ovgu.featureide.fm.core.cnf.Nodes;
 import de.ovgu.featureide.fm.core.color.ColorPalette;
 import de.ovgu.featureide.fm.core.color.FeatureColor;
@@ -104,6 +98,10 @@ import de.ovgu.featureide.fm.core.configuration.ConfigurationMatrix;
 import de.ovgu.featureide.fm.core.configuration.SelectableFeature;
 import de.ovgu.featureide.fm.core.configuration.Selection;
 import de.ovgu.featureide.fm.core.configuration.TreeElement;
+import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.functional.Functional.IBinaryFunction;
+import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
+import de.ovgu.featureide.fm.core.functional.Functional.IFunction;
 import de.ovgu.featureide.fm.core.job.IJob;
 import de.ovgu.featureide.fm.core.job.IJob.JobStatus;
 import de.ovgu.featureide.fm.core.job.LongRunningJob;
@@ -589,7 +587,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 			}
 			return false;
 		} else {
-			final FeatureModelAnalyzer analyzer = configurationEditor.getConfiguration().getFeatureModel().getAnalyser();
+			final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(configurationEditor.getConfiguration().getFeatureModel());
 			try {
 				if (!analyzer.isValid()) {
 					displayError(
@@ -1159,7 +1157,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 				}
 				sb.append("Open Clauses:\n");
 				for (LiteralSet clause : openClauses) {
-					sb.append(NodeWriter.nodeToString(Nodes.convert(feature.getSatMapping(), clause), NodeWriter.logicalSymbols)).append('\n');
+					sb.append(NodeWriter.nodeToString(Nodes.convert(feature.getVariables(), clause), NodeWriter.logicalSymbols)).append('\n');
 				}
 			}
 

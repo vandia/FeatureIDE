@@ -90,7 +90,9 @@ import de.ovgu.featureide.core.job.ModelScheduleRule;
 import de.ovgu.featureide.core.signature.ProjectSignatures;
 import de.ovgu.featureide.fm.core.FMComposerManager;
 import de.ovgu.featureide.fm.core.FMCorePlugin;
+import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.ModelMarkerHandler;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
@@ -100,6 +102,7 @@ import de.ovgu.featureide.fm.core.base.event.IEventListener;
 import de.ovgu.featureide.fm.core.base.impl.ExtendedFeature;
 import de.ovgu.featureide.fm.core.base.impl.ExtendedFeatureModel;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
+import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
 import de.ovgu.featureide.fm.core.configuration.FeatureIDEFormat;
 import de.ovgu.featureide.fm.core.configuration.SelectableFeature;
 import de.ovgu.featureide.fm.core.configuration.Selection;
@@ -1056,7 +1059,8 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 					for (IFile file : files) {
 						subTask.setTaskName(CHECK_VALIDITY_OF + " - " + file.getName());
 						reader.read(Paths.get(file.getLocationURI()), ConfigurationManager.getFormat(file.getName()));
-						if (!config.isValid()) {
+						final ConfigurationPropagator propagator = de.ovgu.featureide.fm.core.FeatureProject.getPropagator(config, true);
+						if (!LongRunningWrapper.runMethod(propagator.isValid())) {
 							String name = file.getName();
 							name = name.substring(0, name.lastIndexOf('.'));
 							String message = CONFIGURATION_ + name + IS_INVALID;
@@ -1162,11 +1166,13 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 	private Collection<String> getOptionalConcreteFeatures() {
 		final IFeatureModel featureModel = featureModelManager.getObject();
 		final Collection<String> concreteFeatures = FeatureUtils.extractConcreteFeaturesAsStringList(featureModel);
-		List<List<IFeature>> deadCoreList = featureModel.getAnalyser().analyzeFeatures();
-		for (final IFeature feature : deadCoreList.get(0)) {
+		final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(featureModel);
+		final List<IFeature> coreList = analyzer.getCoreFeatures();
+		final List<IFeature> deadList = analyzer.getDeadFeatures();
+		for (final IFeature feature : coreList) {
 			concreteFeatures.remove(feature.getName());
 		}
-		for (final IFeature feature : deadCoreList.get(1)) {
+		for (final IFeature feature : deadList) {
 			concreteFeatures.remove(feature.getName());
 		}
 		return concreteFeatures;

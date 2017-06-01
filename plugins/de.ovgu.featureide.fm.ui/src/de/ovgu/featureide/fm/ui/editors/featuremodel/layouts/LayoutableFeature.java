@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
-import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.functional.Functional;
 
 /**
  * A feature representation for layout.

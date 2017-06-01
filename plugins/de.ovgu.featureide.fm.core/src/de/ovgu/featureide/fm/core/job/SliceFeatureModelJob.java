@@ -40,7 +40,7 @@ import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.Nodes;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.CNFCreator;
-import de.ovgu.featureide.fm.core.cnf.manipulator.remove.CNFSilcer;
+import de.ovgu.featureide.fm.core.cnf.manipulator.remove.CNFSlicer;
 import de.ovgu.featureide.fm.core.cnf.solver.SimpleSatSolver;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -236,7 +236,7 @@ public class SliceFeatureModelJob implements LongRunningMethod<IFeatureModel> {
 				break;
 			case TIMEOUT:
 			case TRUE:
-				m.addConstraint(factory.createConstraint(m, Nodes.convert(cnf, clause)));
+				m.addConstraint(factory.createConstraint(m, Nodes.convert(cnf.getVariables(), clause)));
 				break;
 			default:
 				assert false;
@@ -327,7 +327,7 @@ public class SliceFeatureModelJob implements LongRunningMethod<IFeatureModel> {
 		final ArrayList<String> removeFeatures = new ArrayList<>(FeatureUtils.getFeatureNames(featureModel));
 		removeFeatures.removeAll(featureNames);
 		final CNF satInstance = CNFCreator.createNodes(featureModel);
-		final CNF sliced = LongRunningWrapper.runMethod(new CNFSilcer(satInstance, removeFeatures), monitor.subTask(1));
+		final CNF sliced = LongRunningWrapper.runMethod(new CNFSlicer(satInstance, removeFeatures), monitor.subTask(1));
 		return sliced;
 	}
 

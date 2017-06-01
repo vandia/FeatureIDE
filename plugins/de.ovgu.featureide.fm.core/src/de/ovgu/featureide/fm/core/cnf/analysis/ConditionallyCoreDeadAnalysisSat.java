@@ -20,15 +20,11 @@
  */
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
-import org.sat4j.minisat.core.Solver;
-
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.SatUtils;
-import de.ovgu.featureide.fm.core.cnf.solver.FixedLiteralSelectionStrategy;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2.SelectionStrategy;
-import de.ovgu.featureide.fm.core.cnf.solver.VarOrderHeap2;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -66,7 +62,7 @@ public class ConditionallyCoreDeadAnalysisSat extends AConditionallyCoreDeadAnal
 			}
 
 			SatUtils.updateSolution(model1, model2);
-			((Solver<?>) solver.getInternalSolver()).setOrder(new VarOrderHeap2(new FixedLiteralSelectionStrategy(model1, true), solver.getOrder()));
+			solver.setSelectionStrategy(model1, true);
 			for (int i = 0; i < model1.length; i++) {
 				final int varX = model1[i];
 				if (varX != 0) {
@@ -88,7 +84,7 @@ public class ConditionallyCoreDeadAnalysisSat extends AConditionallyCoreDeadAnal
 				}
 			}
 		}
-		return new LiteralSet(solver.getAssignmentArray());
+		return new LiteralSet(solver.getAssignmentArray(assumptions.getLiterals().length));
 	}
 
 }

@@ -20,13 +20,24 @@
  */
 package de.ovgu.featureide.fm.core.cnf;
 
+import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.ovgu.featureide.fm.core.base.FeatureUtils;
+import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.IEventListener;
+import de.ovgu.featureide.fm.core.cnf.manipulator.remove.CNFSlicer;
+import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
+import de.ovgu.featureide.fm.core.filter.AbstractFeatureFilter;
+import de.ovgu.featureide.fm.core.filter.HiddenFeatureFilter;
+import de.ovgu.featureide.fm.core.filter.base.IFilter;
+import de.ovgu.featureide.fm.core.filter.base.OrFilter;
+import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.io.manager.IFileManager;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 
 /**
  * 
@@ -58,15 +69,16 @@ public class FeatureModelFormula implements IEventListener {
 		cnfLock.lock();
 		try {
 			if (cnf == null) {
-				// TODO
-				cnf = new FeatureModelCNF(fmManager.getObject(), false);
+				final IFeatureModel fm = fmManager.getObject();
+				cnf = new FeatureModelCNF(fm, false);
+				cnf.addClauses(Nodes.convert(cnf.getVariables(), AdvancedNodeCreator.createRegularCNF(fm)));
 			}
 			return cnf;
 		} finally {
 			cnfLock.unlock();
 		}
 	}
-	
+
 	public CNF getSlicedCNF(int index) {
 		final FeatureModelCNF cnf2 = getCNF();
 		final Lock slicingLock = slicingLocks[index];
@@ -74,8 +86,23 @@ public class FeatureModelFormula implements IEventListener {
 		try {
 			CNF slicedCNF = slicedCNFs[index];
 			if (slicedCNF == null) {
-				// TODO
-				slicedCNF = new FeatureModelCNF(fmManager.getObject(), false);
+				final IFeatureModel fm = fmManager.getObject();
+				final IFilter<IFeature> filter;
+				switch(index) {
+				case 0:
+					filter = new AbstractFeatureFilter();
+					break;
+				case 1:
+					filter = new HiddenFeatureFilter();
+					break;
+				case 2:
+					filter = new OrFilter<IFeature>(Arrays.asList(new HiddenFeatureFilter(), new AbstractFeatureFilter()));
+					break;
+				default:
+					return cnf2;
+				}
+				final CNFSlicer slicer = new CNFSlicer(cnf2, Functional.map(Functional.filter(fm.getFeatures(), filter), FeatureUtils.GET_FEATURE_NAME));
+				slicedCNF = LongRunningWrapper.runMethod(slicer);
 				slicedCNFs[index] = slicedCNF;
 			}
 			return slicedCNF;
@@ -125,49 +152,49 @@ public class FeatureModelFormula implements IEventListener {
 	public CNF getClausesWithoutAbstractAndHidden() {
 		return getSlicedCNF(2);
 	}
-	
-//		public void load(IMonitor monitor) {
-//			if (clauses != null) {
-//				return null;
-//			}
-//			final IFeatureModel featureModel = configuration.getFeatureModel();
-//			final Collection<IFeature> features = FeatureUtils.getFeatures(featureModel);
-//
-//			final SatInstance2 orgSatInstance = new SimpleClauseCreator(featureModel).createNodes();
-//
-//			if (configuration.ignoreAbstractFeatures) {
-//				clauses = orgSatInstance;
-//			} else {
-//				filter1 = new OrFilter<>(Arrays.asList(new HiddenFeatureFilter(), new AbstractFeatureFilter()));
-//				filter2 = new AbstractFeatureFilter();
-//				nodeCreator1 = new AdvancedNodeCreator(featureModel, filter1);
-//				nodeCreator2 = new AdvancedNodeCreator(featureModel, filter2);
-//			}
-//			nodeCreator1.setCnfType(AdvancedNodeCreator.CNFType.Regular);
-//			nodeCreator2.setCnfType(AdvancedNodeCreator.CNFType.Regular);
-//			nodeCreator1.setIncludeBooleanValues(false);
-//			nodeCreator2.setIncludeBooleanValues(false);
-//
-//			final IRunner<Node> buildThread1 = LongRunningWrapper.getThread(nodeCreator1);
-//			final IRunner<Node> buildThread2 = LongRunningWrapper.getThread(nodeCreator2);
-//
-//			buildThread1.schedule();
-//			buildThread2.schedule();
-//
-//			try {
-//				buildThread2.join();
-//				buildThread1.join();
-//			} catch (InterruptedException e) {
-//				Logger.logError(e);
-//				final List<String> list = Functional
-//						.toList(Functional.map(Functional.filter(features, new AbstractFeatureFilter()), FeatureUtils.GET_FEATURE_NAME));
-//				clauses = LongRunningWrapper.runMethod(new SatSilcer(orgSatInstance, list));
-//	}
-//	final List<String> list = Functional.toList(Functional.map(Functional.filter(features, new HiddenFeatureFilter()), FeatureUtils.GET_FEATURE_NAME));
-//	clausesWithoutHidden = LongRunningWrapper.runMethod(new SatSilcer(clauses, list));
-//
-//	return null;
-//}
-//}
+
+	//		public void load(IMonitor monitor) {
+	//			if (clauses != null) {
+	//				return null;
+	//			}
+	//			final IFeatureModel featureModel = configuration.getFeatureModel();
+	//			final Collection<IFeature> features = FeatureUtils.getFeatures(featureModel);
+	//
+	//			final SatInstance2 orgSatInstance = new SimpleClauseCreator(featureModel).createNodes();
+	//
+	//			if (configuration.ignoreAbstractFeatures) {
+	//				clauses = orgSatInstance;
+	//			} else {
+	//				filter1 = new OrFilter<>(Arrays.asList(new HiddenFeatureFilter(), new AbstractFeatureFilter()));
+	//				filter2 = new AbstractFeatureFilter();
+	//				nodeCreator1 = new AdvancedNodeCreator(featureModel, filter1);
+	//				nodeCreator2 = new AdvancedNodeCreator(featureModel, filter2);
+	//			}
+	//			nodeCreator1.setCnfType(AdvancedNodeCreator.CNFType.Regular);
+	//			nodeCreator2.setCnfType(AdvancedNodeCreator.CNFType.Regular);
+	//			nodeCreator1.setIncludeBooleanValues(false);
+	//			nodeCreator2.setIncludeBooleanValues(false);
+	//
+	//			final IRunner<Node> buildThread1 = LongRunningWrapper.getThread(nodeCreator1);
+	//			final IRunner<Node> buildThread2 = LongRunningWrapper.getThread(nodeCreator2);
+	//
+	//			buildThread1.schedule();
+	//			buildThread2.schedule();
+	//
+	//			try {
+	//				buildThread2.join();
+	//				buildThread1.join();
+	//			} catch (InterruptedException e) {
+	//				Logger.logError(e);
+	//				final List<String> list = Functional
+	//						.toList(Functional.map(Functional.filter(features, new AbstractFeatureFilter()), FeatureUtils.GET_FEATURE_NAME));
+	//				clauses = LongRunningWrapper.runMethod(new SatSilcer(orgSatInstance, list));
+	//	}
+	//	final List<String> list = Functional.toList(Functional.map(Functional.filter(features, new HiddenFeatureFilter()), FeatureUtils.GET_FEATURE_NAME));
+	//	clausesWithoutHidden = LongRunningWrapper.runMethod(new SatSilcer(clauses, list));
+	//
+	//	return null;
+	//}
+	//}
 
 }

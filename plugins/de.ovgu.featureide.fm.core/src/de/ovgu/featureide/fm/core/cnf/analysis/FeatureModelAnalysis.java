@@ -35,7 +35,6 @@ import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.IConstr;
 
 import de.ovgu.featureide.fm.core.ConstraintAttribute;
-import de.ovgu.featureide.fm.core.FeatureDependencies;
 import de.ovgu.featureide.fm.core.FeatureStatus;
 import de.ovgu.featureide.fm.core.Logger;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
@@ -44,20 +43,20 @@ import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
-import de.ovgu.featureide.fm.core.base.util.Functional;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.CNFCreator;
 import de.ovgu.featureide.fm.core.cnf.CNFCreator.ModelType;
-import de.ovgu.featureide.fm.core.cnf.IVariables;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.Nodes;
 import de.ovgu.featureide.fm.core.cnf.SatUtils;
+import de.ovgu.featureide.fm.core.cnf.Variables;
 import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
 import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
 import de.ovgu.featureide.fm.core.filter.HiddenFeatureFilter;
+import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -273,7 +272,7 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 		}
 	}
 
-	private boolean checkConstraintContradiction(IVariables satInstance, List<LiteralSet> constraintNode) {
+	private boolean checkConstraintContradiction(Variables satInstance, List<LiteralSet> constraintNode) {
 		return LongRunningWrapper.runMethod(new HasSolutionAnalysis(new CNF(satInstance, constraintNode))) == null;
 	}
 
@@ -290,7 +289,7 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 		monitor.checkCancel();
 
 		for (IConstraint constraint : constraints) {
-			modSat.addClauses(Nodes.convert(si, constraint.getNode()));
+			modSat.addClauses(Nodes.convert(si.getVariables(), constraint.getNode()));
 
 			if (constraint.getConstraintAttribute() == ConstraintAttribute.NORMAL) {
 				if (calculateDeadConstraints) {
@@ -336,7 +335,7 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 			final List<List<IConstr>> constraintMarkers = new ArrayList<>();
 				final List<List<LiteralSet>> cnfNodes = new ArrayList<>();
 			for (IConstraint constraint : constraints) {
-				List<LiteralSet> cnf = Nodes.convert(si, constraint.getNode());
+				List<LiteralSet> cnf = Nodes.convert(si.getVariables(), constraint.getNode());
 				cnfNodes.add(cnf);
 
 				constraintMarkers.add(redundantSat.addClauses(cnf));
@@ -376,8 +375,8 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 
 					if (redundant) {
 							clone.removeConstraint(constraint);
-							final List<LiteralSet> clauseList = Nodes.convert(si, new Not(constraint.getNode()));
-							if (checkConstraintTautology(si, clauseList)) {
+							final List<LiteralSet> clauseList = Nodes.convert(si.getVariables(), new Not(constraint.getNode()));
+							if (checkConstraintTautology(si.getVariables(), clauseList)) {
 							setConstraintAttribute(constraint, ConstraintAttribute.TAUTOLOGY);
 						} else {
 							setConstraintAttribute(constraint, ConstraintAttribute.REDUNDANT);
@@ -388,8 +387,8 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 			}
 			} else {
 			for (IConstraint constraint : constraints) {
-					final List<LiteralSet> clauseList = Nodes.convert(si, new Not(constraint.getNode()));
-					if (checkConstraintTautology(si, clauseList)) {
+					final List<LiteralSet> clauseList = Nodes.convert(si.getVariables(), new Not(constraint.getNode()));
+					if (checkConstraintTautology(si.getVariables(), clauseList)) {
 					setConstraintAttribute(constraint, ConstraintAttribute.TAUTOLOGY);
 				}
 				monitor.checkCancel();
@@ -398,7 +397,7 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 	}
 	}
 
-	private boolean checkConstraintTautology(IVariables mapping, List<LiteralSet> constraintNode) {
+	private boolean checkConstraintTautology(Variables mapping, List<LiteralSet> constraintNode) {
 		return checkConstraintContradiction(mapping, constraintNode);
 	}
 
@@ -409,7 +408,7 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 		monitor.checkCancel();
 
 		for (IConstraint constraint : constraints) {
-			List<LiteralSet> cnf = Nodes.convert(si, constraint.getNode());
+			List<LiteralSet> cnf = Nodes.convert(si.getVariables(), constraint.getNode());
 
 			List<IConstr> constraintMarkers = null;
 			boolean satisfiable;
@@ -428,7 +427,7 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 						}
 					}
 
-					if (checkConstraintContradiction(si, cnf)) {
+					if (checkConstraintContradiction(si.getVariables(), cnf)) {
 						setConstraintAttribute(constraint, ConstraintAttribute.UNSATISFIABLE);
 					} else {
 						setConstraintAttribute(constraint, ConstraintAttribute.VOID_MODEL);
@@ -449,7 +448,7 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 		for (int i = 0; i < solution2.getLiterals().length; i++) {
 			monitor.checkCancel();
 			final int var = solution2.getLiterals()[i];
-			final IFeature feature = fm.getFeature(si.getName(var));
+			final IFeature feature = fm.getFeature(si.getVariables().getName(var));
 			if (var < 0) {
 				setFeatureAttribute(feature, FeatureStatus.DEAD);
 				deadFeatures.add(feature);
@@ -467,13 +466,13 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 		int[] deadVars = new int[deadList.size()];
 		int j = 0;
 		for (IFeature deadFeature : deadList) {
-			deadVars[j++] = solver.getSatInstance().getVariable(deadFeature.getName());
+			deadVars[j++] = solver.getSatInstance().getVariables().getVariable(deadFeature.getName());
 		}
 		final LiteralSet solution2 = LongRunningWrapper.runMethod(new CoreDeadAnalysis(solver, new LiteralSet(deadVars)));
 		for (int i = 0; i < solution2.getLiterals().length; i++) {
 			final int var = solution2.getLiterals()[i];
 			if (var < 0) {
-				result.add(fm.getFeature(solver.getSatInstance().getName(var)));
+				result.add(fm.getFeature(solver.getSatInstance().getVariables().getName(var)));
 			}
 		}
 		return result;
@@ -484,7 +483,7 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 		for (IFeature feature : features) {
 			final IFeature parent = FeatureUtils.getParent(feature);
 			if (parent != null && (!feature.getStructure().isMandatorySet() || !parent.getStructure().isAnd())) {
-				possibleFOFeatures.add(new LiteralSet(-si.getVariable(parent.getName()), si.getVariable(feature.getName())));
+				possibleFOFeatures.add(new LiteralSet(-si.getVariables().getVariable(parent.getName()), si.getVariables().getVariable(feature.getName())));
 			}
 		}
 		final List<LiteralSet> solution3 = LongRunningWrapper.runMethod(new RedundancyAnalysis(si, possibleFOFeatures), monitor.subTask(0));
@@ -492,7 +491,7 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 		falseOptionalFeatures.clear();
 		for (LiteralSet pair : solution3) {
 			monitor.checkCancel();
-			final IFeature feature = fm.getFeature(si.getName(pair.getLiterals()[1]));
+			final IFeature feature = fm.getFeature(si.getVariables().getName(pair.getLiterals()[1]));
 			setFeatureAttribute(feature, FeatureStatus.FALSE_OPTIONAL);
 			falseOptionalFeatures.add(feature);
 		}
@@ -508,12 +507,12 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 		for (IFeature feature : foList) {
 			final IFeature parent = FeatureUtils.getParent(feature);
 			if (parent != null && (!feature.getStructure().isMandatorySet() || !parent.getStructure().isAnd())) {
-				possibleFOFeatures.add(new LiteralSet(-si.getVariable(parent.getName()), si.getVariable(feature.getName())));
+				possibleFOFeatures.add(new LiteralSet(-si.getVariables().getVariable(parent.getName()), si.getVariables().getVariable(feature.getName())));
 			}
 		}
 		final List<LiteralSet> solution3 = LongRunningWrapper.runMethod(new RedundancyAnalysis(solver, possibleFOFeatures));
 		for (LiteralSet pair : solution3) {
-			result.add(fm.getFeature(si.getName(pair.getLiterals()[1])));
+			result.add(fm.getFeature(si.getVariables().getName(pair.getLiterals()[1])));
 		}
 		return result;
 	}
@@ -523,73 +522,55 @@ public class FeatureModelAnalysis implements LongRunningMethod<HashMap<Object, O
 	 * 
 	 * @param changedAttributes
 	 */
-	private void checkFeatureHidden(final Iterable<IFeature> features) {
+	private void checkFeatureHidden(final Iterable<IFeature> features, final CNF si) {
 		if (!fm.getStructure().hasHidden()) {
 			return;
 		}
-		/**
-		 * First every relevant constraint of every hidden feature is checked if its form equals
-		 * HIDDEN_FEATURE <=> A
-		 * where A is an expression containing only non hidden features
-		 * If there is a constraint of that kind for a hidden feature it is added to a list.
-		 */
-		Collection<IFeature> list = new LinkedList<>();
-		Collection<IFeature> hiddenFeatures = Functional.toList(Functional.filter(features, new HiddenFeatureFilter()));
-		for (IFeature feature : hiddenFeatures) {
-			monitor.checkCancel();
-			for (IConstraint constraint : feature.getStructure().getRelevantConstraints()) {
-				Node node = constraint.getNode();
-				if (node instanceof Equals) {
-					Node[] children = node.getChildren();
-					Node leftChild = children[0];
-					Node rightChild = children[1];
-					if (leftChild instanceof Literal && ((Literal) leftChild).var.equals(feature.getName())) {
-						IConstraint rightConstraint = factory.createConstraint(fm, rightChild);
-						rightConstraint.setContainedFeatures();
-						if (!rightConstraint.hasHiddenFeatures()) {
-							list.add(feature);
-							break;
-						}
-					}
-					if (rightChild instanceof Literal && ((Literal) rightChild).var.equals(feature.getName())) {
-						IConstraint leftConstraint = factory.createConstraint(fm, leftChild);
-						leftConstraint.setContainedFeatures();
-						if (!leftConstraint.hasHiddenFeatures()) {
-							list.add(feature);
-							break;
-						}
-					}
-				}
-			}
-		}
 
-		/**
-		 * Additionally each Node is checked if the atomic set containing it, consists of indeterminate hidden nodes only.
-		 * If this is the case it's also indeterminate.
-		 * A node is therefore not marked indeterminate if it either
-		 * - has a non-hidden Node in its atomic set defining its state or
-		 * - if a Node of its atomic set is determined by a constraint of the above form.
-		 */
-		FeatureDependencies featureDependencies = new FeatureDependencies(fm, false);
-		for (IFeature feature : hiddenFeatures) {
-			monitor.checkCancel();
-			if (!list.contains(feature)) {
-				Collection<IFeature> set = featureDependencies.getImpliedFeatures(feature);
-				boolean noHidden = false;
-				for (IFeature f : set) {
-					if (!f.getStructure().isHidden() && !f.getStructure().hasHiddenParent() || list.contains(f)) {
-						if (featureDependencies.isAlways(f, feature)) {
-							noHidden = true;
-							break;
-						}
-					}
-				}
-
-				if (!noHidden) {
-					setFeatureAttribute(feature, FeatureStatus.INDETERMINATE_HIDDEN);
-				}
+		final Iterable<IFeature> hiddenFeatures = Functional.filter(features, new HiddenFeatureFilter());
+		List<String> hiddenLiterals = Functional.toList(Functional.map(hiddenFeatures, new Functional.IFunction<IFeature, String>() {
+			@Override
+			public String invoke(IFeature feature) {
+				return feature.getName();
 			}
+		}));
+		
+		final DeterminedAnalysis method = new DeterminedAnalysis(si, LiteralSet variables);
+		method.setAssumptions(null);
+		final LiteralSet determinedHidden = LongRunningWrapper.runMethod(method);
+		
+		for (int feature : determinedHidden) {
+			setFeatureAttribute(fm.getFeature(si.getVariableObject(feature).toString()), FeatureStatus.INDETERMINATE_HIDDEN);
 		}
+	}
+
+//		/**
+//		 * Additionally each Node is checked if the atomic set containing it, consists of indeterminate hidden nodes only.
+//		 * If this is the case it's also indeterminate.
+//		 * A node is therefore not marked indeterminate if it either
+//		 * - has a non-hidden Node in its atomic set defining its state or
+//		 * - if a Node of its atomic set is determined by a constraint of the above form.
+//		 */
+//		FeatureDependencies featureDependencies = new FeatureDependencies(fm, false);
+//		for (IFeature feature : hiddenFeatures) {
+//			monitor.checkCancel();
+//			if (!list.contains(feature)) {
+//				Collection<IFeature> set = featureDependencies.getImpliedFeatures(feature);
+//				boolean noHidden = false;
+//				for (IFeature f : set) {
+//					if (!f.getStructure().isHidden() && !f.getStructure().hasHiddenParent() || list.contains(f)) {
+//						if (featureDependencies.isAlways(f, feature)) {
+//							noHidden = true;
+//							break;
+//						}
+//					}
+//				}
+//
+//				if (!noHidden) {
+//					setFeatureAttribute(feature, FeatureStatus.INDETERMINATE_HIDDEN);
+//				}
+//			}
+//		}
 	}
 
 	private void checkValidity(final CNF si) {

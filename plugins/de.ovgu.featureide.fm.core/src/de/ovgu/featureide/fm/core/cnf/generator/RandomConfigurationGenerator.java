@@ -22,13 +22,11 @@ package de.ovgu.featureide.fm.core.cnf.generator;
 
 import java.util.List;
 
-import org.sat4j.core.VecInt;
-import org.sat4j.specs.ContradictionException;
-
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2.SelectionStrategy;
+import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -78,8 +76,8 @@ public class RandomConfigurationGenerator extends PairWiseConfigurationGenerator
 		time = System.nanoTime();
 
 		try {
-			config.setBlockingClauseConstraint(solver.getInternalSolver().addBlockingClause(new VecInt(SatUtils.negateSolution(curModel))));
-		} catch (ContradictionException e) {
+			solver.addClause(new LiteralSet(SatUtils.negateSolution(curModel)));
+		} catch (RuntimeContradictionException e) {
 			return true;
 		}
 

@@ -54,7 +54,7 @@ public interface ISimpleSatSolver extends Cloneable {
 	 * @see #removeClause(IConstr)
 	 * @see #addClauses(Iterable)
 	 */
-	IConstr addClause(LiteralSet mainClause);
+	IConstr addClause(LiteralSet mainClause) throws RuntimeContradictionException;
 
 	/**
 	 * Adds multiple clauses.
@@ -66,7 +66,7 @@ public interface ISimpleSatSolver extends Cloneable {
 	 * @see #removeClause(IConstr)
 	 * @see #addClause(LiteralSet)
 	 */
-	List<IConstr> addClauses(Iterable<? extends LiteralSet> clauses);
+	List<IConstr> addClauses(Iterable<? extends LiteralSet> clauses) throws RuntimeContradictionException;
 
 	/**
 	 * Removes a certain clause. If possible, instead of using this method consider using {@link #removeLastClause()} as it runs faster.<br/>

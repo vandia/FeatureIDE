@@ -47,13 +47,15 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 
 	protected RingList<int[]> solutionList = RingList.empytRingList();
 	protected SelectionStrategy strategy = SelectionStrategy.ORG;
+	
+	protected boolean globalTimeout = false;
 
-	public AdvancedSatSolver(CNF satInstance) {
+	public AdvancedSatSolver(CNF satInstance) throws RuntimeContradictionException {
 		super(satInstance);
 		this.strategy = SelectionStrategy.ORG;
 
-		this.assignment = new VecInt(satInstance.size());
-		this.order = new int[satInstance.size()];
+		this.assignment = new VecInt(satInstance.getVariables().size());
+		this.order = new int[satInstance.getVariables().size()];
 		setOrderFix();
 	}
 
@@ -64,7 +66,6 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 		this.order = Arrays.copyOf(oldSolver.order, oldSolver.order.length);
 		this.assignment = new VecInt(0);
 		oldSolver.assignment.copyTo(this.assignment);
-
 	}
 
 	@Override
@@ -98,6 +99,16 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 	}
 
 	@Override
+	public void assignmentDelete(int i) {
+		assignment.delete(internalMapping.convertToInternal(i));
+	}
+
+	@Override
+	public void assignmentSet(int index, int var) {
+		assignment.set(index, internalMapping.convertToInternal(var));
+	}
+
+	@Override
 	public int getAssignmentSize() {
 		return assignment.size();
 	}
@@ -118,7 +129,12 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 
 	@Override
 	public int[] getAssignmentArray() {
-		return internalMapping.convertToOriginal(assignment.toArray());
+		return internalMapping.convertToOriginal(Arrays.copyOf(assignment.toArray(), assignment.size()));
+	}
+
+	@Override
+	public int[] getAssignmentArray(int from) {
+		return internalMapping.convertToOriginal(Arrays.copyOfRange(assignment.toArray(), from, assignment.size()));
 	}
 
 	@Override
@@ -149,7 +165,7 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 	@Override
 	public SatResult hasSolution() {
 		try {
-			if (solver.isSatisfiable(assignment, false)) {
+			if (solver.isSatisfiable(assignment, globalTimeout)) {
 				solutionList.add(solver.model());
 				return SatResult.TRUE;
 			} else {
@@ -172,7 +188,7 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 		System.arraycopy(internalMapping.convertToInternal(assignment), 0, unitClauses, 0, unitClauses.length);
 
 		try {
-			if (solver.isSatisfiable(new VecInt(unitClauses), false)) {
+			if (solver.isSatisfiable(new VecInt(unitClauses), globalTimeout)) {
 				solutionList.add(solver.model());
 				return SatResult.TRUE;
 			} else {
@@ -231,6 +247,8 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 			case RANDOM:
 				solver.setOrder(new VarOrderHeap2(new RandomLiteralSelectionStrategy(), order));
 				break;
+			case FIXED:
+				break;
 			default:
 				throw new AssertionError(strategy);
 			}
@@ -238,8 +256,24 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 	}
 
 	@Override
+	public void setSelectionStrategy(int[] model, boolean b) {
+		this.strategy = SelectionStrategy.FIXED;
+		solver.setOrder(new VarOrderHeap2(new FixedLiteralSelectionStrategy(model, true), order));
+	}
+
+	@Override
 	public void useSolutionList(int size) {
 		solutionList = new RingList<>(size);
+	}
+
+	@Override
+	public boolean isGlobalTimeout() {
+		return globalTimeout;
+	}
+
+	@Override
+	public void setGlobalTimeout(boolean globalTimeout) {
+		this.globalTimeout = globalTimeout;
 	}
 
 }

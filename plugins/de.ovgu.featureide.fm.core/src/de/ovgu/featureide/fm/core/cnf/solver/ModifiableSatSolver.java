@@ -20,7 +20,6 @@
  */
 package de.ovgu.featureide.fm.core.cnf.solver;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,18 +36,16 @@ import de.ovgu.featureide.fm.core.cnf.LiteralSet;
  */
 public class ModifiableSatSolver extends AdvancedSatSolver {
 
-	protected final ArrayDeque<IConstr> constrList = new ArrayDeque<>();
-
-	public ModifiableSatSolver(AdvancedSatSolver oldSolver) {
+	public ModifiableSatSolver(AdvancedSatSolver oldSolver) throws RuntimeContradictionException {
 		super(oldSolver);
 	}
 
-	public ModifiableSatSolver(CNF satInstance) {
+	public ModifiableSatSolver(CNF satInstance) throws RuntimeContradictionException {
 		super(satInstance);
 	}
 
 	@Override
-	public List<IConstr> addClauses(Iterable<? extends LiteralSet> clauses) {
+	public List<IConstr> addClauses(Iterable<? extends LiteralSet> clauses) throws RuntimeContradictionException {
 		final ArrayList<IConstr> newConstrs = new ArrayList<>();
 
 		try {
@@ -64,7 +61,7 @@ public class ModifiableSatSolver extends AdvancedSatSolver {
 	}
 
 	@Override
-	protected IConstr addClauseInternal(Solver<?> solver, LiteralSet mainClause) {
+	protected IConstr addClauseInternal(Solver<?> solver, LiteralSet mainClause) throws RuntimeContradictionException {
 		final IConstr constr = super.addClauseInternal(solver, mainClause);
 		constrList.add(constr);
 		return constr;
@@ -84,7 +81,7 @@ public class ModifiableSatSolver extends AdvancedSatSolver {
 	public void removeLastClauses(int numberOfClauses) {
 		try {
 			for (int i = 0; i < numberOfClauses; i++) {
-				final IConstr removeLast = constrList.removeLast();
+				final IConstr removeLast = constrList.remove(constrList.size() - 1);
 				if (removeLast != null) {
 					solver.removeSubsumedConstr(removeLast);
 				}

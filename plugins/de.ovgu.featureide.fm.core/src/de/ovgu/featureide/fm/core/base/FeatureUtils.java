@@ -20,8 +20,6 @@
  */
 package de.ovgu.featureide.fm.core.base;
 
-import static de.ovgu.featureide.fm.core.base.util.Functional.filter;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -49,11 +47,12 @@ import de.ovgu.featureide.fm.core.FeatureStatus;
 import de.ovgu.featureide.fm.core.IFeatureModelLayout;
 import de.ovgu.featureide.fm.core.IGraphicItem.GraphicItem;
 import de.ovgu.featureide.fm.core.Operator;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.RenamingsManager;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
-import de.ovgu.featureide.fm.core.base.util.Functional;
-import de.ovgu.featureide.fm.core.base.util.Functional.IFunction;
 import de.ovgu.featureide.fm.core.filter.ConcreteFeatureFilter;
+import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.functional.Functional.IFunction;
 
 /**
  * Several convenience methods for handling feature models, features and constraints.
@@ -252,7 +251,7 @@ public final class FeatureUtils {
 	public static final FeatureModelAnalyzer createAnalyser(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return featureModel.getAnalyser();
+		return ProjectManager.getAnalyzer(featureModel);
 	}
 
 	public static final void createDefaultValues(IFeatureModel featureModel, CharSequence projectName) {
@@ -323,7 +322,7 @@ public final class FeatureUtils {
 	public static Iterable<IFeature> extractConcreteFeatures(final Iterable<IFeature> features) {
 		requireNonNull(features);
 
-		return filter(features, CONCRETE_FEATURE_FILTER);
+		return Functional.filter(features, CONCRETE_FEATURE_FILTER);
 	}
 
 	/**
@@ -368,7 +367,7 @@ public final class FeatureUtils {
 	public static final FeatureModelAnalyzer getAnalyser(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return featureModel.getAnalyser();
+		return ProjectManager.getAnalyzer(featureModel);
 	}
 
 	public static final List<String> getAnnotations(IFeatureModel featureModel) {
@@ -481,7 +480,7 @@ public final class FeatureUtils {
 		final Node propNode = constraint.getNode();
 		if (propNode != null) {
 			fm.removeConstraint(constraint);
-			deadFeaturesBefore = fm.getAnalyser().getDeadFeatures();
+			deadFeaturesBefore = ProjectManager.getAnalyzer(fm).getDeadFeatures();
 			fm.addConstraint(new Constraint(fm, propNode));
 			fm.handleModelDataChanged();
 		}
@@ -1227,8 +1226,8 @@ public final class FeatureUtils {
 		final IFeatureModel featureModel = constraint.getFeatureModel();
 		final IFeatureModel clonedModel = FeatureUtils.clone(constraint.getFeatureModel());
 		clonedModel.removeConstraint(constraint);
-		final Collection<IFeature> foFeatures = clonedModel.getAnalyser().getFalseOptionalFeatures();
-		for (IFeature feature : featureModel.getAnalyser().getFalseOptionalFeatures()) {
+		final Collection<IFeature> foFeatures = ProjectManager.getAnalyzer(clonedModel).getFalseOptionalFeatures();
+		for (IFeature feature : ProjectManager.getAnalyzer(featureModel).getFalseOptionalFeatures()) {
 			if (!foFeatures.contains(clonedModel.getFeature(feature.getName())) && !falseOptionalFeatures.contains(feature)) {
 				falseOptionalFeatures.add(feature);
 				found = true;

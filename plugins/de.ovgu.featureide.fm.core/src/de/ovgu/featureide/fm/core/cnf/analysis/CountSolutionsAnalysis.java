@@ -20,11 +20,12 @@
  */
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
-import org.sat4j.specs.TimeoutException;
-import org.sat4j.tools.SolutionCounter;
-
 import de.ovgu.featureide.fm.core.cnf.CNF;
+import de.ovgu.featureide.fm.core.cnf.LiteralSet;
+import de.ovgu.featureide.fm.core.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
+import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
+import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -43,15 +44,20 @@ public class CountSolutionsAnalysis extends AbstractAnalysis<Long> {
 	}
 
 	public Long analyze(IMonitor monitor) throws Exception {
-		long number = 0;
-		final SolutionCounter counter = new SolutionCounter(solver.getInternalSolver());
-
-		try {
-			number = counter.countSolutions();
-		} catch (TimeoutException e) {
-			number = -1 - counter.lowerBound();
-		}
-		return number;
+		solver.setGlobalTimeout(true);
+        long solutionCount = 0;
+        SatResult hasSolution = solver.hasSolution();
+		while (hasSolution == SatResult.TRUE) {
+        	solutionCount++;
+            int[] solution = solver.getSolution();
+            try {
+                solver.addClause(new LiteralSet(SatUtils.negateSolution(solution)));
+            } catch (RuntimeContradictionException e) {
+                break;
+            }
+            hasSolution = solver.hasSolution();
+        }
+		return hasSolution == SatResult.TIMEOUT ? -(solutionCount + 1) : solutionCount;
 	}
 
 }

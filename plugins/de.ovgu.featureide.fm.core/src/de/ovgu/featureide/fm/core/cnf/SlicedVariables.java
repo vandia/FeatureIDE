@@ -20,6 +20,7 @@
  */
 package de.ovgu.featureide.fm.core.cnf;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.prop4j.solver.BasicSolver;
@@ -35,21 +36,41 @@ public class SlicedVariables extends Variables {
 
 	private static final long serialVersionUID = 2162112716200473939L;
 
-	protected final IInternalVariables internalMapping;
+	private final int[] orgToInternal;
+	private final int[] internalToOrg;
 
-	public SlicedVariables(Collection<String> varNameList, IInternalVariables mapping) {
-		super(varNameList);
-		this.internalMapping = mapping;
+	public SlicedVariables(Variables orgVariables, Collection<String> varNameList) {
+		super(orgVariables);
+		
+		orgToInternal = new int[orgVariables.size() + 1];
+		internalToOrg = new int[varNameList.size() + 1];
+
+		for (String varName : varNameList) {
+			final int orgVariable = orgVariables.getVariable(varName);
+			orgToInternal[orgVariable] = 1;
+		}
+
+		int count = 0;
+		for (int i = 1; i < orgToInternal.length; i++) {
+			final int index = orgToInternal[i];
+			if (index > 0) {
+				count++;
+				orgToInternal[i] = count;
+				internalToOrg[count] = i;
+			}
+		}
 	}
 
 	private SlicedVariables(SlicedVariables oldSatMapping) {
 		super(oldSatMapping);
-		this.internalMapping = oldSatMapping.internalMapping;
+		this.orgToInternal = Arrays.copyOf(oldSatMapping.orgToInternal, oldSatMapping.orgToInternal.length);
+		this.internalToOrg = Arrays.copyOf(oldSatMapping.internalToOrg, oldSatMapping.internalToOrg.length);
 	}
 
 	@Override
 	public int size() {
-		return internalMapping.getNumberOfVariables();
+//		return internalMapping.getNumberOfVariables();
+		return internalToOrg.length - 1;
 	}
 
 	@Override
@@ -57,8 +78,48 @@ public class SlicedVariables extends Variables {
 		return new SlicedVariables(this);
 	}
 
-	public IInternalVariables getInternalVariables() {
-		return internalMapping;
+	public boolean checkClause(LiteralSet orgClause) {
+		for (int literal : orgClause.getLiterals()) {
+			if (orgToInternal[Math.abs(literal)] == 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public LiteralSet convertToInternal(LiteralSet orgClause) {
+		return new LiteralSet(convertToInternal(orgClause.getLiterals()));
+	}
+
+	public int[] convertToInternal(int[] orgLiterals) {
+		final int[] convertedLiterals = new int[orgLiterals.length];
+		for (int i = 0; i < orgLiterals.length; i++) {
+			convertedLiterals[i] = convertToInternal(orgLiterals[i]);
+		}
+		return convertedLiterals;
+	}
+
+	public int convertToInternal(int orgLiteral) {
+		final int convertedLiteral = orgToInternal[Math.abs(orgLiteral)];
+		assert convertedLiteral != 0;
+		return orgLiteral > 0 ? convertedLiteral : -convertedLiteral;
+	}
+
+	public LiteralSet convertToOriginal(LiteralSet internalClause) {
+		return new LiteralSet(convertToInternal(internalClause.getLiterals()));
+	}
+
+	public int[] convertToOriginal(int[] internalLiterals) {
+		final int[] convertedLiterals = new int[internalLiterals.length];
+		for (int i = 0; i < internalLiterals.length; i++) {
+			convertedLiterals[i] = convertToOriginal(internalLiterals[i]);
+		}
+		return convertedLiterals;
+	}
+
+	public int convertToOriginal(int internalLiteral) {
+		final int convertedLiteral = internalToOrg[Math.abs(internalLiteral)];
+		return internalLiteral > 0 ? convertedLiteral : -convertedLiteral;
 	}
 
 }

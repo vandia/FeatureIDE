@@ -20,6 +20,7 @@
  */
 package de.ovgu.featureide.fm.core.io.manager;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import de.ovgu.featureide.fm.core.base.event.IEventManager;
@@ -45,5 +46,7 @@ public interface IFileManager<T> extends IEventManager {
 	void dispose();
 
 	T getObject();
+
+	Path getPath();
 
 }

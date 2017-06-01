@@ -41,7 +41,7 @@ import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.FeatureUtilsLegacy;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.functional.Functional;
 
 /**
  * The model representation of the feature tree that notifies listeners of
@@ -70,7 +70,7 @@ public class FeatureModel extends DeprecatedFeatureModel implements IGraphicItem
 	}
 
 	protected FeatureModelAnalyzer createAnalyser() {
-		return model.getAnalyser();
+		return ProjectManager.getAnalyzer(model);
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class FeatureModel extends DeprecatedFeatureModel implements IGraphicItem
 	 * on the {@link FeatureModel}.
 	 */
 	public FeatureModelAnalyzer getAnalyser() {
-		return model.getAnalyser();
+		return ProjectManager.getAnalyzer(model);
 	}
 
 	@Override

@@ -38,12 +38,13 @@ import org.prop4j.Node;
 import org.prop4j.Not;
 import org.prop4j.Or;
 
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
-import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.functional.Functional;
 
 /**
  * Takes a feature model as input and returns a propositional formula
@@ -213,7 +214,7 @@ public class NodeCreator {
 					and = new And(children);
 				}
 			}
-		Node[] concreteFeatures = new Node[featureModel.getAnalyser().countConcreteFeatures() + 1];
+		Node[] concreteFeatures = new Node[ProjectManager.getAnalyzer(featureModel).countConcreteFeatures() + 1];
 		int i = 0;
 		for (IFeature feature : featureModel.getFeatures())
 			if (feature.getStructure().isConcrete())

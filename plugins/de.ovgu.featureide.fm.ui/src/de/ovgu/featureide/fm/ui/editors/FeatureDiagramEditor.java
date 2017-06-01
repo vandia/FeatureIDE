@@ -84,6 +84,7 @@ import de.ovgu.featureide.fm.core.ConstraintAttribute;
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.FeatureStatus;
 import de.ovgu.featureide.fm.core.Features;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
@@ -429,8 +430,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 			return;
 		}
 		final IFeatureModelElement primaryModel = primary.getModel().getObject();
-		getFeatureModel().getAnalyser().addExplanation(primaryModel);
-		final Explanation activeExplanation = getFeatureModel().getAnalyser().getExplanation(primaryModel);
+		final Explanation activeExplanation = ProjectManager.getAnalyzer(getFeatureModel()).getExplanation(primaryModel);
 		setActiveExplanation(activeExplanation);
 	}
 
@@ -830,8 +830,8 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 			return;
 		}
 		waiting = true;
-		final boolean runAnalysis = featureModelEditor.getFeatureModel().getAnalyser().runCalculationAutomatically
-				&& featureModelEditor.getFeatureModel().getAnalyser().calculateFeatures;
+		final boolean runAnalysis = ProjectManager.getAnalyzer(featureModelEditor.getFeatureModel()).runCalculationAutomatically
+				&& ProjectManager.getAnalyzer(featureModelEditor.getFeatureModel()).calculateFeatures;
 		/**
 		 * This extra job is necessary, else the UI will stop.
 		 */
@@ -875,7 +875,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 							return true;
 						}
 
-						analyzer = getFeatureModel().getAnalyser();
+						analyzer = ProjectManager.getAnalyzer(getFeatureModel());
 						final HashMap<Object, Object> changedAttributes = analyzer.analyzeFeatureModel(monitor);
 						refreshGraphics(changedAttributes);
 						return true;

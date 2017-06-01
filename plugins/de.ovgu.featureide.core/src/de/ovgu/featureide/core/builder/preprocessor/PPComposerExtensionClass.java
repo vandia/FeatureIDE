@@ -55,8 +55,8 @@ import de.ovgu.featureide.core.builder.ComposerExtensionClass;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.base.util.Functional;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
+import de.ovgu.featureide.fm.core.functional.Functional;
 
 /**
  * Abstract class for FeatureIDE preprocessor composer extensions with

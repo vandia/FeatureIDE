@@ -43,8 +43,6 @@ public interface IConfigurationPropagator {
 	 * @return {@code true} if the current selection is a valid configuration
 	 */
 	LongRunningMethod<Boolean> isValid();
-	
-	LongRunningMethod<Void> resolve();
 
 	/**
 	 * Ignores hidden features.
@@ -62,8 +60,20 @@ public interface IConfigurationPropagator {
 	 */
 	LongRunningMethod<Long> number(int timeout);
 
-	LongRunningMethod<Void> update(boolean redundantManual, String startFeatureName);
-	
+	LongRunningMethod<Boolean> update(boolean redundantManual, List<SelectableFeature> featureOrder);
+
+	LongRunningMethod<Boolean> update(boolean redundantManual);
+
+	LongRunningMethod<Boolean> update();
+
+	LongRunningMethod<Boolean> completeRandomly();
+
+	LongRunningMethod<Boolean> completeMin();
+
+	LongRunningMethod<Boolean> completeMax();
+
+	LongRunningMethod<Void> resolve();
+
 	LongRunningMethod<List<LiteralSet>> findOpenClauses(List<SelectableFeature> featureList);
 
 }

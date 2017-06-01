@@ -124,7 +124,8 @@ public class ExtendedFeatureModel extends FeatureModel {
 
 	@Override
 	protected FeatureModelAnalyzer createAnalyser() {
-		return new ExtendedFeatureModelAnalyzer(this);
+		// TODO !!!
+		return null; //new ExtendedFeatureModelAnalyzer(this);
 	}
 
 	public void addAttribute(final String featureName, final String attributeName, final Boolean value) {
@@ -267,28 +268,6 @@ public class ExtendedFeatureModel extends FeatureModel {
 	 */
 	public void setMappingModel(IFeatureModel mappingModel) {
 		this.mappingModel = mappingModel;
-	}
-
-	public void runTests() {
-		final ExtendedFeatureModelAnalyzer analyzer = new ExtendedFeatureModelAnalyzer(this);
-		Logger.logInfo(VELVET_FEATUREMODEL_IMPORTED);
-
-		try {
-			Logger.logInfo(analyzer.isValid() ? VALID : INVALID);
-			StringBuilder sb = new StringBuilder("Dead Features: ");
-			for (IFeature deadFeature : analyzer.getDeadFeatures()) {
-				sb.append(deadFeature.getName() + ", ");
-			}
-			Logger.logInfo(sb.toString());
-			sb.delete(0, sb.length());
-			sb.append("FO Features: ");
-			for (IFeature deadFeature : analyzer.getFalseOptionalFeatures()) {
-				sb.append(deadFeature.getName() + ", ");
-			}
-			Logger.logInfo(sb.toString());
-		} catch (final TimeoutException e) {
-			Logger.logError(e);
-		}
 	}
 
 	@Override

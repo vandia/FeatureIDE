@@ -25,7 +25,7 @@ import java.util.HashSet;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 
 /**
- * Used by {@link CNFSilcer}.
+ * Used by {@link CNFSlicer}.
  * 
  * @author Sebastian Krieter
  */

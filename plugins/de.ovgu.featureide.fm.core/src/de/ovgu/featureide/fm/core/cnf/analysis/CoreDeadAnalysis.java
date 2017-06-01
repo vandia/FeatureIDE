@@ -83,9 +83,7 @@ public class CoreDeadAnalysis extends AbstractAnalysis<LiteralSet> {
 			}
 
 			SatUtils.updateSolution(model1, model2);
-			((Solver<?>) solver.getInternalSolver()).setOrder(new VarOrderHeap2(
-					new FixedLiteralSelectionStrategy(model1, model1.length > (SatUtils.countNegative(model2) + SatUtils.countNegative(model1))),
-					solver.getOrder()));
+			solver.setSelectionStrategy(model1, model1.length > (SatUtils.countNegative(model2) + SatUtils.countNegative(model1)));
 
 			for (int i = 0; i < model1.length; i++) {
 				final int varX = model1[i];

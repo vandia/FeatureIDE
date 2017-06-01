@@ -157,7 +157,7 @@ public class FeatureStructure implements IFeatureStructure {
 	}
 
 	@Override
-	public List<IFeatureStructure> getChildren() {	// Changed type LinkedList to List, Marcus Pinnecke 30.08.15
+	public List<IFeatureStructure> getChildren() {
 		return children;
 	}
 	

@@ -34,12 +34,12 @@ public class AnalysisResult<T> {
 	private final String id;
 	private final LiteralSet assumptions;
 	private final int hashCode;
+	private final T result;
 
-	protected T result;
-
-	public AnalysisResult(String id, LiteralSet assumptions) {
+	public AnalysisResult(String id, LiteralSet assumptions, T result) {
 		this.id = id;
 		this.assumptions = assumptions;
+		this.result = result;
 		this.hashCode = (31 * id.hashCode()) + Arrays.hashCode(assumptions.getLiterals());
 	}
 
@@ -58,10 +58,6 @@ public class AnalysisResult<T> {
 	@Override
 	public int hashCode() {
 		return hashCode;
-	}
-
-	public void setResult(T result) {
-		this.result = result;
 	}
 
 	@Override

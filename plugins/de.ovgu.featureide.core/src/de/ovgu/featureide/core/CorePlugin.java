@@ -162,7 +162,7 @@ public class CorePlugin extends AbstractCorePlugin {
 
 		featureProjectMap = new HashMap<IProject, IFeatureProject>();
 		for (final IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-			try { 
+			try {
 				if (project.isOpen()) {
 					// conversion for old projects
 					IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(COMPOSERS_ID);
@@ -193,8 +193,8 @@ public class CorePlugin extends AbstractCorePlugin {
 	 * @throws CoreException
 	 */
 	private static void changeOldNature(IProject project, String composerID) throws CoreException {
-		CorePlugin.getDefault().logInfo(
-				CHANGE_OLD_NATURE_TO_ + FeatureProjectNature.NATURE_ID + AND_COMPOSER_TO_ + composerID + IN_PROJECT_ + project.getName() + "'");
+		CorePlugin.getDefault()
+				.logInfo(CHANGE_OLD_NATURE_TO_ + FeatureProjectNature.NATURE_ID + AND_COMPOSER_TO_ + composerID + IN_PROJECT_ + project.getName() + "'");
 		IProjectDescription description = project.getDescription();
 		String[] natures = description.getNatureIds();
 		for (int i = 0; i < natures.length; i++)
@@ -285,7 +285,7 @@ public class CorePlugin extends AbstractCorePlugin {
 		IFeatureProject featureProject = featureProjectMap.remove(project);
 		// Quick fix #402 
 		featureProject.dispose();
-		
+
 		logInfo(project.getName() + REMOVED);
 
 		for (IProjectListener listener : projectListeners)
@@ -358,7 +358,8 @@ public class CorePlugin extends AbstractCorePlugin {
 	 * Starts composer specific changes of the project structure,
 	 * after adding the FeatureIDE nature to a project.
 	 */
-	public static void setupProject(final IProject project, String compositionToolID, final String sourcePath, final String configPath, final String buildPath) {
+	public static void setupProject(final IProject project, String compositionToolID, final String sourcePath, final String configPath,
+			final String buildPath) {
 		setupFeatureProject(project, compositionToolID, sourcePath, configPath, buildPath, false);
 
 		IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(COMPOSERS_ID);
@@ -697,7 +698,7 @@ public class CorePlugin extends AbstractCorePlugin {
 		if (signatures != null) {
 			SignatureIterator it = signatures.iterator();
 			int featureID = signatures.getFeatureID(featureName);
-			if(featureID == -1){
+			if (featureID == -1) {
 				return Collections.emptyList();
 			}
 			it.addFilter(new ContextFilter(featureName, signatures));
@@ -789,8 +790,8 @@ public class CorePlugin extends AbstractCorePlugin {
 	public void buildContextDocumentation(List<IProject> pl, String options, String featureName) {
 		final ArrayList<JobArguments> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
-			arguments.add(new PrintDocumentationJob.Arguments("Docu_Context_" + featureName, options.split("\\s+"),
-					new ContextMerger(), featureName, iProject));
+			arguments
+					.add(new PrintDocumentationJob.Arguments("Docu_Context_" + featureName, options.split("\\s+"), new ContextMerger(), featureName, iProject));
 		}
 		FMCorePlugin.getDefault().startJobs(arguments, true);
 	}
@@ -806,8 +807,8 @@ public class CorePlugin extends AbstractCorePlugin {
 	public void buildFeatureDocumentation(List<IProject> pl, String options, String featureName) {
 		final ArrayList<JobArguments> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
-			arguments.add(new PrintDocumentationJob.Arguments("Docu_Feature_" + featureName, options.split("\\s+"),
-					new FeatureModuleMerger(), featureName, iProject));
+			arguments.add(new PrintDocumentationJob.Arguments("Docu_Feature_" + featureName, options.split("\\s+"), new FeatureModuleMerger(), featureName,
+					iProject));
 		}
 		FMCorePlugin.getDefault().startJobs(arguments, true);
 	}

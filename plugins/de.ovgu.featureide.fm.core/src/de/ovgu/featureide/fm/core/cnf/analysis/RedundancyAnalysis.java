@@ -44,14 +44,12 @@ public class RedundancyAnalysis extends AbstractAnalysis<List<LiteralSet>> {
 
 	private List<LiteralSet> clauseList;
 
-	public RedundancyAnalysis(CNF satInstance, List<LiteralSet> possiblyRedundantClauses) {
+	public RedundancyAnalysis(CNF satInstance) {
 		super(satInstance);
-		this.clauseList = possiblyRedundantClauses;
 	}
 
-	public RedundancyAnalysis(ISatSolver2 solver, List<LiteralSet> possiblyRedundantClauses) {
+	public RedundancyAnalysis(ISatSolver2 solver) {
 		super(solver);
-		this.clauseList = possiblyRedundantClauses;
 	}
 
 	public List<LiteralSet> analyze(IMonitor monitor) throws Exception {
@@ -90,6 +88,14 @@ public class RedundancyAnalysis extends AbstractAnalysis<List<LiteralSet>> {
 		default:
 			throw new AssertionError(hasSolution);
 		}
+	}
+
+	public List<LiteralSet> getClauseList() {
+		return clauseList;
+	}
+
+	public void setClauseList(List<LiteralSet> clauseList) {
+		this.clauseList = clauseList;
 	}
 
 }

@@ -33,13 +33,13 @@ public interface IInternalVariables {
 	int[] convertToInternal(int[] orgLiterals);
 
 	int convertToInternal(int orgLiteral);
-	
+
 	LiteralSet convertToOriginal(LiteralSet internalClause);
 
 	int[] convertToOriginal(int[] internalLiterals);
 
 	int convertToOriginal(int internalLiteral);
-	
-	int getNumberOfVariables();
+
+	int size();
 
 }

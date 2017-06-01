@@ -23,15 +23,13 @@ package de.ovgu.featureide.fm.core.cnf.generator;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sat4j.core.VecInt;
-import org.sat4j.specs.ContradictionException;
-import org.sat4j.specs.ISolver;
-
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.cnf.analysis.AbstractAnalysis;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
+import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
+import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -39,16 +37,16 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class GetSolutionsAnalysis extends AbstractAnalysis<List<LiteralSet>> {
+public class SolutionGenerator extends AbstractAnalysis<List<LiteralSet>> {
 
 	private final int max;
 
-	public GetSolutionsAnalysis(ISatSolver2 solver, int max) {
+	public SolutionGenerator(ISatSolver2 solver, int max) {
 		super(solver);
 		this.max = max;
 	}
 
-	public GetSolutionsAnalysis(CNF satInstance, int max) {
+	public SolutionGenerator(CNF satInstance, int max) {
 		super(satInstance);
 		this.max = max;
 	}
@@ -56,19 +54,18 @@ public class GetSolutionsAnalysis extends AbstractAnalysis<List<LiteralSet>> {
 	@Override
 	public List<LiteralSet> analyze(IMonitor monitor) throws Exception {
 		final ArrayList<LiteralSet> solutionList = new ArrayList<>();
-
-		final ISolver internalSolver = solver.getInternalSolver();
-		int count = 0;
-		while (++count <= max && internalSolver.isSatisfiable(true)) {
-			final int[] nextSolution = internalSolver.model();
-			solutionList.add(new LiteralSet(nextSolution));
+		solver.setGlobalTimeout(true);
+		SatResult hasSolution = solver.hasSolution();
+		while (max > solutionList.size() && hasSolution == SatResult.TRUE) {
+			final int[] solution = solver.getSolution();
+			solutionList.add(new LiteralSet(solution));
 			try {
-				internalSolver.addClause(new VecInt(SatUtils.negateSolution(nextSolution)));
-			} catch (ContradictionException e) {
+				solver.addClause(new LiteralSet(SatUtils.negateSolution(solution)));
+			} catch (RuntimeContradictionException e) {
 				break;
 			}
+			hasSolution = solver.hasSolution();
 		}
-
 		return solutionList;
 	}
 

@@ -31,8 +31,7 @@ import de.ovgu.featureide.fm.core.base.event.IEventListener;
 import de.ovgu.featureide.fm.core.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
-import de.ovgu.featureide.fm.core.io.manager.ConfigurationManager;
-import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
+import de.ovgu.featureide.fm.core.io.manager.IFileManager;
 
 /**
  * Class that encapsulates any data and method related to FeatureIDE projects.
@@ -55,10 +54,17 @@ public class FeatureProject {
 		}
 	}
 
-	private final FeatureModelManager featureModelManager;
-	private final List<ConfigurationManager> configurationManagerList = new ArrayList<>();
+	private final List<IFileManager<Configuration>> configurationManagerList = new ArrayList<>();
+
+	private final IFileManager<IFeatureModel> featureModelManager;
+	private final FeatureModelFormula formula;
+	private final FeatureModelAnalyzer analyzer;
+
 	private int currentConfigurationIndex = -1;
-	private FeatureModelFormula formula;
+
+	public FeatureModelFormula getFormula() {
+		return formula;
+	}
 
 	public ConfigurationPropagator getPropagator() {
 		return getPropagator(currentConfigurationIndex);
@@ -75,7 +81,8 @@ public class FeatureProject {
 
 	@Deprecated
 	public static ConfigurationPropagator getPropagator(IFeatureModel featureModel, boolean includeAbstractFeatures) {
-		return new ConfigurationPropagator(new Configuration(featureModel), includeAbstractFeatures);
+		final Configuration configuration = new Configuration(featureModel);
+		return new ConfigurationPropagator(configuration, includeAbstractFeatures);
 	}
 
 	//	private IFeatureGraph modalImplicationGraph;
@@ -145,8 +152,7 @@ public class FeatureProject {
 	 * @param aProject
 	 *            the FeatureIDE project
 	 */
-	public FeatureProject(FeatureModelManager featureModelManager, List<ConfigurationManager> configurationManagerList) {
-		// TODO Make Configuration independent from FeatureModel
+	public FeatureProject(IFileManager<IFeatureModel> featureModelManager, List<IFileManager<Configuration>> configurationManagerList) {
 		// TODO Rename manager method save -> write
 		// TODO Implement analyses for configurations
 		this.featureModelManager = featureModelManager;
@@ -154,10 +160,11 @@ public class FeatureProject {
 		featureModelManager.addListener(new FeatureModelChangeListner());
 		featureModelManager.read();
 		formula = new FeatureModelFormula(featureModelManager);
+		analyzer = new FeatureModelAnalyzer(this);
 	}
 
 	private void renameFeature(final IFeatureModel model, String oldName, String newName) {
-		for (ConfigurationManager configurationManager : configurationManagerList) {
+		for (IFileManager<Configuration> configurationManager : configurationManagerList) {
 			configurationManager.read();
 			configurationManager.save();
 		}
@@ -203,8 +210,12 @@ public class FeatureProject {
 		return featureModelManager.getAbsolutePath();
 	}
 
-	public FeatureModelManager getFeatureModelManager() {
+	public IFileManager<IFeatureModel> getFeatureModelManager() {
 		return featureModelManager;
+	}
+
+	public FeatureModelAnalyzer getAnalyzer() {
+		return analyzer;
 	}
 
 }

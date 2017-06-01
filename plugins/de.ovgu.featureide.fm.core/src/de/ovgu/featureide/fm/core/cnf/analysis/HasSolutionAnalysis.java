@@ -21,8 +21,8 @@
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
 import de.ovgu.featureide.fm.core.cnf.CNF;
-import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
+import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -30,7 +30,7 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class HasSolutionAnalysis extends AbstractAnalysis<LiteralSet> {
+public class HasSolutionAnalysis extends AbstractAnalysis<Boolean> {
 
 	public HasSolutionAnalysis(ISatSolver2 solver) {
 		super(solver);
@@ -40,8 +40,8 @@ public class HasSolutionAnalysis extends AbstractAnalysis<LiteralSet> {
 		super(satInstance);
 	}
 
-	public LiteralSet analyze(IMonitor monitor) throws Exception {
-		return new LiteralSet(solver.findSolution());
+	public Boolean analyze(IMonitor monitor) throws Exception {
+		return solver.hasSolution() == SatResult.TRUE;
 	}
 
 }

@@ -23,12 +23,12 @@ package de.ovgu.featureide.ui.actions.generator.configuration;
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.base.util.Functional;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.CNFCreator;
-import de.ovgu.featureide.fm.core.cnf.manipulator.remove.CNFSilcer;
+import de.ovgu.featureide.fm.core.cnf.manipulator.remove.CNFSlicer;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.filter.AbstractFeatureFilter;
+import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.ui.actions.generator.BuilderConfiguration;
@@ -66,7 +66,7 @@ public abstract class AConfigurationGenerator implements LongRunningMethod<Void>
 	
 	protected final CNF getSatInstance(IFeatureModel fm) {
 		final Iterable<String> abstractFeatures = Functional.map(Functional.filter(fm.getFeatures(), new AbstractFeatureFilter()), FeatureUtils.GET_FEATURE_NAME);
-		return LongRunningWrapper.runMethod(new CNFSilcer(CNFCreator.createNodes(fm), abstractFeatures));
+		return LongRunningWrapper.runMethod(new CNFSlicer(CNFCreator.createNodes(fm), abstractFeatures));
 	}
 	
 	protected void cancelGenerationJobs() {

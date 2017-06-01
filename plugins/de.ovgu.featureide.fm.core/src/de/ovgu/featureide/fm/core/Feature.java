@@ -38,7 +38,7 @@ import de.ovgu.featureide.fm.core.base.IFeatureStructure;
 import de.ovgu.featureide.fm.core.base.IPropertyContainer;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.IEventListener;
-import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.functional.Functional;
 
 /**
  * <b>This class is deprecated and only existing due to compatibility considerations</b>. Use {@link de.ovgu.featureide.fm.core.base.impl.Feature new Feature class} instead.

@@ -35,6 +35,10 @@ public interface IVariables extends Cloneable {
 
 	List<String> convertToString(LiteralSet model, boolean includePositive, boolean includeNegative);
 
+	List<String> convertToString(LiteralSet model, boolean includePositive, boolean includeNegative, boolean markNegative);
+
+	LiteralSet convertToVariables(List<String> variableNames);
+
 	int size();
 
 	int getVariable(String varName);

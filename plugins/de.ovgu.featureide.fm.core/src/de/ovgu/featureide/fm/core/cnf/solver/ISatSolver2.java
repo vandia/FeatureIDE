@@ -32,7 +32,7 @@ public interface ISatSolver2 extends ISimpleSatSolver {
 	public static final int MAX_SOLUTION_BUFFER = 1000;
 
 	public static enum SelectionStrategy {
-		NEGATIVE, ORG, POSITIVE, RANDOM
+		NEGATIVE, ORG, POSITIVE, RANDOM, FIXED
 	}
 
 	RingList<int[]> getSolutionList();
@@ -55,6 +55,8 @@ public interface ISatSolver2 extends ISimpleSatSolver {
 
 	void setSelectionStrategy(SelectionStrategy strategy);
 
+	void setSelectionStrategy(int[] model, boolean b);
+
 	void assignmentPop();
 
 	void assignmentPush(int x);
@@ -69,12 +71,22 @@ public interface ISatSolver2 extends ISimpleSatSolver {
 
 	int assignmentGet(int i);
 
+	void assignmentDelete(int i);
+
+	void assignmentSet(int index, int var);
+
 	int[] getAssignmentArray();
+
+	int[] getAssignmentArray(int from);
 
 	int[] getAssignmentArray(int from, int to);
 
 	int getAssignmentSize();
 
 	int[] getContradictoryAssignment();
+
+	boolean isGlobalTimeout();
+
+	void setGlobalTimeout(boolean globalTimeout);
 
 }

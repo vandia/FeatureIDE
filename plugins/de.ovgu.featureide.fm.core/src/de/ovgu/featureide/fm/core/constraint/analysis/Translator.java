@@ -36,12 +36,12 @@ import org.prop4j.Or;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
-import de.ovgu.featureide.fm.core.base.util.Functional;
 import de.ovgu.featureide.fm.core.constraint.Equation;
 import de.ovgu.featureide.fm.core.constraint.FeatureAttributeMap;
 import de.ovgu.featureide.fm.core.constraint.Reference;
 import de.ovgu.featureide.fm.core.constraint.RelationOperator;
 import de.ovgu.featureide.fm.core.constraint.WeightedTerm;
+import de.ovgu.featureide.fm.core.functional.Functional;
 
 /**
  * The Translator utility provides a bunch of handy tools to translate feature

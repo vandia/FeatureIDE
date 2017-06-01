@@ -30,19 +30,19 @@ import java.util.List;
  * 
  * @author Sebastian Krieter
  */
-public class CNF implements Serializable, IVariables {
+public class CNF implements Serializable {
 
 	private static final long serialVersionUID = -5140589732063007073L;
 
 	protected final ClauseList clauses;
-	protected final IVariables variables;
+	protected final Variables variables;
 
-	public CNF(IVariables mapping, List<LiteralSet> clauses) {
+	public CNF(Variables mapping, List<LiteralSet> clauses) {
 		this.variables = mapping;
 		this.clauses = new ClauseList(clauses);
 	}
 
-	public CNF(IVariables mapping) {
+	public CNF(Variables mapping) {
 		this.variables = mapping;
 		this.clauses = new ClauseList();
 	}
@@ -72,47 +72,16 @@ public class CNF implements Serializable, IVariables {
 		this.clauses.addAll(clauses);
 	}
 
-	@Override
-	public List<String> convertToString(LiteralSet model) {
-		return variables.convertToString(model);
+	public IVariables getVariables() {
+		return variables;
 	}
 
-	@Override
-	public List<String> convertToString(LiteralSet model, boolean includePositive, boolean includeNegative) {
-		return variables.convertToString(model, includePositive, includeNegative);
-	}
-
-	public IVariables getMapping() {
+	public IInternalVariables getInternalVariables() {
 		return variables;
 	}
 
 	public List<LiteralSet> getClauses() {
 		return Collections.unmodifiableList(clauses);
-	}
-
-	@Override
-	public int size() {
-		return variables.size();
-	}
-
-	@Override
-	public int getVariable(String varName) {
-		return variables.getVariable(varName);
-	}
-
-	@Override
-	public int getVariable(String varName, boolean sign) {
-		return variables.getVariable(varName, sign);
-	}
-
-	@Override
-	public String getName(final int x) {
-		return variables.getName(x);
-	}
-
-	@Override
-	public String[] getNames() {
-		return variables.getNames();
 	}
 
 	@Override

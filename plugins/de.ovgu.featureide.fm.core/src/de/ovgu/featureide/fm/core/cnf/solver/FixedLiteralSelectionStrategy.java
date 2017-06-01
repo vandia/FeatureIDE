@@ -12,17 +12,17 @@ public class FixedLiteralSelectionStrategy implements IPhaseSelectionStrategy {
 
 	private final int[] model, phase;
 
-	public FixedLiteralSelectionStrategy(int[] model, boolean reverse) {
+	public FixedLiteralSelectionStrategy(int[] model, boolean min) {
 		super();
 		this.model = model;
 		this.phase = new int[model.length + 1];
-		if (reverse) {
+		if (min) {
 			for (int i = 0; i < model.length; i++) {
 				this.phase[i + 1] = model[i] >= 0 ? negLit(i + 1) : posLit(i + 1);
 			}
 		} else {
 			for (int i = 0; i < model.length; i++) {
-				this.phase[i + 1] = model[i] <= 0 ? negLit(i + 1) : posLit(i + 1);
+				this.phase[i + 1] = model[i] > 0 ? negLit(i + 1) : posLit(i + 1);
 			}
 		}
 	}

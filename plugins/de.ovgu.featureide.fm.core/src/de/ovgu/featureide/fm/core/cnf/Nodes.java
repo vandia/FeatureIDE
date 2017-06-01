@@ -64,17 +64,17 @@ public final class Nodes {
 		final Or[] nodeClauses = new Or[clauses.size()];
 		int index = 0;
 		for (LiteralSet clause : clauses) {
-			nodeClauses[index++] = convert(satInstance, clause);
+			nodeClauses[index++] = convert(satInstance.getVariables(), clause);
 		}
 		return new And(nodeClauses);
 	}
 
-	public static Or convert(IVariables satInstance, LiteralSet clause) {
+	public static Or convert(IVariables variables, LiteralSet clause) {
 		final int[] literals = clause.getLiterals();
 		final Literal[] nodeLiterals = new Literal[literals.length];
 		for (int i = 0; i < literals.length; i++) {
 			final int literal = literals[i];
-			nodeLiterals[i] = new Literal(satInstance.getName(literal), literal > 0);
+			nodeLiterals[i] = new Literal(variables.getName(literal), literal > 0);
 		}
 		return new Or(nodeLiterals);
 	}

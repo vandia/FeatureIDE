@@ -80,6 +80,7 @@ import org.sat4j.specs.TimeoutException;
 import de.ovgu.featureide.fm.core.ExtensionManager.NoSuchExtensionException;
 import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.fm.core.ModelMarkerHandler;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
@@ -570,7 +571,7 @@ public class FeatureModelEditor extends MultiPageEditorPart implements IEventLis
 		}
 		if (!warnings.containsError()) {
 			try {
-				if (!featureModel.getAnalyser().isValid()) {
+				if (!ProjectManager.getAnalyzer(featureModel).isValid()) {
 					markerHandler.createModelMarker(THE_FEATURE_MODEL_IS_VOID_COMMA__I_E__COMMA__IT_CONTAINS_NO_PRODUCTS, IMarker.SEVERITY_ERROR, 0);
 				}
 			} catch (TimeoutException e) {

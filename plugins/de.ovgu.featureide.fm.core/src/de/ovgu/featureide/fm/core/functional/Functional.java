@@ -548,6 +548,29 @@ public abstract class Functional {
 	}
 
 	/**
+	 * Converts the collection <i>collection</i> of type <b>T</b> into an Iterable of <b>T</b>.
+	 * <br/>
+	 * It is guaranteed not to remove any element from the iterator. <br/>
+	 * <br/>
+	 * <b>Note</b>: This is a <b>non-blocking</b> operation
+	 * 
+	 * @param Collection source
+	 * @return An iterable of <b>T</b> that were yielded by <b>collection</b>
+	 * 
+	 * @author Marcus Pinnecke
+	 * @since 3.0
+	 */
+	public static <T> Iterable<T> toIterator(final Collection<T> collection) {
+		return new Iterable<T>() {
+
+			@Override
+			public Iterator<T> iterator() {
+				return collection.iterator();
+			}
+		};
+	}
+
+	/**
 	 * Joins the elements of type <b>T</b> in <code>source</code> using <code>delimiter</code> as the delimiting element between a pair
 	 * of elements from <code>source</code into a combined object of type <b>R</b>. The method first constructs
 	 * a new instance of <b>R</b> as the <i>result</i> using the <code>newInstanceOfR</code> parameter. Afterwards <code>source</code>

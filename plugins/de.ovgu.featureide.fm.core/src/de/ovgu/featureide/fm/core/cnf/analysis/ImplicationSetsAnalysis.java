@@ -147,7 +147,7 @@
 //		relationSet.clear();
 //		parentStack.clear();
 //
-//		solver.useSolutionList(Math.min(solver.getSatInstance().size(), ISatSolver2.MAX_SOLUTION_BUFFER));
+//		solver.useSolutionList(Math.min(solver.getSatInstance().getVariables().size(), ISatSolver2.MAX_SOLUTION_BUFFER));
 //		solver.setSelectionStrategy(SelectionStrategy.POSITIVE);
 //		int[] model1 = solver.findSolution();
 //

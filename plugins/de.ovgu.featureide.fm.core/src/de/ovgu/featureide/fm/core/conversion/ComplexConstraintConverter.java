@@ -31,6 +31,7 @@ import org.prop4j.Or;
 
 import de.ovgu.featureide.fm.core.ConstraintAttribute;
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
@@ -218,7 +219,7 @@ public class ComplexConstraintConverter {
 	 * If the feature model is a void model or unsatisfiable then a simple contradicting feature model will be created.
 	 */
 	protected boolean prepare() {
-		FeatureModelAnalyzer analyzer = fm.getAnalyser();
+		FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(fm);
 		
 		analyzer.calculateFeatures = true;
 		analyzer.calculateConstraints = true;

@@ -58,9 +58,4 @@ public class FeatureModelCNF extends CNF {
 		this(oldSatInstance, true);
 	}
 
-	@Override
-	public int getVariable(String varName) {
-		return super.getVariable(useOldNames ? featureModel.getRenamingsManager().getOldName(varName) : varName);
-	}
-
 }

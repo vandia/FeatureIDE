@@ -34,7 +34,7 @@ import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
 import de.ovgu.featureide.fm.core.base.impl.FeatureModel;
 import de.ovgu.featureide.fm.core.base.impl.ModelFileIdMap;
-import de.ovgu.featureide.fm.core.base.util.Functional;
+import de.ovgu.featureide.fm.core.functional.Functional;
 
 /**
  * The feature model interface represents any class that acts in the sense of a <i>feature model</i> in FeatureIDE.
@@ -353,16 +353,16 @@ public interface IFeatureModel extends Cloneable, IEventManager {
 	 */
 	void deleteFeatureFromTable(IFeature feature);
 
-	/**
-	 * Returns an instance of {@link FeatureModelAnalyzer} which is bound to this feature model. Since analysis of feature models are computational expensive in
-	 * general, results for analysis are cached in the instance of a analyzer. When calling methods on the return value of this method, changes are indirectly
-	 * automatically stored in this feature model by object references.
-	 * 
-	 * @return The instance of {@link FeatureModelAnalyzer} bound to this feature model.
-	 * 
-	 * @since 3.0
-	 */
-	FeatureModelAnalyzer getAnalyser();
+//	/**
+//	 * Returns an instance of {@link FeatureModelAnalyzer} which is bound to this feature model. Since analysis of feature models are computational expensive in
+//	 * general, results for analysis are cached in the instance of a analyzer. When calling methods on the return value of this method, changes are indirectly
+//	 * automatically stored in this feature model by object references.
+//	 * 
+//	 * @return The instance of {@link FeatureModelAnalyzer} bound to this feature model.
+//	 * 
+//	 * @since 3.0
+//	 */
+//	FeatureModelAnalyzer getAnalyser();
 
 	/**
 	 * @return Returns the number of constraints contained in this feature model.

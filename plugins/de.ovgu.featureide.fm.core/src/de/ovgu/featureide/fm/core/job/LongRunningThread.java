@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import de.ovgu.featureide.fm.core.Logger;
-import de.ovgu.featureide.fm.core.base.util.Functional.IConsumer;
+import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.fm.core.job.monitor.NullMonitor;
 import de.ovgu.featureide.fm.core.job.util.JobFinishListener;
