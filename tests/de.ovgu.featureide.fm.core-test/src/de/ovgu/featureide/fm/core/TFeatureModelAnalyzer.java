@@ -27,12 +27,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 
+import de.ovgu.featureide.fm.core.analysis.ConstraintProperties;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
+import de.ovgu.featureide.fm.core.base.IFeatureModelElement;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 
 /**
@@ -57,7 +60,7 @@ public class TFeatureModelAnalyzer {
 	private IFeature FM1_F1 = FM_test_1.getFeature("F1");
 	private IFeature FM1_F2 = FM_test_1.getFeature("F2");
 	private IConstraint FM1_C1 = FM_test_1.getConstraints().get(0);
-	private HashMap<Object, Object> FM1_DATA = ProjectManager.getAnalyzer(FM_test_1).analyzeFeatureModel(null);
+	private Map<IFeatureModelElement, Object> FM1_DATA = ProjectManager.getAnalyzer(FM_test_1).analyzeFeatureModel(null);
 	
 	private IFeatureModel FM_test_2 = init("test_2.xml");
 	private IFeature FM2_F1 = FM_test_2.getFeature("F1");
@@ -66,13 +69,13 @@ public class TFeatureModelAnalyzer {
 	private IConstraint FM2_C1 = FM_test_2.getConstraints().get(0);
 	private IConstraint FM2_C2 = FM_test_2.getConstraints().get(1);
 	private IConstraint FM2_C3 = FM_test_2.getConstraints().get(2);
-	private HashMap<Object, Object> FM2_DATA = ProjectManager.getAnalyzer(FM_test_2).analyzeFeatureModel(null);
+	private Map<IFeatureModelElement, Object> FM2_DATA = ProjectManager.getAnalyzer(FM_test_2).analyzeFeatureModel(null);
 	
 	private IFeatureModel FM_test_3 = init("test_3.xml");
 	private IFeature FM3_F2 = FM_test_3.getFeature("F2");
 	private IFeature FM3_F3 = FM_test_3.getFeature("F3");
 	private IConstraint FM3_C1 = FM_test_3.getConstraints().get(0); 
-	private HashMap<Object, Object> FM3_DATA = ProjectManager.getAnalyzer(FM_test_3).analyzeFeatureModel(null);
+	private Map<IFeatureModelElement, Object> FM3_DATA = ProjectManager.getAnalyzer(FM_test_3).analyzeFeatureModel(null);
 	
 	private IFeatureModel FM_test_4 = init("test_4.xml");
 	private IFeature FM4_F1 = FM_test_4.getFeature("I");
@@ -85,17 +88,17 @@ public class TFeatureModelAnalyzer {
 	private IFeature FM4_F8 = FM_test_4.getFeature("M");
 	private IFeature FM4_F9 = FM_test_4.getFeature("C");
 	private IFeature FM4_F10 = FM_test_4.getFeature("J");
-	private HashMap<Object, Object> FM4_DATA = ProjectManager.getAnalyzer(FM_test_4).analyzeFeatureModel(null);
+	private Map<IFeatureModelElement, Object> FM4_DATA = ProjectManager.getAnalyzer(FM_test_4).analyzeFeatureModel(null);
 	
 	private IFeatureModel FM_test_7 = init("test_7.xml");
 	private IFeature FM7_F1 = FM_test_7.getFeature("H");
 	private IConstraint FM7_C1 = FM_test_7.getConstraints().get(0); 
-	private HashMap<Object, Object> FM7_DATA = ProjectManager.getAnalyzer(FM_test_7).analyzeFeatureModel(null);
+	private Map<IFeatureModelElement, Object> FM7_DATA = ProjectManager.getAnalyzer(FM_test_7).analyzeFeatureModel(null);
 	
 	private IFeatureModel FM_test_8 = init("test_8.xml");
 	private IFeature FM8_F1 = FM_test_8.getFeature("B");
 	private IFeature FM8_F2 = FM_test_8.getFeature("C");
-	private HashMap<Object, Object> FM8_DATA = ProjectManager.getAnalyzer(FM_test_8).analyzeFeatureModel(null);
+	private Map<IFeatureModelElement, Object> FM8_DATA = ProjectManager.getAnalyzer(FM_test_8).analyzeFeatureModel(null);
 	
 	/** 
      * @return 
@@ -183,7 +186,7 @@ public class TFeatureModelAnalyzer {
 	
 	@Test
 	public void TFalseOptional_FM2_C2() {
-		assertEquals(FM2_DATA.get(FM2_C2), ConstraintAttribute.REDUNDANT);
+		assertEquals(ConstraintAttribute.REDUNDANT, ((ConstraintProperties)FM2_DATA.get(FM2_C2)).getConstraintRedundancyStatus());
 	}
 	
 	@Test
@@ -193,7 +196,7 @@ public class TFeatureModelAnalyzer {
 	
 	@Test
 	public void TFalseOptional_FM2_C3() {
-		assertEquals(FM2_DATA.get(FM2_C3), ConstraintAttribute.REDUNDANT);
+		assertEquals(((ConstraintProperties)FM2_DATA.get(FM2_C3)).getConstraintRedundancyStatus(), ConstraintAttribute.REDUNDANT);
 	}
 	
 	@Test

@@ -99,8 +99,8 @@ import de.ovgu.featureide.core.signature.filter.ContextFilter;
 import de.ovgu.featureide.fm.core.AbstractCorePlugin;
 import de.ovgu.featureide.fm.core.ExtensionManager.NoSuchExtensionException;
 import de.ovgu.featureide.fm.core.FMComposerManager;
-import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.fm.core.Logger;
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
@@ -788,37 +788,36 @@ public class CorePlugin extends AbstractCorePlugin {
 	}
 
 	public void buildContextDocumentation(List<IProject> pl, String options, String featureName) {
-		final ArrayList<JobArguments> arguments = new ArrayList<>(pl.size());
+		final ArrayList<JobArguments<?>> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
-			arguments
-					.add(new PrintDocumentationJob.Arguments("Docu_Context_" + featureName, options.split("\\s+"), new ContextMerger(), featureName, iProject));
+			arguments.add(new PrintDocumentationJob.Arguments("Docu_Context_" + featureName, options.split("\\s+"), new ContextMerger(), featureName, iProject));
 		}
-		FMCorePlugin.getDefault().startJobs(arguments, true);
+		ProjectManager.startJobs(arguments, true);
 	}
 
 	public void buildVariantDocumentation(List<IProject> pl, String options) {
-		final ArrayList<JobArguments> arguments = new ArrayList<>(pl.size());
+		final ArrayList<JobArguments<?>> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
 			arguments.add(new PrintDocumentationJob.Arguments("Docu_Variant", options.split("\\s+"), new VariantMerger(), null, iProject));
 		}
-		FMCorePlugin.getDefault().startJobs(arguments, true);
+		ProjectManager.startJobs(arguments, true);
 	}
 
 	public void buildFeatureDocumentation(List<IProject> pl, String options, String featureName) {
-		final ArrayList<JobArguments> arguments = new ArrayList<>(pl.size());
+		final ArrayList<JobArguments<?>> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
 			arguments.add(new PrintDocumentationJob.Arguments("Docu_Feature_" + featureName, options.split("\\s+"), new FeatureModuleMerger(), featureName,
 					iProject));
 		}
-		FMCorePlugin.getDefault().startJobs(arguments, true);
+		ProjectManager.startJobs(arguments, true);
 	}
 
 	public void buildSPLDocumentation(List<IProject> pl, String options) {
-		final ArrayList<JobArguments> arguments = new ArrayList<>(pl.size());
+		final ArrayList<JobArguments<?>> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
 			arguments.add(new PrintDocumentationJob.Arguments("Docu_SPL", options.split("\\s+"), new SPLMerger(), null, iProject));
 		}
-		FMCorePlugin.getDefault().startJobs(arguments, true);
+		ProjectManager.startJobs(arguments, true);
 	}
 
 }

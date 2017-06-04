@@ -49,7 +49,6 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.progress.UIJob;
-import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureProject;
 import de.ovgu.featureide.fm.core.ProjectManager;
@@ -352,11 +351,8 @@ public class ViewContentProvider implements IStructuredContentProvider, ITreeCon
 			TreeParent statistics = new TreeParent(text, null, true) {
 				@Override
 				public void initChildren() {
-					try {
-						addChild(MODEL_VOID + ProjectManager.getAnalyzer(model).isValid());
-					} catch (TimeoutException e) {
-						addChild(MODEL_TIMEOUT);
-					}
+					// TODO catch time put
+					addChild(MODEL_VOID + ProjectManager.getAnalyzer(model).isValid());
 					addChild(NUMBER_FEATURES + features);
 					addChild(NUMBER_CONCRETE + concrete);
 					addChild(NUMBER_ABSTRACT + (features - concrete));
@@ -375,16 +371,11 @@ public class ViewContentProvider implements IStructuredContentProvider, ITreeCon
 			TreeObject statistics = (TreeObject) root.getChildren()[position];
 			final TreeElement[] children = statistics.getChildren();
 			try {
+				// TODO catch time put
 				if (children[INDEX_VALID] instanceof SelectableFeature) {
 					((SelectableFeature) children[INDEX_VALID]).setName(MODEL_VOID + ProjectManager.getAnalyzer(model).isValid());
 				} else {
 					((TreeObject) children[INDEX_VALID]).setName(MODEL_VOID + ProjectManager.getAnalyzer(model).isValid());
-				}
-			} catch (TimeoutException e) {
-				if (children[INDEX_VALID] instanceof SelectableFeature) {
-					((SelectableFeature) children[INDEX_VALID]).setName(MODEL_TIMEOUT);
-				} else {
-					((TreeObject) children[INDEX_VALID]).setName(MODEL_TIMEOUT);
 				}
 			} catch (ConcurrentModificationException e) {
 

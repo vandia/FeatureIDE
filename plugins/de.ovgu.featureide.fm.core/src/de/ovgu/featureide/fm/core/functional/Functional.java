@@ -21,8 +21,10 @@
 package de.ovgu.featureide.fm.core.functional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -467,6 +469,10 @@ public abstract class Functional {
 		return Functional.toList(Functional.map(source, mapFunction));
 	}
 
+	public static <T> List<T> filterToList(final Iterable<T> source, IFilter<T> filter) {
+		return Functional.toList(Functional.filter(source, filter));
+	}
+
 	/**
 	 * Converts the iterator <i>source</i> of type <b>T</b> into a list of <b>Strings</b> using {@link #mapToString(Iterable)} on <b>source</b> and finally
 	 * {@link #toList(Iterable)} on the result. <br/>
@@ -755,6 +761,20 @@ public abstract class Functional {
 	 */
 	public static <T> boolean isEmpty(Iterable<T> iterable) {
 		return !iterable.iterator().hasNext();
+	}
+
+	public static <T> Integer[] getSortedIndex(final List<T> list, final Comparator<T> comparator) {
+		Integer[] index = new Integer[list.size()];
+		for (int i = 0; i < index.length; i++) {
+			index[i] = i;
+		}
+		Arrays.sort(index, new Comparator<Integer>() {
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return comparator.compare(list.get(o1), list.get(o2));
+			}
+		});
+		return index;
 	}
 
 }

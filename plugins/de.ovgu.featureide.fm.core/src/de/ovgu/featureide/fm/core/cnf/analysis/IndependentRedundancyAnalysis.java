@@ -24,13 +24,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.sat4j.specs.IConstr;
-
 import de.ovgu.featureide.fm.core.cnf.CNF;
+import de.ovgu.featureide.fm.core.cnf.ClauseLengthComparatorDsc;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
+import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -38,13 +38,13 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class RedundancyAnalysis2 extends ARedundancyAnalysis {
+public class IndependentRedundancyAnalysis extends ARedundancyAnalysis {
 
-	public RedundancyAnalysis2(CNF satInstance) {
+	public IndependentRedundancyAnalysis(CNF satInstance) {
 		super(satInstance);
 	}
 
-	public RedundancyAnalysis2(ISatSolver2 solver) {
+	public IndependentRedundancyAnalysis(ISatSolver2 solver) {
 		super(solver);
 	}
 
@@ -53,27 +53,20 @@ public class RedundancyAnalysis2 extends ARedundancyAnalysis {
 			return Collections.emptyList();
 		}
 		monitor.setRemainingWork(clauseList.size() + 1);
-
+		
 		final List<LiteralSet> resultList = new ArrayList<>(clauseList);
+		final Integer[] index = Functional.getSortedIndex(resultList, new ClauseLengthComparatorDsc());
 		final AdvancedSatSolver emptySolver = new ModifiableSatSolver(new CNF(solver.getSatInstance(), true));
-		final List<IConstr> constraintMarkers = new ArrayList<>(emptySolver.addClauses(clauseList));
 		monitor.step();
 
-		int i = 0;
-		for (LiteralSet constraint : clauseList) {
-			boolean redundant = true;
-			final IConstr constr = constraintMarkers.get(i);
-			if (constr != null) {
-				emptySolver.removeClause(constr);
-				redundant = isRedundant(emptySolver, constraint);
+		for (int i = index.length - 1; i >= 0; --i) {
+			final LiteralSet clause = clauseList.get(index[i]);
+			if (!isRedundant(emptySolver, clause)) {
+				resultList.set(index[i], null);
 			}
-
-			if (!redundant) {
-				resultList.set(i, null);
-			}
-			i++;
 			monitor.step();
 		}
+
 		return resultList;
 	}
 

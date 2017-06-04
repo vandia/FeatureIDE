@@ -93,6 +93,16 @@ public class Variables implements Serializable, IVariables, IInternalVariables {
 	}
 
 	@Override
+	public LiteralSet convertToVariables(List<String> variableNames) {
+		final int[] literals = new int[variableNames.size()];
+		int i = 0;
+		for (String varName : variableNames) {
+			literals[i++] = varToInt.get(varName);
+		}
+		return new LiteralSet(literals);
+	}
+
+	@Override
 	public int size() {
 		return intToVar.length - 1;
 	}

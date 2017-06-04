@@ -27,7 +27,6 @@ import de.ovgu.featureide.fm.core.explanations.Explanation;
  * All additional properties of an {@link IFeature}.
  * 
  * @author Sebastian Krieter
- * @author Marcus Pinnecke *
  */
 public class FeatureProperties {
 	

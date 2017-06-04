@@ -27,28 +27,27 @@ import java.util.concurrent.locks.ReentrantLock;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
-import de.ovgu.featureide.fm.core.base.event.IEventListener;
 import de.ovgu.featureide.fm.core.cnf.manipulator.remove.CNFSlicer;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
+import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator.CNFType;
+import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator.ModelType;
 import de.ovgu.featureide.fm.core.filter.AbstractFeatureFilter;
 import de.ovgu.featureide.fm.core.filter.HiddenFeatureFilter;
 import de.ovgu.featureide.fm.core.filter.base.IFilter;
 import de.ovgu.featureide.fm.core.filter.base.OrFilter;
 import de.ovgu.featureide.fm.core.functional.Functional;
-import de.ovgu.featureide.fm.core.io.manager.IFileManager;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 
 /**
  * 
  * @author Sebastian Krieter
  */
-public class FeatureModelFormula implements IEventListener {
+public class FeatureModelFormula {
 
-	private static final int numberOfSlicedCNFs = 3;
+	private static final int numberOfSlicedCNFs = 5;
 
 	private final CNF[] slicedCNFs = new CNF[numberOfSlicedCNFs];
-	private final Lock[] slicingLocks = new Lock[3];
+	private final Lock[] slicingLocks = new Lock[numberOfSlicedCNFs];
 	{
 		for (int i = 0; i < slicingLocks.length; i++) {
 			slicingLocks[i] = new ReentrantLock();
@@ -56,22 +55,20 @@ public class FeatureModelFormula implements IEventListener {
 	}
 
 	private final Lock cnfLock = new ReentrantLock();
-	private final IFileManager<IFeatureModel> fmManager;
+	private final IFeatureModel featureModel;
 
 	private FeatureModelCNF cnf;
 
-	public FeatureModelFormula(IFileManager<IFeatureModel> fmManager) {
-		this.fmManager = fmManager;
-		fmManager.addListener(this);
+	public FeatureModelFormula(IFeatureModel fmManager) {
+		this.featureModel = fmManager;
 	}
 
 	public FeatureModelCNF getCNF() {
 		cnfLock.lock();
 		try {
 			if (cnf == null) {
-				final IFeatureModel fm = fmManager.getObject();
-				cnf = new FeatureModelCNF(fm, false);
-				cnf.addClauses(Nodes.convert(cnf.getVariables(), AdvancedNodeCreator.createRegularCNF(fm)));
+				cnf = new FeatureModelCNF(featureModel, false);
+				cnf.addClauses(Nodes.convert(cnf.getVariables(), AdvancedNodeCreator.createRegularCNF(featureModel)));
 			}
 			return cnf;
 		} finally {
@@ -86,9 +83,8 @@ public class FeatureModelFormula implements IEventListener {
 		try {
 			CNF slicedCNF = slicedCNFs[index];
 			if (slicedCNF == null) {
-				final IFeatureModel fm = fmManager.getObject();
 				final IFilter<IFeature> filter;
-				switch(index) {
+				switch (index) {
 				case 0:
 					filter = new AbstractFeatureFilter();
 					break;
@@ -101,7 +97,8 @@ public class FeatureModelFormula implements IEventListener {
 				default:
 					return cnf2;
 				}
-				final CNFSlicer slicer = new CNFSlicer(cnf2, Functional.map(Functional.filter(fm.getFeatures(), filter), FeatureUtils.GET_FEATURE_NAME));
+				final CNFSlicer slicer = new CNFSlicer(cnf2,
+						Functional.map(Functional.filter(featureModel.getFeatures(), filter), FeatureUtils.GET_FEATURE_NAME));
 				slicedCNF = LongRunningWrapper.runMethod(slicer);
 				slicedCNFs[index] = slicedCNF;
 			}
@@ -111,7 +108,7 @@ public class FeatureModelFormula implements IEventListener {
 		}
 	}
 
-	private void resetCNF() {
+	public void resetCNF() {
 		cnfLock.lock();
 		try {
 			cnf = null;
@@ -129,17 +126,18 @@ public class FeatureModelFormula implements IEventListener {
 		}
 	}
 
-	@Override
-	public void propertyChange(FeatureIDEEvent event) {
-		switch (event.getEventType()) {
-		// TODO !!!
-		case MODEL_DATA_LOADED:
-			resetCNF();
-			break;
-		default:
-			break;
-		}
-	}
+	//	// TODO use in FeatureProject
+	//	@Override
+	//	public void propertyChange(FeatureIDEEvent event) {
+	//		switch (event.getEventType()) {
+	//		// TODO !!!
+	//		case MODEL_DATA_LOADED:
+	//			resetCNF();
+	//			break;
+	//		default:
+	//			break;
+	//		}
+	//	}
 
 	public CNF getClausesWithoutAbstract() {
 		return getSlicedCNF(0);
@@ -151,6 +149,41 @@ public class FeatureModelFormula implements IEventListener {
 
 	public CNF getClausesWithoutAbstractAndHidden() {
 		return getSlicedCNF(2);
+	}
+
+	public CNF getFeatureTreeClauses() {
+		final Lock slicingLock = slicingLocks[3];
+		slicingLock.lock();
+		try {
+			CNF slicedCNF = slicedCNFs[3];
+			if (slicedCNF == null) {
+				final AdvancedNodeCreator nodeCreator = new AdvancedNodeCreator(featureModel);
+				nodeCreator.setModelType(ModelType.OnlyStructure);
+				nodeCreator.setCnfType(CNFType.Regular);
+				nodeCreator.setIncludeBooleanValues(false);
+				slicedCNF = new FeatureModelCNF(featureModel, false);
+				slicedCNF.addClauses(Nodes.convert(slicedCNF.getVariables(), nodeCreator.createNodes()));
+				slicedCNFs[3] = slicedCNF;
+			}
+			return slicedCNF;
+		} finally {
+			slicingLock.unlock();
+		}
+	}
+
+	public CNF getEmptyCNF() {
+		final Lock slicingLock = slicingLocks[4];
+		slicingLock.lock();
+		try {
+			CNF slicedCNF = slicedCNFs[4];
+			if (slicedCNF == null) {
+				slicedCNF = new FeatureModelCNF(featureModel, false);
+				slicedCNFs[4] = slicedCNF;
+			}
+			return slicedCNF;
+		} finally {
+			slicingLock.unlock();
+		}
 	}
 
 	//		public void load(IMonitor monitor) {

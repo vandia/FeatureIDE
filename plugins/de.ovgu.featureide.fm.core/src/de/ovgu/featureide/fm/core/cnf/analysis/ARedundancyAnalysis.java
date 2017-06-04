@@ -20,61 +20,51 @@
  */
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import org.sat4j.specs.IConstr;
 
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
+import de.ovgu.featureide.fm.core.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
-import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
-import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
+import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver;
+import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
 
 /**
  * Finds core and dead features.
  * 
  * @author Sebastian Krieter
  */
-public class RedundancyAnalysis2 extends ARedundancyAnalysis {
+public abstract class ARedundancyAnalysis extends AbstractAnalysis<List<LiteralSet>> {
 
-	public RedundancyAnalysis2(CNF satInstance) {
+	protected List<LiteralSet> clauseList;
+
+	public ARedundancyAnalysis(CNF satInstance) {
 		super(satInstance);
 	}
 
-	public RedundancyAnalysis2(ISatSolver2 solver) {
+	public ARedundancyAnalysis(ISatSolver2 solver) {
 		super(solver);
 	}
 
-	public List<LiteralSet> analyze(IMonitor monitor) throws Exception {
-		if (clauseList == null) {
-			return Collections.emptyList();
+	protected boolean isRedundant(ISimpleSatSolver solver, LiteralSet curClause) {
+		final SatResult hasSolution = solver.hasSolution(SatUtils.negateSolution(curClause.getLiterals()));
+		switch (hasSolution) {
+		case FALSE:
+			return true;
+		case TIMEOUT:
+		case TRUE:
+			return false;
+		default:
+			throw new AssertionError(hasSolution);
 		}
-		monitor.setRemainingWork(clauseList.size() + 1);
+	}
 
-		final List<LiteralSet> resultList = new ArrayList<>(clauseList);
-		final AdvancedSatSolver emptySolver = new ModifiableSatSolver(new CNF(solver.getSatInstance(), true));
-		final List<IConstr> constraintMarkers = new ArrayList<>(emptySolver.addClauses(clauseList));
-		monitor.step();
+	public List<LiteralSet> getClauseList() {
+		return clauseList;
+	}
 
-		int i = 0;
-		for (LiteralSet constraint : clauseList) {
-			boolean redundant = true;
-			final IConstr constr = constraintMarkers.get(i);
-			if (constr != null) {
-				emptySolver.removeClause(constr);
-				redundant = isRedundant(emptySolver, constraint);
-			}
-
-			if (!redundant) {
-				resultList.set(i, null);
-			}
-			i++;
-			monitor.step();
-		}
-		return resultList;
+	public void setClauseList(List<LiteralSet> clauseList) {
+		this.clauseList = clauseList;
 	}
 
 }

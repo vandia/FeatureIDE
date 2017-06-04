@@ -30,12 +30,9 @@ import de.ovgu.featureide.fm.core.explanations.Explanation;
 /**
  * Represents a propositional constraint below the feature diagram.
  * 
- * @author Thomas Thuem
- * @author Florian Proksch
- * @author Stefan Krueger
- * @author Marcus Pinnecke
+ * @author Sebastian Krieter
  */
-public abstract class ConstraintProperties {
+public class ConstraintProperties {
 
 	public enum ConstraintRedundancyStatus {
 		UNKNOWN, NORMAL, REDUNDANT, IMPLICIT, TAUTOLOGY
@@ -53,10 +50,10 @@ public abstract class ConstraintProperties {
 		UNKNOWN, SATISFIABLE, VOID_MODEL, UNSATISFIABLE
 	}
 
-	private ConstraintRedundancyStatus constraintRedundancyStatus = ConstraintRedundancyStatus.NORMAL;
-	private ConstraintDeadStatus constraintDeadStatus = ConstraintDeadStatus.NORMAL;
-	private ConstraintFalseOptionalStatus constraintFalseOptionalStatus = ConstraintFalseOptionalStatus.NORMAL;
-	private ConstraintFalseSatisfiabilityStatus constraintFalseSatisfiabilityStatus = ConstraintFalseSatisfiabilityStatus.SATISFIABLE;
+	private ConstraintRedundancyStatus constraintRedundancyStatus = ConstraintRedundancyStatus.UNKNOWN;
+	private ConstraintDeadStatus constraintDeadStatus = ConstraintDeadStatus.UNKNOWN;
+	private ConstraintFalseOptionalStatus constraintFalseOptionalStatus = ConstraintFalseOptionalStatus.UNKNOWN;
+	private ConstraintFalseSatisfiabilityStatus constraintFalseSatisfiabilityStatus = ConstraintFalseSatisfiabilityStatus.UNKNOWN;
 
 	protected Collection<IFeature> deadFeatures = Collections.emptyList();
 	protected Collection<IFeature> falseOptionalFeatures = Collections.emptyList();
@@ -149,7 +146,7 @@ public abstract class ConstraintProperties {
 		return constraintFalseSatisfiabilityStatus;
 	}
 
-	public void setConstraintFalseSatisfiabilityStatus(ConstraintFalseSatisfiabilityStatus constraintFalseSatisfiabilityStatus) {
+	public void setConstraintSatisfiabilityStatus(ConstraintFalseSatisfiabilityStatus constraintFalseSatisfiabilityStatus) {
 		this.constraintFalseSatisfiabilityStatus = constraintFalseSatisfiabilityStatus;
 	}
 

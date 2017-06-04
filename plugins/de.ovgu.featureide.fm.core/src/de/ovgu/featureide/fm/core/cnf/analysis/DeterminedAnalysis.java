@@ -21,6 +21,7 @@
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.sat4j.core.VecInt;
@@ -93,7 +94,7 @@ public class DeterminedAnalysis extends AbstractAnalysis<LiteralSet> {
 			monitor.step();
 		}
 
-		return new LiteralSet(resultList.toArray());
+		return new LiteralSet(Arrays.copyOf(resultList.toArray(), resultList.size()));
 	}
 
 	protected final boolean isRedundant(ISimpleSatSolver solver, LiteralSet curClause) {

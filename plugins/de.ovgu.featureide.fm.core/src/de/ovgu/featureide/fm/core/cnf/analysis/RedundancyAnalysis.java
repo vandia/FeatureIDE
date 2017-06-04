@@ -27,12 +27,10 @@ import java.util.List;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.ClauseLengthComparatorDsc;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
-import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver;
-import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
 import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
+import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -40,9 +38,7 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class RedundancyAnalysis extends AbstractAnalysis<List<LiteralSet>> {
-
-	private List<LiteralSet> clauseList;
+public class RedundancyAnalysis extends ARedundancyAnalysis {
 
 	public RedundancyAnalysis(CNF satInstance) {
 		super(satInstance);
@@ -53,49 +49,26 @@ public class RedundancyAnalysis extends AbstractAnalysis<List<LiteralSet>> {
 	}
 
 	public List<LiteralSet> analyze(IMonitor monitor) throws Exception {
-		final List<LiteralSet> resultList = new ArrayList<>();
-
 		if (clauseList == null) {
-			return resultList;
+			return Collections.emptyList();
 		}
 		monitor.setRemainingWork(clauseList.size() + 1);
-		Collections.sort(clauseList, new ClauseLengthComparatorDsc());
-		final AdvancedSatSolver emptySolver = new ModifiableSatSolver(new CNF(solver.getSatInstance(), false));
+		
+		final List<LiteralSet> resultList = new ArrayList<>(clauseList);
+		final Integer[] index = Functional.getSortedIndex(resultList, new ClauseLengthComparatorDsc());
+		final AdvancedSatSolver emptySolver = new ModifiableSatSolver(new CNF(solver.getSatInstance(), true));
 		monitor.step();
 
-		for (int i = clauseList.size() - 1; i >= 0; --i) {
-			final LiteralSet clause = clauseList.get(i);
-			final boolean redundant = isRedundant(emptySolver, clause);
-			if (!redundant) {
+		for (int i = index.length - 1; i >= 0; --i) {
+			final LiteralSet clause = clauseList.get(index[i]);
+			if (!isRedundant(emptySolver, clause)) {
 				emptySolver.addClause(clause);
-			} else {
-				resultList.add(clause);
+				resultList.set(index[i], null);
 			}
 			monitor.step();
 		}
 
 		return resultList;
-	}
-
-	protected final boolean isRedundant(ISimpleSatSolver solver, LiteralSet curClause) {
-		final SatResult hasSolution = solver.hasSolution(SatUtils.negateSolution(curClause.getLiterals()));
-		switch (hasSolution) {
-		case FALSE:
-			return true;
-		case TIMEOUT:
-		case TRUE:
-			return false;
-		default:
-			throw new AssertionError(hasSolution);
-		}
-	}
-
-	public List<LiteralSet> getClauseList() {
-		return clauseList;
-	}
-
-	public void setClauseList(List<LiteralSet> clauseList) {
-		this.clauseList = clauseList;
 	}
 
 }
