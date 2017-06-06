@@ -64,7 +64,7 @@ public class RandomConfigurationGenerator extends PairWiseConfigurationGenerator
 			return true;
 		}
 		final int partCount = count(curModel);
-		final Configuration config = new Configuration(curModel, partCount - getLastCoverage(), partCount);
+		final Configuration config = new Configuration(new LiteralSet(curModel), partCount - getLastCoverage(), partCount);
 
 		addCombinationsFromModel(curModel);
 

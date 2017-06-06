@@ -142,7 +142,7 @@ public class ConstraintProperties {
 		this.constraintFalseOptionalStatus = constraintFalseOptionalStatus;
 	}
 
-	public ConstraintFalseSatisfiabilityStatus getConstraintFalseSatisfiabilityStatus() {
+	public ConstraintFalseSatisfiabilityStatus getConstraintSatisfiabilityStatus() {
 		return constraintFalseSatisfiabilityStatus;
 	}
 

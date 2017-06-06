@@ -29,9 +29,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
-import de.ovgu.featureide.fm.core.ConstraintAttribute;
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.ProjectManager;
+import de.ovgu.featureide.fm.core.analysis.ConstraintProperties;
+import de.ovgu.featureide.fm.core.analysis.ConstraintProperties.ConstraintRedundancyStatus;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.ui.editors.FeatureDiagramEditor;
@@ -56,6 +57,8 @@ public class SubtreeDependencyPage extends AbstractWizardPage {
 	 * The origin feature model which contains the sub feature model.
 	 */
 	private IFeatureModel completeFm;
+	
+	private final FeatureModelAnalyzer subTreeAnalyzer;
 
 	/**
 	 * Remember explanation for redundant constraint. Key = constraintIndex, Value = explanation.
@@ -76,6 +79,7 @@ public class SubtreeDependencyPage extends AbstractWizardPage {
 				+ "they are presented below the feature model in a red border.");
 		subtreeModel = fm;
 		completeFm = completeModel;
+		subTreeAnalyzer = ProjectManager.getAnalyzer(subtreeModel);
 	}
 
 	/**
@@ -132,8 +136,9 @@ public class SubtreeDependencyPage extends AbstractWizardPage {
 	private void explainImplicitConstraints(FeatureModelAnalyzer analyzer, IGraphicalFeatureModel graphicalFeatModel) {
 		// iterate implicit constraints and generate explanations 
 		for (IConstraint redundantC : getImplicitConstraints()) {
-			redundantC.setConstraintAttribute(ConstraintAttribute.IMPLICIT, false);
-			ProjectManager.getAnalyzer(subtreeModel).addRedundantConstraintExplanation(completeFm, redundantC);
+			final ConstraintProperties constraintProperties = subTreeAnalyzer.getConstraintProperties(redundantC);
+			constraintProperties.setConstraintRedundancyStatus(ConstraintRedundancyStatus.IMPLICIT);
+			subTreeAnalyzer.getExplanation(redundantC);
 			
 			// remember if an implicit constraint exists to adapt legend 
 			for (IGraphicalConstraint gc : graphicalFeatModel.getConstraints()) {

@@ -129,7 +129,7 @@ public class CorePlugin extends AbstractCorePlugin {
 
 	private HashMap<IProject, IFeatureProject> featureProjectMap;
 
-	private LinkedList<IProjectListener> projectListeners = new LinkedList<IProjectListener>();
+	private LinkedList<IProjectListener> projectListeners = new LinkedList<>();
 
 	private LinkedList<ICurrentConfigurationListener> currentConfigurationListeners = new LinkedList<>();
 

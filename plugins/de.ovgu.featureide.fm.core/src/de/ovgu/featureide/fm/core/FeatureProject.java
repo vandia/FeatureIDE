@@ -21,7 +21,6 @@
 package de.ovgu.featureide.fm.core;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,9 +45,6 @@ public class FeatureProject {
 
 	public class FeatureModelChangeListner implements IEventListener {
 
-		/**
-		 * listens to changed feature names
-		 */
 		public void propertyChange(FeatureIDEEvent evt) {
 			final EventType eventType = evt.getEventType();
 			switch (eventType) {
@@ -96,14 +92,6 @@ public class FeatureProject {
 		public List<Configuration> getConfigurationList() {
 			return configurationList;
 		}
-
-		private void setConfigurationList(List<Configuration> configurationList) {
-			this.configurationList = configurationList;
-		}
-
-		//		public ConfigurationPropagator getPropagator() {
-		//			return getPropagator(getCurrentConfigurationIndex());
-		//		}
 
 		public ConfigurationPropagator getPropagator(Configuration configuration) {
 			return new ConfigurationPropagator(formula, configuration);
@@ -165,7 +153,7 @@ public class FeatureProject {
 	}
 
 	public IFileManager<Configuration> getConfigurationManager(String path) {
-		IFileManager<Configuration> fileManager = ConfigurationManager.getInstance(new Configuration(getFeatureModel()), path);
+		IFileManager<Configuration> fileManager = ConfigurationManager.getInstance(new Configuration(featureModelManager.getObject()), path);
 		if (fileManager != null && !configurationManagerList.contains(fileManager)) {
 			configurationManagerList.add(fileManager);
 		}

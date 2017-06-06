@@ -49,6 +49,8 @@ import de.ovgu.featureide.fm.core.IGraphicItem.GraphicItem;
 import de.ovgu.featureide.fm.core.Operator;
 import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.RenamingsManager;
+import de.ovgu.featureide.fm.core.analysis.ConstraintProperties;
+import de.ovgu.featureide.fm.core.analysis.FeatureProperties;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.filter.ConcreteFeatureFilter;
 import de.ovgu.featureide.fm.core.filter.HiddenFeatureFilter;
@@ -1429,6 +1431,14 @@ public final class FeatureUtils {
 			}
 		}
 		return stringBuilder.toString();
+	}
+
+	public static ConstraintProperties getConstraintProperties(IConstraint constraint) {
+		return ProjectManager.getAnalyzer(constraint.getFeatureModel()).getConstraintProperties(constraint);
+	}
+
+	public static FeatureProperties getFeatureProperties(IFeature feature) {
+		return ProjectManager.getAnalyzer(feature.getFeatureModel()).getFeatureProperties(feature);
 	}
 
 }

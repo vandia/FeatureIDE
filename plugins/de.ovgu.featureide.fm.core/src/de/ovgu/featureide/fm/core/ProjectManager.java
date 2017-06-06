@@ -29,8 +29,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.WeakHashMap;
 
 import javax.annotation.CheckForNull;
 
@@ -54,9 +54,9 @@ import de.ovgu.featureide.fm.core.job.util.JobSequence;
  */
 public class ProjectManager {
 
-	protected static final HashMap<Path, FeatureProject> pathFeatureProjectMap = new HashMap<>();
-	protected static final HashMap<IFeatureModel, FeatureProject> modelFeatureProjectMap = new HashMap<>();
-	protected static final HashMap<IFeatureModel, Path> modelPathMap = new HashMap<>();
+	protected static final WeakHashMap<Path, FeatureProject> pathFeatureProjectMap = new WeakHashMap<>();
+	protected static final WeakHashMap<IFeatureModel, FeatureProject> modelFeatureProjectMap = new WeakHashMap<>();
+	protected static final WeakHashMap<IFeatureModel, Path> modelPathMap = new WeakHashMap<>();
 
 	protected ProjectManager() {
 	}
@@ -241,11 +241,14 @@ public class ProjectManager {
 	}
 
 	public static FeatureModelAnalyzer getAnalyzer(IFeatureModel featureModel) {
-		FeatureProject project = getProject(featureModel);
-		if (project == null) {
-			project = createVirtualFeatureProject(featureModel);
+		synchronized (pathFeatureProjectMap) {
+			FeatureProject project = modelFeatureProjectMap.get(featureModel);
+			if (project == null) {
+				project = createVirtualFeatureProject(featureModel);
+				modelFeatureProjectMap.put(featureModel, project);
+			}
+			return project.getStatus().getAnalyzer();
 		}
-		return project.getAnalyzer();
 	}
 
 }

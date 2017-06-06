@@ -29,20 +29,18 @@ import java.util.List;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureProject;
-import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.FeatureModelCNF;
 import de.ovgu.featureide.fm.core.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.analysis.ConditionallyCoreDeadAnalysisSat;
 import de.ovgu.featureide.fm.core.cnf.analysis.CountSolutionsAnalysis;
-import de.ovgu.featureide.fm.core.cnf.generator.SolutionGenerator;
 import de.ovgu.featureide.fm.core.cnf.generator.OneWiseConfigurationGenerator;
+import de.ovgu.featureide.fm.core.cnf.generator.SolutionGenerator;
 import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2.SelectionStrategy;
 import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
 import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
-import de.ovgu.featureide.fm.core.io.manager.VirtualFileManager;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -467,7 +465,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 	 */
 	@Deprecated
 	public ConfigurationPropagator(Configuration configuration, boolean includeAbstractFeatures) {
-		this(new FeatureModelFormula(new VirtualFileManager<IFeatureModel>(configuration.getFeatureModel(), null)), configuration, includeAbstractFeatures);
+		this(new FeatureModelFormula(configuration.getFeatureModel()), configuration, includeAbstractFeatures);
 	}
 
 	public boolean isIncludeAbstractFeatures() {

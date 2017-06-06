@@ -73,7 +73,7 @@ public class IncLingConfigurationGenerator extends AConfigurationGenerator {
 				foundConfigurations += as.q.size();
 				builder.configurationNumber = foundConfigurations;
 				for (PairWiseConfigurationGenerator.Configuration c : as.q) {
-					generateConfiguration(satInstance.convertToString(c.getModel()));
+					generateConfiguration(satInstance.getVariables().convertToString(c.getModel()));
 				}
 			}
 

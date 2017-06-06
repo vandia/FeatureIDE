@@ -320,6 +320,14 @@ public class FeatureModelAnalyzer {
 		init();
 	}
 
+	public FeatureModelAnalyzer(IFeatureModel featureModel) {
+		this(new FeatureModelFormula(featureModel), featureModel);
+	}
+
+	public FeatureModelAnalyzer(FeatureModelFormula formula) {
+		this(formula, formula.getFeatureModel());
+	}
+
 	public boolean isValid() {
 		final Boolean result = validAnalysis.getResult(formula.getCNF());
 		return result == null ? false : result;
@@ -562,9 +570,17 @@ public class FeatureModelAnalyzer {
 		return resultList;
 	}
 
+	public FeatureProperties getFeatureProperties(IFeature feature) {
+		return featurePropertiesMap.get(feature);
+	}
+
+	public ConstraintProperties getConstraintProperties(IConstraint constraint) {
+		return constraintPropertiesMap.get(constraint);
+	}
+
 	/**
 	 * @param monitor
-	 * @return 
+	 * @return
 	 * @return Hashmap: key entry is Feature/Constraint, value usually
 	 *         indicating the kind of attribute
 	 */
@@ -616,7 +632,7 @@ public class FeatureModelAnalyzer {
 			constraintPropertiesMap.get(constraint).setConstraintRedundancyStatus(ConstraintRedundancyStatus.NORMAL);
 			constraintPropertiesMap.get(constraint).setConstraintSatisfiabilityStatus(ConstraintFalseSatisfiabilityStatus.SATISFIABLE);
 		}
-		
+
 		System.out.println();
 
 		// get constraint anomalies

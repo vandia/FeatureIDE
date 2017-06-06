@@ -29,8 +29,8 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 
 import de.ovgu.featureide.fm.core.base.IFeature;
+import de.ovgu.featureide.fm.core.cnf.IVariables;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.Variables;
 
 /**
  * A representation of a selectable feature for the configuration process.
@@ -49,7 +49,7 @@ public class SelectableFeature extends TreeElement {
 
 	private int recommendationValue = -1;
 	private Map<Integer, LiteralSet> openClauses = null;
-	private Variables variables = null;
+	private IVariables variables = null;
 
 	private String name;
 
@@ -147,11 +147,11 @@ public class SelectableFeature extends TreeElement {
 		return Collections.emptySet();
 	}
 
-	public Variables getVariables() {
+	public IVariables getVariables() {
 		return variables;
 	}
 
-	public void setVariables(Variables variables) {
+	public void setVariables(IVariables variables) {
 		this.variables = variables;
 	}
 

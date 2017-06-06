@@ -59,8 +59,12 @@ public class FeatureModelFormula {
 
 	private FeatureModelCNF cnf;
 
-	public FeatureModelFormula(IFeatureModel fmManager) {
-		this.featureModel = fmManager;
+	public FeatureModelFormula(IFeatureModel featureModel) {
+		this.featureModel = featureModel.clone();
+	}
+
+	public IFeatureModel getFeatureModel() {
+		return featureModel;
 	}
 
 	public FeatureModelCNF getCNF() {
@@ -185,49 +189,5 @@ public class FeatureModelFormula {
 			slicingLock.unlock();
 		}
 	}
-
-	//		public void load(IMonitor monitor) {
-	//			if (clauses != null) {
-	//				return null;
-	//			}
-	//			final IFeatureModel featureModel = configuration.getFeatureModel();
-	//			final Collection<IFeature> features = FeatureUtils.getFeatures(featureModel);
-	//
-	//			final SatInstance2 orgSatInstance = new SimpleClauseCreator(featureModel).createNodes();
-	//
-	//			if (configuration.ignoreAbstractFeatures) {
-	//				clauses = orgSatInstance;
-	//			} else {
-	//				filter1 = new OrFilter<>(Arrays.asList(new HiddenFeatureFilter(), new AbstractFeatureFilter()));
-	//				filter2 = new AbstractFeatureFilter();
-	//				nodeCreator1 = new AdvancedNodeCreator(featureModel, filter1);
-	//				nodeCreator2 = new AdvancedNodeCreator(featureModel, filter2);
-	//			}
-	//			nodeCreator1.setCnfType(AdvancedNodeCreator.CNFType.Regular);
-	//			nodeCreator2.setCnfType(AdvancedNodeCreator.CNFType.Regular);
-	//			nodeCreator1.setIncludeBooleanValues(false);
-	//			nodeCreator2.setIncludeBooleanValues(false);
-	//
-	//			final IRunner<Node> buildThread1 = LongRunningWrapper.getThread(nodeCreator1);
-	//			final IRunner<Node> buildThread2 = LongRunningWrapper.getThread(nodeCreator2);
-	//
-	//			buildThread1.schedule();
-	//			buildThread2.schedule();
-	//
-	//			try {
-	//				buildThread2.join();
-	//				buildThread1.join();
-	//			} catch (InterruptedException e) {
-	//				Logger.logError(e);
-	//				final List<String> list = Functional
-	//						.toList(Functional.map(Functional.filter(features, new AbstractFeatureFilter()), FeatureUtils.GET_FEATURE_NAME));
-	//				clauses = LongRunningWrapper.runMethod(new SatSilcer(orgSatInstance, list));
-	//	}
-	//	final List<String> list = Functional.toList(Functional.map(Functional.filter(features, new HiddenFeatureFilter()), FeatureUtils.GET_FEATURE_NAME));
-	//	clausesWithoutHidden = LongRunningWrapper.runMethod(new SatSilcer(clauses, list));
-	//
-	//	return null;
-	//}
-	//}
 
 }
