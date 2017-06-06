@@ -79,6 +79,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.osgi.service.prefs.BackingStoreException;
 
 import de.ovgu.featureide.core.CorePlugin;
+import de.ovgu.featureide.core.IBuilderMarkerHandler;
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.core.builder.ComposerExtensionClass;
 import de.ovgu.featureide.core.builder.ComposerExtensionManager;
@@ -125,7 +126,7 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * @author Tom Brosch
  * @author Marcus Pinnecke (Feature Interface)
  */
-public class FeatureProject extends BuilderMarkerHandler implements IFeatureProject, IResourceChangeListener {
+public class FeatureProject extends de.ovgu.featureide.fm.core.FeatureProject implements IFeatureProject, IResourceChangeListener, IBuilderMarkerHandler {
 
 	private static final CorePlugin LOGGER = CorePlugin.getDefault();
 
@@ -284,14 +285,20 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 							break;
 						}
 					}
-					if(addedFeatures < 10 && addedFeatures > 0)
-					{
-						message.delete(message.lastIndexOf(", "), message.lastIndexOf(", ")+2);						
+					if (addedFeatures < 10 && addedFeatures > 0) {
+						message.delete(message.lastIndexOf(", "), message.lastIndexOf(", ") + 2);
 					}
 
 					return message.toString();
 				}
 			});
+	
+	private static FeatureModelManager getFeatureModelManager(IProject project) {
+		ModelMarkerHandler<IFile> modelFile = (project.getFile("mpl.velvet").exists()) ? new ModelMarkerHandler<>(project.getFile("mpl.velvet"))
+				: new ModelMarkerHandler<>(project.getFile("model.xml"));
+
+		return FeatureModelManager.getInstance(Paths.get(modelFile.getModelFile().getLocationURI()));
+	}
 
 	/**
 	 * Creating a new ProjectData includes creating folders if they don't exist,
@@ -301,7 +308,7 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 	 *            the FeatureIDE project
 	 */
 	public FeatureProject(IProject aProject) {
-		super(aProject);
+		super(getFeatureModelManager(aProject));
 		project = aProject;
 
 		try {
@@ -863,8 +870,7 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 		try {
 			List<IFile> configs = getAllConfigurations();
 			IResourceDelta configurationDelta = event.getDelta().findMember(configFolder.getFullPath());
-			if(configurationDelta != null)
-			{
+			if (configurationDelta != null) {
 				for (IResourceDelta delta : configurationDelta.getAffectedChildren(IResourceDelta.REMOVED)) {
 					CorePlugin.getDefault().logInfo(delta.toString() + " was removed.");
 					//if configuration was removed update warnings
@@ -1488,4 +1494,21 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 	public FeatureModelManager getFeatureModelManager() {
 		return featureModelManager;
 	}
+
+	public void createBuilderMarker(IResource resource, String message, int lineNumber, int severity) {
+		EclipseMarkerHandler.createBuilderMarker((resource != null) ? resource : project, message, lineNumber, severity);
+	}
+
+	public void deleteBuilderMarkers(IResource resource, int depth) {
+		EclipseMarkerHandler.deleteBuilderMarkers(resource, depth);
+	}
+
+	public void createConfigurationMarker(IResource resource, String message, int lineNumber, int severity) {
+		EclipseMarkerHandler.createConfigurationMarker(resource, message, lineNumber, severity);
+	}
+
+	public void deleteConfigurationMarkers(IResource resource, int depth) {
+		EclipseMarkerHandler.deleteConfigurationMarkers(resource, depth);
+	}
+
 }

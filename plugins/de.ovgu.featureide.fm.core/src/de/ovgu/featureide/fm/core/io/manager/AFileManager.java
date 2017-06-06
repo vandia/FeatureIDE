@@ -79,6 +79,13 @@ public abstract class AFileManager<T> implements IFileManager<T>, IEventManager 
 		}
 	}
 
+	public void setObject(T object) {
+		synchronized (syncObject) {
+			variableObject = object;
+			persist();
+		}
+	}
+
 	public T editObject() {
 		synchronized (saveSyncObject) {
 			return variableObject;
@@ -168,7 +175,7 @@ public abstract class AFileManager<T> implements IFileManager<T>, IEventManager 
 	public String getAbsolutePath() {
 		return absolutePath;
 	}
-	
+
 	public Path getPath() {
 		return path;
 	}

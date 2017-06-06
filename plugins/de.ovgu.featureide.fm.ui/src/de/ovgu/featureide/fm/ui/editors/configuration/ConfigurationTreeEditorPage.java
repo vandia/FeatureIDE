@@ -95,6 +95,7 @@ import de.ovgu.featureide.fm.core.color.FeatureColor;
 import de.ovgu.featureide.fm.core.color.FeatureColorManager;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.ConfigurationMatrix;
+import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
 import de.ovgu.featureide.fm.core.configuration.SelectableFeature;
 import de.ovgu.featureide.fm.core.configuration.Selection;
 import de.ovgu.featureide.fm.core.configuration.TreeElement;
@@ -106,6 +107,7 @@ import de.ovgu.featureide.fm.core.job.IJob;
 import de.ovgu.featureide.fm.core.job.IJob.JobStatus;
 import de.ovgu.featureide.fm.core.job.LongRunningJob;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.util.JobFinishListener;
 import de.ovgu.featureide.fm.ui.FMUIPlugin;
 import de.ovgu.featureide.fm.ui.editors.configuration.IConfigurationEditor.EXPAND_ALGORITHM;
@@ -154,6 +156,8 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 	protected final HashSet<SelectableFeature> updateFeatures = new HashSet<SelectableFeature>();
 
 	protected IConfigurationEditor configurationEditor = null;
+
+	protected ConfigurationPropagator propagator;
 
 	protected boolean dirty = false;
 
@@ -250,6 +254,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 	@Override
 	protected void setInput(IEditorInput input) {
 		super.setInput(input);
+		propagator = configurationEditor.getPropagator();
 	}
 
 	@Override
@@ -525,11 +530,11 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 			infoLabel.setForeground(null);
 			return;
 		}
-		final boolean valid = configurationEditor.getConfiguration().isValid();
+		final boolean valid = LongRunningWrapper.runMethod(propagator.isValid());
 		if (configurationEditor.getPropagator() == null) {
 			return;
 		}
-		final LongRunningJob<Long> job = new LongRunningJob<>("", configurationEditor.getConfiguration().getPropagator().number(250));
+		final LongRunningJob<Long> job = new LongRunningJob<>("", propagator.number(250));
 		job.addJobFinishedListener(new JobFinishListener<Long>() {
 			@Override
 			public void jobFinished(IJob<Long> finishedJob) {
@@ -588,14 +593,10 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 			return false;
 		} else {
 			final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(configurationEditor.getConfiguration().getFeatureModel());
-			try {
-				if (!analyzer.isValid()) {
-					displayError(
-							THE_FEATURE_MODEL_FOR_THIS_PROJECT_IS_VOID_COMMA__I_E__COMMA__THERE_IS_NO_VALID_CONFIGURATION__YOU_NEED_TO_CORRECT_THE_FEATURE_MODEL_BEFORE_YOU_CAN_CREATE_OR_EDIT_CONFIGURATIONS_);
-					return false;
-				}
-			} catch (TimeoutException e) {
-				FMUIPlugin.getDefault().logError(e);
+			if (!analyzer.isValid()) {
+				displayError(
+						THE_FEATURE_MODEL_FOR_THIS_PROJECT_IS_VOID_COMMA__I_E__COMMA__THERE_IS_NO_VALID_CONFIGURATION__YOU_NEED_TO_CORRECT_THE_FEATURE_MODEL_BEFORE_YOU_CAN_CREATE_OR_EDIT_CONFIGURATIONS_);
+				return false;
 			}
 		}
 		return true;
@@ -657,7 +658,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 				item.setForeground(null);
 				item.setFont(treeItemStandardFont);
 				refreshItem(item, feature);
-				if (configurationEditor.getConfiguration().canBeValid()) {
+				if (LongRunningWrapper.runMethod(propagator.canBeValid())) {
 					invalidFeatures.clear();
 				} else {
 					invalidFeatures.add(feature);
@@ -858,7 +859,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 	 * configuration is invalid. deselect:blue, select:green
 	 */
 	protected LongRunningJob<List<LiteralSet>> computeColoring(final Display currentDisplay) {
-		if (!configurationEditor.isAutoSelectFeatures() || configurationEditor.getConfiguration().isValid()) {
+		if (!configurationEditor.isAutoSelectFeatures() || LongRunningWrapper.runMethod(propagator.isValid())) {
 			for (SelectableFeature selectableFeature : configurationEditor.getConfiguration().getFeatures()) {
 				selectableFeature.setRecommendationValue(-1);
 				selectableFeature.clearOpenClauses();
@@ -909,7 +910,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 			}
 		}
 
-		final LongRunningMethod<List<LiteralSet>> jobs = configurationEditor.getConfiguration().getPropagator().findOpenClauses(manualFeatureList);
+		final LongRunningMethod<List<LiteralSet>> jobs = propagator.findOpenClauses(manualFeatureList);
 		LongRunningJob<List<LiteralSet>> job = new LongRunningJob<>("FindClauses", jobs);
 		job.schedule();
 
@@ -1016,7 +1017,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 		}
 		final TreeItem topItem = tree.getTopItem();
 		SelectableFeature feature = (SelectableFeature) (topItem.getData());
-		final LongRunningMethod<List<String>> update = configurationEditor.getConfiguration().getPropagator().update(redundantManual,
+		final LongRunningMethod<List<String>> update = propagator.update(redundantManual,
 				feature.getFeature().getName());
 		final LongRunningJob<List<String>> job = new LongRunningJob<>("", update);
 		job.setIntermediateFunction(new IConsumer<Object>() {

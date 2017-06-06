@@ -22,7 +22,9 @@ package de.ovgu.featureide.fm.core;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
@@ -32,7 +34,7 @@ import de.ovgu.featureide.fm.core.base.event.IEventListener;
 import de.ovgu.featureide.fm.core.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
-import de.ovgu.featureide.fm.core.io.manager.FileManagerMap;
+import de.ovgu.featureide.fm.core.io.manager.ConfigurationManager;
 import de.ovgu.featureide.fm.core.io.manager.IFileManager;
 
 /**
@@ -48,23 +50,32 @@ public class FeatureProject {
 		 * listens to changed feature names
 		 */
 		public void propertyChange(FeatureIDEEvent evt) {
-			if (EventType.FEATURE_NAME_CHANGED == evt.getEventType()) {
+			final EventType eventType = evt.getEventType();
+			switch (eventType) {
+			case FEATURE_NAME_CHANGED:
 				String oldName = (String) evt.getOldValue();
 				String newName = (String) evt.getNewValue();
 				FeatureProject.this.renameFeature((IFeatureModel) evt.getSource(), oldName, newName);
+				break;
+			case MODEL_DATA_LOADED:
+				final FeatureProjectStatus status = initStatus();
+				for (IFileManager<Configuration> iFileManager : configurationManagerList) {
+					iFileManager.setObject(new Configuration(iFileManager.getObject(), status.getFeatureModel()));
+				}
+			default:
+				break;
 			}
 		}
 	}
 
-	public static class Status {
+	public static class FeatureProjectStatus {
 		private final FeatureModelFormula formula;
 		private final IFeatureModel featureModel;
 		private final FeatureModelAnalyzer analyzer;
 
 		private List<Configuration> configurationList = Collections.emptyList();
-		private int currentConfigurationIndex = -1;
 
-		public Status(FeatureModelFormula formula, IFeatureModel featureModel, FeatureModelAnalyzer analyzer) {
+		public FeatureProjectStatus(FeatureModelFormula formula, IFeatureModel featureModel, FeatureModelAnalyzer analyzer) {
 			this.formula = formula;
 			this.featureModel = featureModel;
 			this.analyzer = analyzer;
@@ -90,32 +101,20 @@ public class FeatureProject {
 			this.configurationList = configurationList;
 		}
 
-		public int getCurrentConfigurationIndex() {
-			return currentConfigurationIndex;
-		}
-
-		private void setCurrentConfigurationIndex(int currentConfigurationIndex) {
-			this.currentConfigurationIndex = currentConfigurationIndex;
-		}
-
-		public ConfigurationPropagator getPropagator() {
-			return getPropagator(getCurrentConfigurationIndex());
-		}
-
-		public ConfigurationPropagator getPropagator(int index) {
-			return new ConfigurationPropagator(formula, configurationList.get(index));
-		}
+		//		public ConfigurationPropagator getPropagator() {
+		//			return getPropagator(getCurrentConfigurationIndex());
+		//		}
 
 		public ConfigurationPropagator getPropagator(Configuration configuration) {
 			return new ConfigurationPropagator(formula, configuration);
 		}
 	}
 
-	private final List<IFileManager<Configuration>> configurationManagerList = new ArrayList<>();
+	private final HashSet<IFileManager<Configuration>> configurationManagerList = new HashSet<>();
 
 	private final IFileManager<IFeatureModel> featureModelManager;
 
-	private Status status;
+	private FeatureProjectStatus status;
 
 	@Deprecated
 	public static ConfigurationPropagator getPropagator(Configuration configuration, boolean includeAbstractFeatures) {
@@ -128,6 +127,82 @@ public class FeatureProject {
 		return new ConfigurationPropagator(configuration, includeAbstractFeatures);
 	}
 
+	public FeatureProjectStatus getStatus() {
+		return status;
+	}
+
+	/**
+	 * Creating a new ProjectData includes creating folders if they don't exist,
+	 * registering workspace listeners and initialization of the wrapper object.
+	 * 
+	 * @param aProject
+	 *            the FeatureIDE project
+	 */
+	public FeatureProject(IFileManager<IFeatureModel> featureModelManager) {
+		// TODO Rename manager method save -> write
+		// TODO Implement analyses for configurations
+
+		//TODO synchronize with update method
+		this.featureModelManager = featureModelManager;
+		featureModelManager.addListener(new FeatureModelChangeListner());
+		featureModelManager.read();
+
+		initStatus();
+	}
+
+	private FeatureProjectStatus initStatus() {
+		final IFeatureModel featureModel = featureModelManager.getObject();
+		final FeatureModelFormula formula = new FeatureModelFormula(featureModel);
+		status = new FeatureProjectStatus(formula, featureModel, new FeatureModelAnalyzer(formula, featureModel));
+		return status;
+	}
+
+	private void renameFeature(final IFeatureModel model, String oldName, String newName) {
+		for (IFileManager<Configuration> configurationManager : configurationManagerList) {
+			configurationManager.read();
+			configurationManager.save();
+		}
+	}
+
+	public IFileManager<Configuration> getConfigurationManager(String path) {
+		IFileManager<Configuration> fileManager = ConfigurationManager.getInstance(new Configuration(getFeatureModel()), path);
+		if (fileManager != null && !configurationManagerList.contains(fileManager)) {
+			configurationManagerList.add(fileManager);
+		}
+		return fileManager;
+	}
+
+	public void addConfigurationManager(Collection<? extends IFileManager<Configuration>> managerList) {
+		configurationManagerList.addAll(managerList);
+	}
+
+	public void addConfigurationManager(IFileManager<Configuration> manager) {
+		configurationManagerList.add(manager);
+	}
+
+	public Path getFeatureModelFile() {
+		return featureModelManager.getPath();
+	}
+
+	public IFileManager<IFeatureModel> getFeatureModelManager() {
+		return featureModelManager;
+	}
+
+	public FeatureModelAnalyzer getAnalyzer() {
+		final IFeatureModel featureModel = featureModelManager.editObject();
+		final FeatureModelFormula formula = new FeatureModelFormula(featureModel);
+		return new FeatureModelAnalyzer(formula, featureModel);
+	}
+
+	@Override
+	public String toString() {
+		return featureModelManager.getAbsolutePath();
+	}
+
+}
+
+	
+	
 	//	private IFeatureGraph modalImplicationGraph;
 
 	// TODO try to save and load everything
@@ -188,62 +263,6 @@ public class FeatureProject {
 	//				}
 	//			});
 
-	public Status getStatus() {
-		return status;
-	}
-
-	/**
-	 * Creating a new ProjectData includes creating folders if they don't exist,
-	 * registering workspace listeners and initialization of the wrapper object.
-	 * 
-	 * @param aProject
-	 *            the FeatureIDE project
-	 */
-	public FeatureProject(IFileManager<IFeatureModel> featureModelManager, List<IFileManager<Configuration>> configurationManagerList) {
-		// TODO Rename manager method save -> write
-		// TODO Implement analyses for configurations
-		
-		//TODO synchronize with update method
-		this.featureModelManager = featureModelManager;
-		this.configurationManagerList.addAll(configurationManagerList);
-		featureModelManager.addListener(new FeatureModelChangeListner());
-		featureModelManager.read();
-		
-		final IFeatureModel featureModel = featureModelManager.getObject();
-		final FeatureModelFormula formula = new FeatureModelFormula(featureModel);
-		status = new Status(formula, featureModel, new FeatureModelAnalyzer(formula, featureModel));
-	}
-
-	private void renameFeature(final IFeatureModel model, String oldName, String newName) {
-		for (IFileManager<Configuration> configurationManager : configurationManagerList) {
-			configurationManager.read();
-			configurationManager.save();
-		}
-	}
-	
-	public IFileManager<Configuration> getConfiguration(String path) {
-		return (IFileManager<Configuration>) FileManagerMap.<IFileManager<Configuration>>getFileManager(path);
-	}
-
-	public Configuration getCurrentConfiguration() {
-		if (status.currentConfigurationIndex >= 0 && status.currentConfigurationIndex < configurationManagerList.size()) {
-			return configurationManagerList.get(status.currentConfigurationIndex).getObject();
-		}
-		return null;
-	}
-
-	public void setCurrentConfiguration(int index) {
-		status.currentConfigurationIndex = index;
-	}
-
-	public IFeatureModel getFeatureModel() {
-		return featureModelManager.getObject();
-	}
-
-	public Path getModelFile() {
-		return featureModelManager.getPath();
-	}
-
 	//	public Collection<String> getFalseOptionalConfigurationFeatures() {
 	//		return getFalseOptionalConfigurationFeatures(getSelectionMatrix(), (List<String>) getOptionalConcreteFeatures());
 	//	}
@@ -259,18 +278,3 @@ public class FeatureProject {
 	//	public Collection<String> getUnusedConfigurationFeatures(boolean[][] selections, final List<String> concreteFeatures) {
 	//		return checkValidSelections(selections, true, concreteFeatures);
 	//	}
-
-	@Override
-	public String toString() {
-		return featureModelManager.getAbsolutePath();
-	}
-
-	public IFileManager<IFeatureModel> getFeatureModelManager() {
-		return featureModelManager;
-	}
-
-	public FeatureModelAnalyzer getAnalyzer() {
-		return status.analyzer;
-	}
-
-}

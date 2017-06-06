@@ -113,4 +113,9 @@ public class VirtualFileManager<T> implements IFileManager<T>, IEventManager {
 		return "Virtual File manager for " + variableObject;
 	}
 
+	@Override
+	public void setObject(T object) {
+		variableObject = object;
+	}
+
 }

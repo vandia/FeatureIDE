@@ -222,12 +222,17 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 				}
 			}
 		}
+		final Path path = Paths.get(res.getLocationURI());
 		
-		featureProject = ProjectManager.getProject(Paths.get(res.getLocationURI()));
+		if (ProjectManager.hasProjectData(path)) {
+			featureProject = ProjectManager.getProject(path);
+		} else {
+			featureProject = ProjectManager.addProject(Paths.get(project.getLocationURI()), path);
+		}
 		
-		configurationManager = featureProject.getConfiguration(file.getLocation().toOSString());
+		configurationManager = (ConfigurationManager) featureProject.getConfigurationManager(file.getLocation().toOSString());
 
-		featureModelManager = FeatureModelManager.getInstance(Paths.get(res.getLocationURI()));
+		featureModelManager = FeatureModelManager.getInstance(path);
 		invalidFeatureModel = featureModelManager.getLastProblems().containsError();
 		if (invalidFeatureModel) {
 			return;
@@ -267,23 +272,24 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 	}
 
 	public void loadPropagator() {
-		if (!configurationManager.editObject().getPropagator().isLoaded()) {
-			final Display currentDisplay = Display.getCurrent();
-			LongRunningJob<Void> configJob = new LongRunningJob<>("Load Propagator", configurationManager.editObject().getPropagator().load());
-			configJob.addJobFinishedListener(new JobFinishListener<Void>() {
-				@Override
-				public void jobFinished(IJob<Void> finishedJob) {
-					autoSelectFeatures = true;
-					currentDisplay.asyncExec(new Runnable() {
-						@Override
-						public void run() {
-							getPage(getActivePage()).propertyChange(null);
-						}
-					});
-				}
-			});
-			configJobManager.startJob(configJob, true);
-		}
+		featureProject.getStatus().getPropagator(configurationManager.editObject());
+//		if (!configurationManager.editObject().getPropagator().isLoaded()) {
+//			final Display currentDisplay = Display.getCurrent();
+//			LongRunningJob<Void> configJob = new LongRunningJob<>("Load Propagator", configurationManager.editObject().getPropagator().load());
+//			configJob.addJobFinishedListener(new JobFinishListener<Void>() {
+//				@Override
+//				public void jobFinished(IJob<Void> finishedJob) {
+//					autoSelectFeatures = true;
+//					currentDisplay.asyncExec(new Runnable() {
+//						@Override
+//						public void run() {
+//							getPage(getActivePage()).propertyChange(null);
+//						}
+//					});
+//				}
+//			});
+//			configJobManager.startJob(configJob, true);
+//		}
 	}
 
 	// XXX Clause: FG
@@ -384,13 +390,14 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 			return;
 		}
 
-		configurationManager.read();
-		final Configuration configuration = new Configuration(configurationManager.getObject(), featureModelManager.getObject());
-		configuration.loadPropagator();
-		LongRunningWrapper.runMethod(configuration.getPropagator().resolve());
-
-		configurationManager.setConfiguration(configuration);
-		setContainsError(configurationManager.getLastProblems().containsError());
+		// TODO?
+//		configurationManager.read();
+//		final Configuration configuration = new Configuration(configurationManager.getObject(), featureModelManager.getObject());
+//		configuration.loadPropagator();
+//		LongRunningWrapper.runMethod(configuration.getPropagator().resolve());
+//
+//		configurationManager.setObject(configuration);
+//		setContainsError(configurationManager.getLastProblems().containsError());
 
 		// Reinitialize the pages
 		final IConfigurationEditorPage currentPage = getPage(currentPageIndex);
@@ -632,13 +639,9 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 		this.containsError = containsError;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.ovgu.featureide.fm.ui.editors.configuration.IConfigurationEditor#getPropagator()
-	 */
 	@Override
 	public ConfigurationPropagator getPropagator() {
-		// TODO Auto-generated method stub
-		return null;
+		return featureProject.getStatus().getPropagator(getConfiguration());
 	}
 
 }

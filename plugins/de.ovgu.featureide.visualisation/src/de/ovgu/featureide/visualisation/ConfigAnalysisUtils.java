@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.CoreException;
 
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.fm.core.ProjectManager;
+import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.io.manager.ConfigurationManager;
@@ -74,7 +75,7 @@ public class ConfigAnalysisUtils {
 		List<String> featureList = new ArrayList<String>();
 		featureList.addAll(featureList1);
 		List<IFeature> coreFeatures = ProjectManager.getAnalyzer(featureProject.getFeatureModel()).getCoreFeatures();
-		Collection<IFeature> hiddenFeatures = ProjectManager.getAnalyzer(featureProject.getFeatureModel()).getHiddenFeatures();
+		Collection<IFeature> hiddenFeatures = FeatureUtils.getHiddenFeatures(featureProject.getFeatureModel());
 		for (IFeature coref : coreFeatures) {
 			featureList.remove(coref.getName());
 		}

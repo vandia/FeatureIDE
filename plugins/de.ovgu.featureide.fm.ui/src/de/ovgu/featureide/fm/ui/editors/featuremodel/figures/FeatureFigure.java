@@ -154,7 +154,7 @@ public class FeatureFigure extends ModelElementFigure implements GUIDefaults {
 				}
 			}
 		} else {
-			if (feature.getStructure().isRoot() && !analyser.valid()) {
+			if (feature.getStructure().isRoot() && !analyser.isValid()) {
 				setBackgroundColor(FMPropertyManager.getDeadFeatureBackgroundColor());
 				setBorder(FMPropertyManager.getDeadFeatureBorder(this.feature.isConstraintSelected()));
 				toolTip.append(VOID);

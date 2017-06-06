@@ -52,13 +52,13 @@ import de.ovgu.featureide.fm.core.job.util.JobSequence;
  * 
  * @author Sebastian Krieter
  */
-public final class ProjectManager {
+public class ProjectManager {
 
-	private static final HashMap<Path, FeatureProject> pathFeatureProjectMap = new HashMap<>();
-	private static final HashMap<IFeatureModel, FeatureProject> modelFeatureProjectMap = new HashMap<>();
-	private static final HashMap<IFeatureModel, Path> modelPathMap = new HashMap<>();
+	protected static final HashMap<Path, FeatureProject> pathFeatureProjectMap = new HashMap<>();
+	protected static final HashMap<IFeatureModel, FeatureProject> modelFeatureProjectMap = new HashMap<>();
+	protected static final HashMap<IFeatureModel, Path> modelPathMap = new HashMap<>();
 
-	private ProjectManager() {
+	protected ProjectManager() {
 	}
 
 	/**
@@ -100,38 +100,58 @@ public final class ProjectManager {
 				return;
 			}
 			final IFileManager<IFeatureModel> featureModelManager = FeatureModelManager.getInstance(featureModelFile);
-			final ArrayList<IFileManager<Configuration>> configurationManagerList = new ArrayList<>();
 			final IFeatureModel featureModel = featureModelManager.getObject();
-			try {
-				Files.walkFileTree(configurations, new SimpleFileVisitor<Path>() {
-					@Override
-					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-						final Configuration c = new Configuration(featureModel);
-						ConfigurationManager configurationManager = FileManagerMap.<Configuration, ConfigurationManager> getInstance(file.toString());
-						if (configurationManager != null) {
-							configurationManager.setConfiguration(c);
-							configurationManager.read();
-						} else {
-							configurationManager = ConfigurationManager.getInstance(c, file.toString());
-						}
-
-						final ProblemList lastProblems = configurationManager.getLastProblems();
-						if (lastProblems.containsError()) {
-							FileManagerMap.remove(file.toString());
-						} else {
-							configurationManagerList.add(configurationManager);
-						}
-						return FileVisitResult.CONTINUE;
-					}
-				});
-			} catch (IOException e) {
-				Logger.logError(e);
-			}
-			FeatureProject data = new FeatureProject(featureModelManager, configurationManagerList);
+			final FeatureProject data = new FeatureProject(featureModelManager);
+			data.addConfigurationManager(getConfigurationManager(configurations, featureModel));
 			pathFeatureProjectMap.put(root, data);
 			modelFeatureProjectMap.put(featureModel, data);
 			modelPathMap.put(featureModel, root);
 		}
+	}
+
+	public static FeatureProject addProject(Path root, Path featureModelFile) {
+		synchronized (pathFeatureProjectMap) {
+			FeatureProject featureProject = pathFeatureProjectMap.get(root);
+			if (featureProject == null) {
+				final IFileManager<IFeatureModel> featureModelManager = FeatureModelManager.getInstance(featureModelFile);
+				final IFeatureModel featureModel = featureModelManager.getObject();
+				featureProject = new FeatureProject(featureModelManager);
+				pathFeatureProjectMap.put(root, featureProject);
+				modelFeatureProjectMap.put(featureModel, featureProject);
+				modelPathMap.put(featureModel, root);
+			}
+			return featureProject;
+		}
+	}
+
+	public static ArrayList<IFileManager<Configuration>> getConfigurationManager(Path configurations, final IFeatureModel featureModel) {
+		final ArrayList<IFileManager<Configuration>> configurationManagerList = new ArrayList<>();
+		try {
+			Files.walkFileTree(configurations, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					final Configuration c = new Configuration(featureModel);
+					ConfigurationManager configurationManager = FileManagerMap.<Configuration, ConfigurationManager> getInstance(file.toString());
+					if (configurationManager != null) {
+						configurationManager.setObject(c);
+						configurationManager.read();
+					} else {
+						configurationManager = ConfigurationManager.getInstance(c, file.toString());
+					}
+
+					final ProblemList lastProblems = configurationManager.getLastProblems();
+					if (lastProblems.containsError()) {
+						FileManagerMap.remove(file.toString());
+					} else {
+						configurationManagerList.add(configurationManager);
+					}
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (IOException e) {
+			Logger.logError(e);
+		}
+		return configurationManagerList;
 	}
 
 	public static void addProject(IFeatureModel featureModel) {
@@ -144,9 +164,8 @@ public final class ProjectManager {
 	}
 
 	private static FeatureProject createVirtualFeatureProject(IFeatureModel featureModel) {
-		final IFileManager<IFeatureModel> featureModelManager = new VirtualFileManager<>(featureModel, new XmlFeatureModelFormat());
-		final ArrayList<IFileManager<Configuration>> configurationManagerList = new ArrayList<>();
-		FeatureProject data = new FeatureProject(featureModelManager, configurationManagerList);
+		final FeatureProject data = new FeatureProject(new VirtualFileManager<>(featureModel, new XmlFeatureModelFormat()));
+		data.addConfigurationManager(new ArrayList<IFileManager<Configuration>>());
 		return data;
 	}
 
@@ -155,8 +174,9 @@ public final class ProjectManager {
 		synchronized (pathFeatureProjectMap) {
 			final FeatureProject project = pathFeatureProjectMap.remove(root);
 			if (project != null) {
-				modelPathMap.remove(root);
-				modelFeatureProjectMap.remove(project.getFeatureModel());
+				final IFeatureModel fm = project.getFeatureModelManager().getObject();
+				modelPathMap.remove(fm);
+				modelFeatureProjectMap.remove(fm);
 			}
 			return project;
 		}

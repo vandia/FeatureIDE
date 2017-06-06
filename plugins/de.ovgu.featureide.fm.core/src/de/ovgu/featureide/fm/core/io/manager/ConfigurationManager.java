@@ -62,11 +62,6 @@ public class ConfigurationManager extends AFileManager<Configuration> {
 		return oldObject.clone();
 	}
 
-	public void setConfiguration(Configuration configuration) {
-		variableObject = configuration;
-		persist();
-	}
-
 	@Override
 	public boolean externalSave(Runnable externalSaveMethod) {
 		return true;

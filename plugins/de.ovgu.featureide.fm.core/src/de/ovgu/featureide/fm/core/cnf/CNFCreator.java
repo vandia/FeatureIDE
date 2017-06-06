@@ -88,7 +88,7 @@ public class CNFCreator implements LongRunningMethod<CNF> {
 		}
 
 		final CNF cnf = new FeatureModelCNF(featureModel, useOldNames);
-		final Variables vars = cnf.getVariables();
+		final IVariables vars = cnf.getVariables();
 
 		monitor.setTaskName("Creating Formula");
 		monitor.setRemainingWork(2);
@@ -161,7 +161,7 @@ public class CNFCreator implements LongRunningMethod<CNF> {
 		this.useOldNames = useOldNames;
 	}
 
-	private List<LiteralSet> createConstraintNodes(Variables s) {
+	private List<LiteralSet> createConstraintNodes(IVariables s) {
 		final List<LiteralSet> clauses = new ArrayList<>(featureModel.getConstraints().size());
 		for (IConstraint constraint : featureModel.getConstraints()) {
 			final Node node = constraint.getNode();
@@ -182,7 +182,7 @@ public class CNFCreator implements LongRunningMethod<CNF> {
 		}
 	}
 
-	private List<LiteralSet> createStructuralNodes(Variables s) {
+	private List<LiteralSet> createStructuralNodes(IVariables s) {
 		final IFeature root = FeatureUtils.getRoot(featureModel);
 		if (root != null) {
 			final List<LiteralSet> clauses = new ArrayList<>(featureModel.getNumberOfFeatures());

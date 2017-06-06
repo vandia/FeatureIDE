@@ -54,12 +54,12 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 		private IConstr blockingClauseConstraint = null;
 
 		private int deltaCoverage;
-		private final int[] model;
+		private final LiteralSet model;
 		private int totalCoverage;
 
 		public long time = 0;
 
-		public Configuration(int[] model, int deltaCoverage, int totalCoverage) {
+		public Configuration(LiteralSet model, int deltaCoverage, int totalCoverage) {
 			this.model = model;
 			this.deltaCoverage = deltaCoverage;
 			this.totalCoverage = totalCoverage;
@@ -73,7 +73,7 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 			return deltaCoverage;
 		}
 
-		public int[] getModel() {
+		public LiteralSet getModel() {
 			return model;
 		}
 
@@ -716,7 +716,7 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 			return true;
 		}
 		final int partCount = count(curModel) - fixedPartCount;
-		final Configuration config = new Configuration(curModel, partCount - getLastCoverage(), partCount);
+		final Configuration config = new Configuration(new LiteralSet(curModel), partCount - getLastCoverage(), partCount);
 
 		int lesserCount = 0;
 		synchronized (tempConfigurationList) {

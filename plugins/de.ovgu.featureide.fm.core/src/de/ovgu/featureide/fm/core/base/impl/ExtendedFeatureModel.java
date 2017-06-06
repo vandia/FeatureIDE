@@ -122,12 +122,6 @@ public class ExtendedFeatureModel extends FeatureModel {
 		imports.add(imp.replace(".", "\\"));
 	}
 
-	@Override
-	protected FeatureModelAnalyzer createAnalyser() {
-		// TODO !!!
-		return null; //new ExtendedFeatureModelAnalyzer(this);
-	}
-
 	public void addAttribute(final String featureName, final String attributeName, final Boolean value) {
 		this.booleanAttributes.setAttribute(featureName, attributeName, value);
 	}

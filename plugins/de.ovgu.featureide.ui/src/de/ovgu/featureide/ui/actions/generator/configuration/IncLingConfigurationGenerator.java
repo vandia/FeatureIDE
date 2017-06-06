@@ -64,7 +64,7 @@ public class IncLingConfigurationGenerator extends AConfigurationGenerator {
 				int foundConfigurations = 0;
 				while (true) {
 					try {
-						generateConfiguration(satInstance.convertToString(as.q.take().getModel()));
+						generateConfiguration(satInstance.getVariables().convertToString(as.q.take().getModel()));
 						foundConfigurations++;
 					} catch (InterruptedException e) {
 						break;

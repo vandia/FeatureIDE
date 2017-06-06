@@ -830,8 +830,9 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 			return;
 		}
 		waiting = true;
-		final boolean runAnalysis = ProjectManager.getAnalyzer(featureModelEditor.getFeatureModel()).runCalculationAutomatically
-				&& ProjectManager.getAnalyzer(featureModelEditor.getFeatureModel()).calculateFeatures;
+		final FeatureModelAnalyzer analyzer2 = ProjectManager.getAnalyzer(featureModelEditor.getFeatureModel());
+		final boolean runAnalysis = analyzer2.runCalculationAutomatically
+				&& analyzer2.calculateFeatures;
 		/**
 		 * This extra job is necessary, else the UI will stop.
 		 */

@@ -26,8 +26,8 @@ import static de.ovgu.featureide.fm.core.localization.StringTable.READING_MODEL_
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -45,15 +45,12 @@ import de.ovgu.featureide.fm.core.base.impl.ExtendedFeatureModel.UsedModel;
 import de.ovgu.featureide.fm.core.base.impl.ExtendedFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
 import de.ovgu.featureide.fm.core.base.impl.FMFormatManager;
-import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.io.EclipseFileSystem;
 import de.ovgu.featureide.fm.core.io.FileSystem;
 import de.ovgu.featureide.fm.core.io.IConfigurationFormat;
 import de.ovgu.featureide.fm.core.io.IFeatureModelFormat;
 import de.ovgu.featureide.fm.core.io.IPersistentFormat;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
-import de.ovgu.featureide.fm.core.io.manager.FileManagerMap;
-import de.ovgu.featureide.fm.core.io.manager.IFileManager;
 import de.ovgu.featureide.fm.core.io.velvet.VelvetFeatureModelFormat;
 import de.ovgu.featureide.fm.core.job.LongRunningEclipse;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
@@ -120,82 +117,78 @@ public class FMCorePlugin extends AbstractCorePlugin {
 			return;
 		}
 
-		final String path = file.getLocation().toString();
-		if (FileManagerMap.hasInstance(path)) {
-			final FeatureModelManager instance = FileManagerMap.<IFeatureModel, FeatureModelManager> getInstance(path);
-			if (instance != null) {
-				final IFeatureModel fm = instance.getObject();
-				try {
-					FeatureModelAnalyzer fma = new FeatureModelAnalyzer(new FeatureProject(instance, Collections.<IFileManager<Configuration>> emptyList()));
-					fma.analyzeFeatureModel(null);
+		FeatureProject featureProject = ProjectManager.getProject(Paths.get(file.getProject().getLocationURI()));
 
-					final StringBuilder sb = new StringBuilder();
-					sb.append("Number Features: ");
-					sb.append(fm.getNumberOfFeatures());
-					sb.append(" (");
-					sb.append(fma.countConcreteFeatures());
-					sb.append(")\n");
+		final IFeatureModel fm = featureProject.getStatus().getFeatureModel();
+		try {
+			FeatureModelAnalyzer fma = featureProject.getStatus().getAnalyzer();
+			fma.analyzeFeatureModel(null);
 
-					if (fm instanceof ExtendedFeatureModel) {
-						ExtendedFeatureModel extFeatureModel = (ExtendedFeatureModel) fm;
-						int countInherited = 0;
-						int countInstances = 0;
-						for (UsedModel usedModel : extFeatureModel.getExternalModels().values()) {
-							switch (usedModel.getType()) {
-							case ExtendedFeature.TYPE_INHERITED:
-								countInherited++;
-								break;
-							case ExtendedFeature.TYPE_INSTANCE:
-								countInstances++;
-								break;
-							}
-						}
-						sb.append("Number Instances: ");
-						sb.append(countInstances);
-						sb.append("\n");
-						sb.append("Number Inherited: ");
-						sb.append(countInherited);
-						sb.append("\n");
-					}
+			final StringBuilder sb = new StringBuilder();
+			sb.append("Number Features: ");
+			sb.append(fm.getNumberOfFeatures());
+			sb.append(" (");
+			sb.append(fma.countConcreteFeatures());
+			sb.append(")\n");
 
-					Collection<IFeature> analyzedFeatures = fma.getCoreFeatures();
-					sb.append("Core Features (");
-					sb.append(analyzedFeatures.size());
-					sb.append("): ");
-					for (IFeature coreFeature : analyzedFeatures) {
-						sb.append(coreFeature.getName());
-						sb.append(", ");
+			if (fm instanceof ExtendedFeatureModel) {
+				ExtendedFeatureModel extFeatureModel = (ExtendedFeatureModel) fm;
+				int countInherited = 0;
+				int countInstances = 0;
+				for (UsedModel usedModel : extFeatureModel.getExternalModels().values()) {
+					switch (usedModel.getType()) {
+					case ExtendedFeature.TYPE_INHERITED:
+						countInherited++;
+						break;
+					case ExtendedFeature.TYPE_INSTANCE:
+						countInstances++;
+						break;
 					}
-					analyzedFeatures = fma.getDeadFeatures();
-					sb.append("\nDead Features (");
-					sb.append(analyzedFeatures.size());
-					sb.append("): ");
-					for (IFeature deadFeature : analyzedFeatures) {
-						sb.append(deadFeature.getName());
-						sb.append(", ");
-					}
-					analyzedFeatures = fma.getFalseOptionalFeatures();
-					sb.append("\nFO Features (");
-					sb.append(analyzedFeatures.size());
-					sb.append("): ");
-					for (IFeature foFeature : analyzedFeatures) {
-						sb.append(foFeature.getName());
-						sb.append(", ");
-					}
-					sb.append("\n");
-
-					final IFile outputFile = ((IFolder) outputDir).getFile(file.getName() + "_output.txt");
-					final InputStream inputStream = new ByteArrayInputStream(sb.toString().getBytes(Charset.defaultCharset()));
-					if (outputFile.isAccessible()) {
-						outputFile.setContents(inputStream, false, true, null);
-					} else {
-						outputFile.create(inputStream, true, null);
-					}
-					logInfo(PRINTED_OUTPUT_FILE_);
-				} catch (Exception e) {
-					logError(e);
 				}
+				sb.append("Number Instances: ");
+				sb.append(countInstances);
+				sb.append("\n");
+				sb.append("Number Inherited: ");
+				sb.append(countInherited);
+				sb.append("\n");
 			}
+
+			Collection<IFeature> analyzedFeatures = fma.getCoreFeatures();
+			sb.append("Core Features (");
+			sb.append(analyzedFeatures.size());
+			sb.append("): ");
+			for (IFeature coreFeature : analyzedFeatures) {
+				sb.append(coreFeature.getName());
+				sb.append(", ");
+			}
+			analyzedFeatures = fma.getDeadFeatures();
+			sb.append("\nDead Features (");
+			sb.append(analyzedFeatures.size());
+			sb.append("): ");
+			for (IFeature deadFeature : analyzedFeatures) {
+				sb.append(deadFeature.getName());
+				sb.append(", ");
+			}
+			analyzedFeatures = fma.getFalseOptionalFeatures();
+			sb.append("\nFO Features (");
+			sb.append(analyzedFeatures.size());
+			sb.append("): ");
+			for (IFeature foFeature : analyzedFeatures) {
+				sb.append(foFeature.getName());
+				sb.append(", ");
+			}
+			sb.append("\n");
+
+			final IFile outputFile = ((IFolder) outputDir).getFile(file.getName() + "_output.txt");
+			final InputStream inputStream = new ByteArrayInputStream(sb.toString().getBytes(Charset.defaultCharset()));
+			if (outputFile.isAccessible()) {
+				outputFile.setContents(inputStream, false, true, null);
+			} else {
+				outputFile.create(inputStream, true, null);
+			}
+			logInfo(PRINTED_OUTPUT_FILE_);
+		} catch (Exception e) {
+			logError(e);
 		}
 	}
 

@@ -51,6 +51,7 @@ import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.RenamingsManager;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.filter.ConcreteFeatureFilter;
+import de.ovgu.featureide.fm.core.filter.HiddenFeatureFilter;
 import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.functional.Functional.IFunction;
 
@@ -73,6 +74,8 @@ public final class FeatureUtils {
 	};
 
 	public static final ConcreteFeatureFilter CONCRETE_FEATURE_FILTER = new ConcreteFeatureFilter();
+
+	public static final HiddenFeatureFilter HIDDEN_FEATURE_FILTER = new HiddenFeatureFilter();
 
 	public static final IFunction<IConstraint, Node> CONSTRAINT_TO_NODE = new IFunction<IConstraint, Node>() {
 
@@ -303,6 +306,12 @@ public final class FeatureUtils {
 		return extractConcreteFeatures(model.getFeatures());
 	}
 
+	public static Iterable<IFeature> extractHiddenFeatures(final IFeatureModel model) {
+		requireNonNull(model);
+
+		return extractHiddenFeatures(model.getFeatures());
+	}
+
 	/**
 	 * Extracts all concrete features from an object that yields features. Basically, an invocation of this method on <b>features</b> will return an iterable
 	 * object that
@@ -323,6 +332,12 @@ public final class FeatureUtils {
 		requireNonNull(features);
 
 		return Functional.filter(features, CONCRETE_FEATURE_FILTER);
+	}
+
+	public static Iterable<IFeature> extractHiddenFeatures(final Iterable<IFeature> features) {
+		requireNonNull(features);
+
+		return Functional.filter(features, HIDDEN_FEATURE_FILTER);
 	}
 
 	/**
@@ -423,6 +438,13 @@ public final class FeatureUtils {
 		requireNonNull(featureModel);
 
 		return Functional.toList(FeatureUtils.extractConcreteFeatures(featureModel));
+	}
+
+	@Nonnull
+	public static final Collection<IFeature> getHiddenFeatures(IFeatureModel featureModel) {
+		requireNonNull(featureModel);
+
+		return Functional.toList(FeatureUtils.extractHiddenFeatures(featureModel));
 	}
 
 	public static final Node getConstraint(IFeatureModel featureModel, int index) {

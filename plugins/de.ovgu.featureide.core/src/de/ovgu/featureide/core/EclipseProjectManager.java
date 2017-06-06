@@ -18,39 +18,18 @@
  *
  * See http://featureide.cs.ovgu.de/ for further information.
  */
-package de.ovgu.featureide.fm.core.io.manager;
+package de.ovgu.featureide.core;
 
-import java.nio.file.Path;
-import java.util.List;
-
-import de.ovgu.featureide.fm.core.base.event.IEventManager;
-import de.ovgu.featureide.fm.core.io.Problem;
+import de.ovgu.featureide.fm.core.ProjectManager;
 
 /**
- * Responsible to load and save all information for a feature model instance.
  * 
  * @author Sebastian Krieter
  */
-public interface IFileManager<T> extends IEventManager {
+public class EclipseProjectManager extends ProjectManager {
 
-	String getAbsolutePath();
-
-	List<Problem> getLastProblems();
-
-	boolean read();
-
-	boolean save();
-
-	boolean externalSave(Runnable externalSaveMethod);
-
-	void dispose();
-
-	T getObject();
-
-	T editObject();
-
-	void setObject(T object);
-
-	Path getPath();
+	private EclipseProjectManager() {
+		super();
+	}
 
 }

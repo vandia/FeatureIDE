@@ -105,7 +105,7 @@ public abstract class FileManagerMap {
 	 */
 	@SuppressWarnings("unchecked")
 	@CheckForNull
-	public static <T, R extends AFileManager<T>> R getInstance(String path) {
+	public static <T, R extends IFileManager<T>> R getInstance(String path) {
 		return (R) map.get(constructAbsolutePath(path));
 	}
 
