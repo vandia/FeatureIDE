@@ -155,11 +155,11 @@ public class ConstraintFigure extends ModelElementFigure implements GUIDefaults 
 		case NORMAL:
 			break;
 		case FALSE_OPTIONAL:
-			if (!constraintProperties.getFalseOptional().isEmpty()) {
+			if (!constraintProperties.getFalseOptionalFeatures().isEmpty()) {
 				if (!constraintProperties.getDeadFeatures().isEmpty()) {
 					toolTip.append("\n\n");
 				}
-				final List<String> falseOptionalFeatures = Functional.mapToList(constraintProperties.getFalseOptional(),
+				final List<String> falseOptionalFeatures = Functional.mapToList(constraintProperties.getFalseOptionalFeatures(),
 						new Functional.ToStringFunction<IFeature>());
 				Collections.sort(falseOptionalFeatures, String.CASE_INSENSITIVE_ORDER);
 

@@ -33,7 +33,7 @@ import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.FeatureModelCNF;
 import de.ovgu.featureide.fm.core.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.analysis.ConditionallyCoreDeadAnalysisSat;
+import de.ovgu.featureide.fm.core.cnf.analysis.CoreDeadAnalysis;
 import de.ovgu.featureide.fm.core.cnf.analysis.CountSolutionsAnalysis;
 import de.ovgu.featureide.fm.core.cnf.generator.OneWiseConfigurationGenerator;
 import de.ovgu.featureide.fm.core.cnf.generator.SolutionGenerator;
@@ -367,7 +367,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 			workMonitor.setRemainingWork(manualLiterals.size() + 1);
 			Collections.reverse(manualLiterals);
 
-			final ConditionallyCoreDeadAnalysisSat analysis = new ConditionallyCoreDeadAnalysisSat(rootNode);
+			final CoreDeadAnalysis analysis = new CoreDeadAnalysis(rootNode);
 			final int[] intLiterals = new int[manualLiterals.size()];
 			for (int i = 0; i < intLiterals.length; i++) {
 				intLiterals[i] = manualLiterals.get(i);

@@ -20,15 +20,11 @@
  */
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
-import org.sat4j.minisat.core.Solver;
-
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.SatUtils;
-import de.ovgu.featureide.fm.core.cnf.solver.FixedLiteralSelectionStrategy;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2.SelectionStrategy;
-import de.ovgu.featureide.fm.core.cnf.solver.VarOrderHeap2;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -36,13 +32,11 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class CoreDeadAnalysis extends AbstractAnalysis<LiteralSet> {
+public class CoreDeadAnalysis extends AVariableAnalysis<LiteralSet> {
 
 	public CoreDeadAnalysis(ISatSolver2 solver) {
 		this(solver, null);
 	}
-
-	private LiteralSet variables;
 
 	public CoreDeadAnalysis(CNF satInstance) {
 		this(satInstance, null);
@@ -110,11 +104,4 @@ public class CoreDeadAnalysis extends AbstractAnalysis<LiteralSet> {
 		return new LiteralSet(solver.getAssignmentArray(initialAssignmentLength, solver.getAssignmentSize()));
 	}
 
-	public LiteralSet getVariables() {
-		return variables;
-	}
-
-	public void setVariables(LiteralSet variables) {
-		this.variables = variables;
-	}
 }

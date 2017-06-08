@@ -31,31 +31,32 @@ import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
 import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
- * Finds core and dead features.
+ * Finds clauses responsible for core and dead features.
  * 
  * @author Sebastian Krieter
  */
-public class RedundancyAnalysis extends ARedundancyAnalysis {
+public class CoreDeadCauseAnalysis extends AClauseAnalysis<List<LiteralSet>> {
 
-	public RedundancyAnalysis(CNF satInstance) {
+	public CoreDeadCauseAnalysis(CNF satInstance) {
 		super(satInstance);
 	}
 
-	public RedundancyAnalysis(ISatSolver2 solver) {
+	public CoreDeadCauseAnalysis(ISatSolver2 solver) {
 		super(solver);
 	}
 
-	public RedundancyAnalysis(CNF satInstance, List<LiteralSet> clauseList) {
-		super(satInstance);
-		this.clauseList = clauseList;
+	protected LiteralSet variables;
+
+	public LiteralSet getVariables() {
+		return variables;
 	}
 
-	public RedundancyAnalysis(ISatSolver2 solver, List<LiteralSet> clauseList) {
-		super(solver);
-		this.clauseList = clauseList;
+	public void setVariables(LiteralSet variables) {
+		this.variables = variables;
 	}
 
 	public List<LiteralSet> analyze(IMonitor monitor) throws Exception {
@@ -64,16 +65,22 @@ public class RedundancyAnalysis extends ARedundancyAnalysis {
 		}
 		monitor.setRemainingWork(clauseList.size() + 1);
 
-		final List<LiteralSet> resultList = new ArrayList<>(clauseList);
-		final Integer[] index = Functional.getSortedIndex(resultList, new ClauseLengthComparatorDsc());
+		final List<LiteralSet> resultList = new ArrayList<>(clauseList.size());
+		for (int i = 0; i < clauseList.size(); i++) {
+			resultList.add(null);
+		}
+		LiteralSet remainingVariables = new LiteralSet(variables);
+		final Integer[] index = Functional.getSortedIndex(clauseList, new ClauseLengthComparatorDsc());
 		final AdvancedSatSolver emptySolver = new ModifiableSatSolver(new CNF(solver.getSatInstance(), true));
 		monitor.step();
 
 		for (int i = index.length - 1; i >= 0; --i) {
-			final LiteralSet clause = clauseList.get(index[i]);
-			if (!isRedundant(emptySolver, clause)) {
-				emptySolver.addClause(clause);
-				resultList.set(index[i], null);
+			emptySolver.addClause(clauseList.get(index[i]));
+
+			final LiteralSet newVariables = LongRunningWrapper.runMethod(new CoreDeadAnalysis(solver, remainingVariables));
+			if (newVariables.getLiterals().length != 0) {
+				resultList.set(index[i], newVariables);
+				remainingVariables = remainingVariables.removeAll(newVariables);
 			}
 			monitor.step();
 		}

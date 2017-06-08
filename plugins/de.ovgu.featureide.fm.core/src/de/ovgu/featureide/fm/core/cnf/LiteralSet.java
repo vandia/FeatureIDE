@@ -55,7 +55,6 @@ public class LiteralSet implements Cloneable, Serializable {
 		return literals;
 	}
 
-
 	public boolean containsLiteral(int literal) {
 		for (int curLiteral : literals) {
 			if (curLiteral == literal) {
@@ -64,7 +63,7 @@ public class LiteralSet implements Cloneable, Serializable {
 		}
 		return false;
 	}
-	
+
 	public boolean contains(int variable) {
 		for (int curLiteral : literals) {
 			if (Math.abs(curLiteral) == variable) {
@@ -96,6 +95,49 @@ public class LiteralSet implements Cloneable, Serializable {
 	@Override
 	public LiteralSet clone() {
 		return new LiteralSet(this);
+	}
+
+	public LiteralSet removeAll(LiteralSet variables) {
+		final boolean[] removeMarker = new boolean[literals.length];
+		final int count = getDuplicates(variables, removeMarker);
+
+		final int[] newLiterals = new int[literals.length - count];
+		int j = 0;
+		for (int i = 0; i < literals.length; i++) {
+			if (!removeMarker[i]) {
+				newLiterals[j++] = literals[i];
+			}
+		}
+		return new LiteralSet(newLiterals);
+	}
+
+	public LiteralSet retainAll(LiteralSet variables) {
+		final boolean[] removeMarker = new boolean[literals.length];
+		final int count = getDuplicates(variables, removeMarker);
+
+		final int[] newLiterals = new int[count];
+		int j = 0;
+		for (int i = 0; i < literals.length; i++) {
+			if (removeMarker[i]) {
+				newLiterals[j++] = literals[i];
+			}
+		}
+		return new LiteralSet(newLiterals);
+	}
+
+	private int getDuplicates(LiteralSet variables, final boolean[] removeMarker) {
+		final int[] otherLiterals = variables.getLiterals();
+		int count = 0;
+		for (int i = 0; i < otherLiterals.length; i++) {
+			final int otherLiteral = otherLiterals[i];
+			for (int j = 0; j < literals.length; j++) {
+				if (literals[j] == otherLiteral) {
+					count++;
+					removeMarker[j] = true;
+				}
+			}
+		}
+		return count;
 	}
 
 	public LiteralSet flip() {
@@ -155,12 +197,12 @@ public class LiteralSet implements Cloneable, Serializable {
 			return uniqueVarArray;
 		}
 	}
-	
+
 	/**
 	 * Constructs a new array of literals that contains no duplicates and unwanted literals.
 	 * Also checks whether the array contains a literal and its negation.
 	 * 
-	 * @param literalArray The initial literal array. 
+	 * @param literalArray The initial literal array.
 	 * @param unwantedVariables An array of variables that should be removed.
 	 * @return A new literal array or {@code null}, if the initial set contained a literal and its negation.
 	 * 
@@ -190,12 +232,12 @@ public class LiteralSet implements Cloneable, Serializable {
 		}
 		return uniqueVarArray;
 	}
-	
+
 	/**
 	 * Constructs a new {@link LiteralSet} that contains no duplicates and unwanted literals.
 	 * Also checks whether the set contains a literal and its negation.
 	 * 
-	 * @param literalSet The initial literal set. 
+	 * @param literalSet The initial literal set.
 	 * @param unwantedVariables An array of variables that should be removed.
 	 * @return A new literal set or {@code null}, if the initial set contained a literal and its negation.
 	 * 

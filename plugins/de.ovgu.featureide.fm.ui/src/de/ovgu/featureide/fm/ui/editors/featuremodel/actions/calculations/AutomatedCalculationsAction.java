@@ -25,7 +25,7 @@ import static de.ovgu.featureide.fm.core.localization.StringTable.AUTOMATED_CALC
 import org.eclipse.gef.ui.parts.GraphicalViewerImpl;
 import org.eclipse.jface.action.Action;
 
-import de.ovgu.featureide.fm.core.ConstraintAttribute;
+import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.FeatureStatus;
 import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IConstraint;
@@ -50,16 +50,17 @@ public class AutomatedCalculationsAction extends Action {
 
 	@Override
 	public void run() {
-		if (ProjectManager.getAnalyzer(featureModel).runCalculationAutomatically) {
+		final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(featureModel);
+		if (analyzer.runCalculationAutomatically) {
 			for (IFeature f : featureModel.getFeatures()) {
 				f.getProperty().setFeatureStatus(FeatureStatus.NORMAL, false);
 			}
 			for (IConstraint c : featureModel.getConstraints()) {
-				c.setConstraintAttribute(ConstraintAttribute.NORMAL, false);
+				analyzer.getConstraintProperties(c).resetStatus();
 			}
-			ProjectManager.getAnalyzer(featureModel).runCalculationAutomatically = false;
+			analyzer.runCalculationAutomatically = false;
 		} else {
-			ProjectManager.getAnalyzer(featureModel).runCalculationAutomatically = true;
+			analyzer.runCalculationAutomatically = true;
 		}
 		featureModel.handleModelDataChanged();
 	}

@@ -25,7 +25,6 @@ import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
-import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -33,7 +32,7 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public abstract class AbstractAnalysis<T> implements LongRunningMethod<T> {
+public abstract class AbstractAnalysis<T> implements IAnalysis<T> {
 
 	protected ISatSolver2 solver;
 

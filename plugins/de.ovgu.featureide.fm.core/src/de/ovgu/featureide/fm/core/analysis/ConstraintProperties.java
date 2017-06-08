@@ -90,7 +90,7 @@ public class ConstraintProperties {
 	//		return deadFeaturesAfter;
 	//	}
 
-	public Collection<IFeature> getFalseOptional() {
+	public Collection<IFeature> getFalseOptionalFeatures() {
 		return falseOptionalFeatures;
 	}
 
@@ -148,6 +148,13 @@ public class ConstraintProperties {
 
 	public void setConstraintSatisfiabilityStatus(ConstraintFalseSatisfiabilityStatus constraintFalseSatisfiabilityStatus) {
 		this.constraintFalseSatisfiabilityStatus = constraintFalseSatisfiabilityStatus;
+	}
+
+	public void resetStatus() {
+		this.constraintRedundancyStatus = ConstraintRedundancyStatus.UNKNOWN;
+		this.constraintDeadStatus = ConstraintDeadStatus.UNKNOWN;
+		this.constraintFalseOptionalStatus = ConstraintFalseOptionalStatus.UNKNOWN;
+		this.constraintFalseSatisfiabilityStatus = ConstraintFalseSatisfiabilityStatus.UNKNOWN;
 	}
 
 }

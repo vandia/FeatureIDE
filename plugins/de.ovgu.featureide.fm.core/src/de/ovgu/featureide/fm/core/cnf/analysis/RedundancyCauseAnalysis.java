@@ -31,6 +31,7 @@ import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
 import de.ovgu.featureide.fm.core.functional.Functional;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -38,42 +39,55 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class RedundancyAnalysis extends ARedundancyAnalysis {
+public class RedundancyCauseAnalysis extends AClauseAnalysis<List<List<LiteralSet>>> {
 
-	public RedundancyAnalysis(CNF satInstance) {
+	public RedundancyCauseAnalysis(CNF satInstance) {
 		super(satInstance);
 	}
 
-	public RedundancyAnalysis(ISatSolver2 solver) {
+	public RedundancyCauseAnalysis(ISatSolver2 solver) {
 		super(solver);
 	}
 
-	public RedundancyAnalysis(CNF satInstance, List<LiteralSet> clauseList) {
-		super(satInstance);
-		this.clauseList = clauseList;
+	protected List<LiteralSet> redundantClauseList;
+
+	public List<LiteralSet> getRedundantClauseList() {
+		return redundantClauseList;
 	}
 
-	public RedundancyAnalysis(ISatSolver2 solver, List<LiteralSet> clauseList) {
-		super(solver);
-		this.clauseList = clauseList;
+	public void setRedundantClauseList(List<LiteralSet> redundantClauseList) {
+		this.redundantClauseList = redundantClauseList;
 	}
 
-	public List<LiteralSet> analyze(IMonitor monitor) throws Exception {
+	public List<List<LiteralSet>> analyze(IMonitor monitor) throws Exception {
 		if (clauseList == null) {
 			return Collections.emptyList();
 		}
 		monitor.setRemainingWork(clauseList.size() + 1);
 
-		final List<LiteralSet> resultList = new ArrayList<>(clauseList);
-		final Integer[] index = Functional.getSortedIndex(resultList, new ClauseLengthComparatorDsc());
+		final List<List<LiteralSet>> resultList = new ArrayList<>(clauseList.size());
+		for (int i = 0; i < clauseList.size(); i++) {
+			resultList.add(null);
+		}
+		List<LiteralSet> remainingClauses = new ArrayList<>(redundantClauseList);
+		final Integer[] index = Functional.getSortedIndex(clauseList, new ClauseLengthComparatorDsc());
 		final AdvancedSatSolver emptySolver = new ModifiableSatSolver(new CNF(solver.getSatInstance(), true));
 		monitor.step();
 
+		final ArrayList<LiteralSet> newClauseList = new ArrayList<>();
 		for (int i = index.length - 1; i >= 0; --i) {
-			final LiteralSet clause = clauseList.get(index[i]);
-			if (!isRedundant(emptySolver, clause)) {
-				emptySolver.addClause(clause);
-				resultList.set(index[i], null);
+			emptySolver.addClause(clauseList.get(index[i]));
+
+			final List<LiteralSet> newClauses = LongRunningWrapper.runMethod(new RedundancyAnalysis(solver, remainingClauses));
+			newClauseList.clear();
+			for (LiteralSet newClause : newClauses) {
+				if (newClause != null) {
+					newClauseList.add(newClause);
+				}
+			}
+			if (!newClauseList.isEmpty()) {
+				resultList.set(index[i], newClauseList);
+				remainingClauses.removeAll(newClauseList);
 			}
 			monitor.step();
 		}

@@ -37,7 +37,7 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class AtomicSetAnalysis extends AbstractAnalysis<List<LiteralSet>> {
+public class AtomicSetAnalysis extends AVariableAnalysis<List<LiteralSet>> {
 
 	public AtomicSetAnalysis(ISatSolver2 solver) {
 		super(solver);

@@ -41,9 +41,7 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class DeterminedAnalysis extends AbstractAnalysis<LiteralSet> {
-
-	private LiteralSet variables;
+public class DeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
 
 	public DeterminedAnalysis(CNF satInstance) {
 		super(satInstance);
@@ -108,14 +106,6 @@ public class DeterminedAnalysis extends AbstractAnalysis<LiteralSet> {
 		default:
 			throw new AssertionError(hasSolution);
 		}
-	}
-
-	public LiteralSet getVariables() {
-		return variables;
-	}
-
-	public void setVariables(LiteralSet variables) {
-		this.variables = variables;
 	}
 
 }

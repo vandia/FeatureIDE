@@ -20,41 +20,32 @@
  */
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
-import java.util.List;
-
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
-import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver;
-import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
 
 /**
- * Finds core and dead features.
+ * 
  * 
  * @author Sebastian Krieter
  */
-public abstract class ARedundancyAnalysis extends AClauseAnalysis<List<LiteralSet>> {
+public abstract class AVariableAnalysis<T> extends AbstractAnalysis<T> {
 
-	public ARedundancyAnalysis(CNF satInstance) {
-		super(satInstance);
-	}
+	protected LiteralSet variables;
 
-	public ARedundancyAnalysis(ISatSolver2 solver) {
+	public AVariableAnalysis(ISatSolver2 solver) {
 		super(solver);
 	}
 
-	protected boolean isRedundant(ISimpleSatSolver solver, LiteralSet curClause) {
-		final SatResult hasSolution = solver.hasSolution(SatUtils.negateSolution(curClause.getLiterals()));
-		switch (hasSolution) {
-		case FALSE:
-			return true;
-		case TIMEOUT:
-		case TRUE:
-			return false;
-		default:
-			throw new AssertionError(hasSolution);
-		}
+	public AVariableAnalysis(CNF satInstance) {
+		super(satInstance);
 	}
 
+	public LiteralSet getVariables() {
+		return variables;
+	}
+
+	public void setVariables(LiteralSet variables) {
+		this.variables = variables;
+	}
 }

@@ -29,15 +29,15 @@ import de.ovgu.featureide.fm.core.explanations.Explanation;
  * @author Sebastian Krieter
  */
 public class FeatureProperties {
-	
+
 	public static enum FeatureSelectionStatus {
 		UNKNOWN, COMMON, DEAD, CORE
 	}
-	
+
 	public static enum FeatureDeterminedStatus {
 		UNKNOWN, INDETERMINATE, DETERMINATE, INDETERMINATE_HIDDEN
 	}
-	
+
 	public static enum FeatureParentStatus {
 		UNKNOWN, OPTIONAL, MANDATORY, GROUP, FALSE_OPTIONAL
 	}
@@ -104,6 +104,12 @@ public class FeatureProperties {
 
 	public void setFeatureParentStatus(FeatureParentStatus featureParentStatus) {
 		this.featureParentStatus = featureParentStatus;
+	}
+
+	public void resetStatus() {
+		this.featureSelectionStatus = FeatureSelectionStatus.UNKNOWN;
+		this.featureDeterminedStatus = FeatureDeterminedStatus.UNKNOWN;
+		this.featureParentStatus = FeatureParentStatus.UNKNOWN;
 	}
 
 }

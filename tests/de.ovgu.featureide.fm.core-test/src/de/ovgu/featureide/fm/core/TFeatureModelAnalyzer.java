@@ -141,12 +141,12 @@ public class TFeatureModelAnalyzer {
 	
 	@Test
 	public void TFalseOptional_FM1_C1_F1() {
-		assertTrue(FM1_C1.getFalseOptional().contains(FM1_F1));
+		assertTrue(FM1_C1.getFalseOptionalFeatures().contains(FM1_F1));
 	}
 	
 	@Test
 	public void TFalseOptional_FM1_C1_F2() {
-		assertTrue(FM1_C1.getFalseOptional().contains(FM1_F2));
+		assertTrue(FM1_C1.getFalseOptionalFeatures().contains(FM1_F2));
 	}
 	
 	@Test
@@ -171,17 +171,17 @@ public class TFeatureModelAnalyzer {
 	
 	@Test
 	public void TFalseOptional_FM2_C1_F1() {
-		assertTrue(FM2_C1.getFalseOptional().contains(FM2_F1));
+		assertTrue(FM2_C1.getFalseOptionalFeatures().contains(FM2_F1));
 	}
 	
 	@Test
 	public void TFalseOptional_FM2_C1_F2() {
-		assertTrue(FM2_C1.getFalseOptional().contains(FM2_F2));
+		assertTrue(FM2_C1.getFalseOptionalFeatures().contains(FM2_F2));
 	}
 	
 	@Test
 	public void TFalseOptional_FM2_C1_F3() {
-		assertTrue(!FM2_C1.getFalseOptional().contains(FM2_F3));
+		assertTrue(!FM2_C1.getFalseOptionalFeatures().contains(FM2_F3));
 	}
 	
 	@Test
@@ -191,7 +191,7 @@ public class TFeatureModelAnalyzer {
 	
 	@Test
 	public void TFalseOptional_FM2_C2_F() {
-		assertTrue(FM2_C2.getFalseOptional().isEmpty());
+		assertTrue(FM2_C2.getFalseOptionalFeatures().isEmpty());
 	}
 	
 	@Test
@@ -201,7 +201,7 @@ public class TFeatureModelAnalyzer {
 	
 	@Test
 	public void TFalseOptional_FM2_C3_F() {
-		assertTrue(FM2_C3.getFalseOptional().isEmpty());
+		assertTrue(FM2_C3.getFalseOptionalFeatures().isEmpty());
 	}
 	
 	@Test
@@ -221,7 +221,7 @@ public class TFeatureModelAnalyzer {
 	
 	@Test
 	public void TFalseOptional_FM3_C1_contains() {
-		assertTrue(FM3_C1.getFalseOptional().contains(FM3_F2));
+		assertTrue(FM3_C1.getFalseOptionalFeatures().contains(FM3_F2));
 	}
 	
 	@Test

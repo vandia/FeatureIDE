@@ -24,6 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,6 +51,7 @@ import de.ovgu.featureide.fm.core.Operator;
 import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.RenamingsManager;
 import de.ovgu.featureide.fm.core.analysis.ConstraintProperties;
+import de.ovgu.featureide.fm.core.analysis.FeatureModelProperties;
 import de.ovgu.featureide.fm.core.analysis.FeatureProperties;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.filter.ConcreteFeatureFilter;
@@ -455,10 +457,11 @@ public final class FeatureUtils {
 		return Functional.toList(getPropositionalNodes(featureModel)).get(index);
 	}
 
+	@Deprecated
 	public static final ConstraintAttribute getConstraintAttribute(IConstraint constraint) {
 		requireNonNull(constraint);
 
-		return constraint.getConstraintAttribute();
+		return ConstraintAttribute.NORMAL;
 	}
 
 	public static final int getConstraintCount(IFeatureModel featureModel) {
@@ -493,7 +496,7 @@ public final class FeatureUtils {
 	public static final Collection<IFeature> getDeadFeatures(IConstraint constraint) {
 		requireNonNull(constraint);
 
-		return constraint.getDeadFeatures();
+		return getConstraintProperties(constraint).getDeadFeatures();
 	}
 
 	public static final Collection<IFeature> getDeadFeatures(IConstraint constraint, IFeatureModel fm, Collection<IFeature> fmDeadFeatures) {
@@ -520,11 +523,12 @@ public final class FeatureUtils {
 		return deadFeaturesAfter;
 	}
 
+	@Deprecated
 	public static final Collection<IFeature> getDeadFeatures(IConstraint constraint, SatSolver solver, IFeatureModel fm, Collection<IFeature> fmDeadFeatures) {
 		requireNonNull(constraint);
 		requireNonNull(fmDeadFeatures);
 
-		return Functional.toList(constraint.getDeadFeatures(solver, fm, fmDeadFeatures));
+		return Collections.emptyList();
 	}
 
 	public static final String getDescription(IFeature feature) {
@@ -540,10 +544,10 @@ public final class FeatureUtils {
 		return feature.getProperty().getDisplayName();
 	}
 
-	public static final Iterable<IFeature> getFalseOptional(IConstraint constraint) {
+	public static final Collection<IFeature> getFalseOptional(IConstraint constraint) {
 		requireNonNull(constraint);
 
-		return constraint.getFalseOptional();
+		return getConstraintProperties(constraint).getFalseOptionalFeatures();
 	}
 
 	public static final IFeature getFeature(IFeatureModel featureModel, CharSequence name) {
@@ -805,13 +809,13 @@ public final class FeatureUtils {
 	public static final boolean hasDeadConst(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return featureModel.getStructure().hasDeadConstraints();
+		return getFeatureModelProperties(featureModel).hasDeadConstraints();
 	}
 
 	public static final boolean hasFalseOptionalFeatures(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return featureModel.getStructure().hasFalseOptionalFeatures();
+		return getFeatureModelProperties(featureModel).hasFalseOptionalFeatures();
 	}
 
 	public static final int hashCode(IConstraint constraint) {
@@ -883,25 +887,25 @@ public final class FeatureUtils {
 	public static final boolean hasRedundantConst(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return featureModel.getStructure().hasRedundantConstraints();
+		return getFeatureModelProperties(featureModel).hasRedundantConstraints();
 	}
 
 	public static final boolean hasTautologyConst(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return featureModel.getStructure().hasTautologyConstraints();
+		return getFeatureModelProperties(featureModel).hasTautologyConstraints();
 	}
 
 	public static final boolean hasUnsatisfiableConst(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return featureModel.getStructure().hasUnsatisfiableConstraints();
+		return getFeatureModelProperties(featureModel).hasUnsatisfiableConstraints();
 	}
 
 	public static final boolean hasVoidModelConst(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return featureModel.getStructure().hasVoidModelConstraints();
+		return getFeatureModelProperties(featureModel).hasVoidModelConstraints();
 	}
 
 	public static final boolean isAbstract(IFeature feature) {
@@ -1201,11 +1205,11 @@ public final class FeatureUtils {
 	//		featureModel.setFeatureOrderInXML(featureModel, featureOrderInXML);
 	//	}
 
+	@Deprecated
 	public static final void setConstraintAttribute(IConstraint constraint, ConstraintAttribute attri, boolean fire) {
 		requireNonNull(constraint);
 		requireNonNull(attri);
-
-		constraint.setConstraintAttribute(attri, fire);
+		// ...
 	}
 
 	public static final void setConstraints(IFeatureModel featureModel, final Iterable<IConstraint> constraints) {
@@ -1223,15 +1227,13 @@ public final class FeatureUtils {
 
 	public static final void setContainedFeatures(IConstraint constraint) {
 		requireNonNull(constraint);
-
-		constraint.setContainedFeatures();
 	}
 
 	public static final void setDeadFeatures(IConstraint constraint, Collection<IFeature> deadFeatures) {
 		requireNonNull(constraint);
 		requireNonNull(deadFeatures);
 
-		constraint.setDeadFeatures(deadFeatures);
+		getConstraintProperties(constraint).setDeadFeatures(deadFeatures);
 	}
 
 	public static final void setDescription(IFeature feature, CharSequence description) {
@@ -1260,11 +1262,13 @@ public final class FeatureUtils {
 		return found;
 	}
 
+	@Deprecated
 	public static final boolean setFalseOptionalFeatures(IConstraint constraint, IFeatureModel clone, Collection<IFeature> fmFalseOptionals) {
 		requireNonNull(constraint);
 		requireNonNull(fmFalseOptionals);
 
-		return constraint.setFalseOptionalFeatures(clone, fmFalseOptionals);
+		getConstraintProperties(constraint).setFalseOptionalFeatures(fmFalseOptionals);
+		return true;
 	}
 
 	public static final void setFeatureOrderList(IFeatureModel featureModel, final List<String> featureOrderList) {
@@ -1439,6 +1443,10 @@ public final class FeatureUtils {
 
 	public static FeatureProperties getFeatureProperties(IFeature feature) {
 		return ProjectManager.getAnalyzer(feature.getFeatureModel()).getFeatureProperties(feature);
+	}
+
+	public static FeatureModelProperties getFeatureModelProperties(IFeatureModel featureModel) {
+		return ProjectManager.getAnalyzer(featureModel).getFeatureModelProperties();
 	}
 
 }

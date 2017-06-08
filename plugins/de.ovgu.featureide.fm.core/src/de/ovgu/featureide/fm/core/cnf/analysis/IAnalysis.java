@@ -20,43 +20,20 @@
  */
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
-import java.util.HashMap;
-
-import de.ovgu.featureide.fm.core.cnf.CNF;
+import de.ovgu.featureide.fm.core.cnf.LiteralSet;
+import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 
 /**
+ * Basic analysis interface.
  * 
  * @author Sebastian Krieter
  */
-public class CNFAnalysis {
+public interface IAnalysis<T> extends LongRunningMethod<T> {
 
-	private CNF cnf;
+	LiteralSet getAssumptions();
 
-	private HashMap<AnalysisResult<?>, AnalysisResult<?>> map;
+	void setAssumptions(LiteralSet assumptions);
 
-	public CNF getCnf() {
-		return cnf;
-	}
+	AnalysisResult<T> getResult();
 
-	public void setCnf(CNF cnf) {
-		this.cnf = cnf;
-	}
-
-	public AnalysisResult<?> getResult(AnalysisResult<?> result) {
-		return map.get(result);
-	}
-
-	public boolean hasResult(AnalysisResult<?> result) {
-		return map.containsKey(result);
-	}
-
-	public AnalysisResult<?> addResult(AnalysisResult<?> result) {
-		final AnalysisResult<?> existingResult = map.get(result);
-		if (existingResult == null) {
-			map.put(result, result);
-			return result;
-		} else {
-			return existingResult;
-		}
-	}
 }

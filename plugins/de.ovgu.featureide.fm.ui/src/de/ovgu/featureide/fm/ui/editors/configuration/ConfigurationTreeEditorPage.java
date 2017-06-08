@@ -80,7 +80,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.prop4j.Node;
 import org.prop4j.NodeWriter;
-import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.ProjectManager;
@@ -1011,15 +1010,12 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 		return job;
 	}
 
-	protected LongRunningJob<List<String>> computeFeatures(final boolean redundantManual, final Display currentDisplay) {
+	protected LongRunningJob<Boolean> computeFeatures(final boolean redundantManual, final Display currentDisplay) {
 		if (!configurationEditor.isAutoSelectFeatures()) {
 			return null;
 		}
-		final TreeItem topItem = tree.getTopItem();
-		SelectableFeature feature = (SelectableFeature) (topItem.getData());
-		final LongRunningMethod<List<String>> update = propagator.update(redundantManual,
-				feature.getFeature().getName());
-		final LongRunningJob<List<String>> job = new LongRunningJob<>("", update);
+		final LongRunningMethod<Boolean> update = propagator.update(redundantManual);
+		final LongRunningJob<Boolean> job = new LongRunningJob<>("", update);
 		job.setIntermediateFunction(new IConsumer<Object>() {
 			@Override
 			public void invoke(Object t) {
@@ -1056,7 +1052,7 @@ public abstract class ConfigurationTreeEditorPage extends EditorPart implements 
 		}
 		updateInfoLabel(null);
 
-		final LongRunningJob<List<String>> updateJob = computeFeatures(redundantManual, currentDisplay);
+		final LongRunningJob<Boolean> updateJob = computeFeatures(redundantManual, currentDisplay);
 		if (updateJob != null) {
 			updateJob.addJobFinishedListener(new JobFinishListener<List<String>>() {
 				@Override

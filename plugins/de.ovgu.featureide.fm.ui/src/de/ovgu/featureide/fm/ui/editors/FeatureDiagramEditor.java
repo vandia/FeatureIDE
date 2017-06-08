@@ -862,13 +862,14 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 						if (waiting) {
 							return true;
 						}
+						analyzer = ProjectManager.getAnalyzer(getFeatureModel());
 
 						// TODO could be combined with analysis results
 						for (IFeature f : featureModelEditor.getFeatureModel().getFeatures()) {
-							f.getProperty().setFeatureStatus(FeatureStatus.NORMAL, false);
+							analyzer.getFeatureProperties(f).resetStatus();
 						}
 						for (IConstraint c : featureModelEditor.getFeatureModel().getConstraints()) {
-							c.setConstraintAttribute(ConstraintAttribute.NORMAL, false);
+							analyzer.getConstraintProperties(c).resetStatus();
 						}
 						refreshGraphics(null);
 
@@ -876,8 +877,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 							return true;
 						}
 
-						analyzer = ProjectManager.getAnalyzer(getFeatureModel());
-						final HashMap<Object, Object> changedAttributes = analyzer.analyzeFeatureModel(monitor);
+						final Map<IFeatureModelElement, Object> changedAttributes = analyzer.analyzeFeatureModel(monitor);
 						refreshGraphics(changedAttributes);
 						return true;
 					}
@@ -900,7 +900,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 	 *            Result of analyis to only refresh special features, or null if
 	 *            all features should be refreshed.
 	 */
-	private void refreshGraphics(final HashMap<Object, Object> changedAttributes) {
+	private void refreshGraphics(final Map<IFeatureModelElement, Object> changedAttributes) {
 		UIJob refreshGraphics = new UIJob(UPDATING_FEATURE_MODEL_ATTRIBUTES) {
 
 			@Override
@@ -915,7 +915,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 						c.update(FeatureIDEEvent.getDefault(EventType.ATTRIBUTE_CHANGED));
 					}
 				} else {
-					for (Object f : changedAttributes.keySet()) {
+					for (IFeatureModelElement f : changedAttributes.keySet()) {
 						if (f instanceof IFeature) {
 							((IFeature) f).fireEvent(new FeatureIDEEvent(this, EventType.ATTRIBUTE_CHANGED, Boolean.FALSE, true));
 							graphicalFeatureModel.getGraphicalFeature((IFeature) f).update(FeatureIDEEvent.getDefault(EventType.ATTRIBUTE_CHANGED));

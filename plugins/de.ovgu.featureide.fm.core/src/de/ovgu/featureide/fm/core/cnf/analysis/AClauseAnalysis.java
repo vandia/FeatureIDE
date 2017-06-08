@@ -20,6 +20,8 @@
  */
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
+import java.util.List;
+
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
@@ -29,16 +31,24 @@ import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
  * 
  * @author Sebastian Krieter
  */
-public abstract class AConditionallyCoreDeadAnalysis extends AbstractAnalysis<LiteralSet> {
+public abstract class AClauseAnalysis<T> extends AbstractAnalysis<T> {
 
-	protected int newCount;
+	protected List<LiteralSet> clauseList;
 
-	public AConditionallyCoreDeadAnalysis(ISatSolver2 solver) {
+	public AClauseAnalysis(CNF satInstance) {
+		super(satInstance);
+	}
+
+	public AClauseAnalysis(ISatSolver2 solver) {
 		super(solver);
 	}
 
-	public AConditionallyCoreDeadAnalysis(CNF satInstance) {
-		super(satInstance);
+	public List<LiteralSet> getClauseList() {
+		return clauseList;
+	}
+
+	public void setClauseList(List<LiteralSet> clauseList) {
+		this.clauseList = clauseList;
 	}
 
 }
