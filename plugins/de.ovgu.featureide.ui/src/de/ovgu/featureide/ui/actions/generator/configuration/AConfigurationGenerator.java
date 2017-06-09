@@ -20,8 +20,9 @@
  */
 package de.ovgu.featureide.ui.actions.generator.configuration;
 
+import java.util.List;
+
 import de.ovgu.featureide.core.IFeatureProject;
-import de.ovgu.featureide.fm.core.FeatureProject.FeatureProjectStatus;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.cnf.CNF;
@@ -69,7 +70,7 @@ public abstract class AConfigurationGenerator implements LongRunningMethod<Void>
 	}
 	
 	protected final CNF getSatInstance(IFeatureModel fm) {
-		final Iterable<String> abstractFeatures = Functional.map(Functional.filter(fm.getFeatures(), new AbstractFeatureFilter()), FeatureUtils.GET_FEATURE_NAME);
+		final List<String> abstractFeatures = Functional.mapToList(fm.getFeatures(), new AbstractFeatureFilter(), FeatureUtils.GET_FEATURE_NAME);
 		return LongRunningWrapper.runMethod(new CNFSlicer(CNFCreator.createNodes(fm), abstractFeatures));
 	}
 	

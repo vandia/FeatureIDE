@@ -101,8 +101,7 @@ public class FeatureModelFormula {
 				default:
 					return cnf2;
 				}
-				final CNFSlicer slicer = new CNFSlicer(cnf2,
-						Functional.map(Functional.filter(featureModel.getFeatures(), filter), FeatureUtils.GET_FEATURE_NAME));
+				final CNFSlicer slicer = new CNFSlicer(cnf2, Functional.mapToList(featureModel.getFeatures(), filter, FeatureUtils.GET_FEATURE_NAME));
 				slicedCNF = LongRunningWrapper.runMethod(slicer);
 				slicedCNFs[index] = slicedCNF;
 			}

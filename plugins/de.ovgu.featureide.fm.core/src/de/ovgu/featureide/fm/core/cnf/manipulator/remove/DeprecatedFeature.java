@@ -27,24 +27,18 @@ package de.ovgu.featureide.fm.core.cnf.manipulator.remove;
  */
 public class DeprecatedFeature implements Comparable<DeprecatedFeature> {
 
-	private final Object feature;
 	private final int id;
 
 	private long positiveCount;
 	private long negativeCount;
 	private long mixedCount;
 
-	public DeprecatedFeature(Object feature, int id) {
-		this.feature = feature;
+	public DeprecatedFeature(int id) {
 		this.id = id;
 
 		positiveCount = 0;
 		negativeCount = 0;
 		mixedCount = 0;
-	}
-
-	public Object getFeature() {
-		return feature;
 	}
 
 	public int getId() {
@@ -120,11 +114,6 @@ public class DeprecatedFeature implements Comparable<DeprecatedFeature> {
 		if (obj == null || getClass() != obj.getClass())
 			return false;
 		return id == ((DeprecatedFeature) obj).id;
-	}
-
-	@Override
-	public String toString() {
-		return feature + ": " + getClauseCount();
 	}
 
 }

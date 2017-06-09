@@ -29,11 +29,13 @@ import org.sat4j.core.VecInt;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.SatUtils;
+import de.ovgu.featureide.fm.core.cnf.manipulator.remove.CNFSlicer;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
 import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -55,11 +57,12 @@ public class DeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
 		monitor.setRemainingWork(variables.getLiterals().length + 1);
 
 		final VecInt resultList = new VecInt();
-		final ModifiableSatSolver modSolver = new ModifiableSatSolver(solver.getSatInstance());
-		final List<LiteralSet> clauses = solver.getSatInstance().getClauses();
 		final List<LiteralSet> relevantClauses = new ArrayList<>();
 
 		for (int literal : variables.getLiterals()) {
+			final CNF slicedCNF = LongRunningWrapper.runMethod(new CNFSlicer(solver.getSatInstance(), variables.removeAll(new LiteralSet(literal))));
+			final List<LiteralSet> clauses = slicedCNF.getClauses();
+			final ModifiableSatSolver modSolver = new ModifiableSatSolver(slicedCNF);
 			for (LiteralSet clause : clauses) {
 				if (clause.contains(literal)) {
 					final LiteralSet newClause = LiteralSet.cleanLiteralSet(clause, literal);
@@ -72,6 +75,9 @@ public class DeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
 				modSolver.addClauses(relevantClauses);
 			} catch (RuntimeContradictionException e) {
 				resultList.push(literal);
+
+				relevantClauses.clear();
+				monitor.step();
 				continue;
 			}
 
@@ -87,8 +93,8 @@ public class DeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
 				throw new AssertionError(hasSolution);
 			}
 			modSolver.removeLastClauses(relevantClauses.size());
-			relevantClauses.clear();
 
+			relevantClauses.clear();
 			monitor.step();
 		}
 

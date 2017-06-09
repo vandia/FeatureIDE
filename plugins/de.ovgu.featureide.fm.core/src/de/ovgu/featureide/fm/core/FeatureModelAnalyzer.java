@@ -742,8 +742,6 @@ public class FeatureModelAnalyzer {
 			constraintPropertiesMap.get(constraint).setConstraintDeadStatus(ConstraintDeadStatus.NORMAL);
 		}
 
-		System.out.println();
-
 		// get constraint anomalies
 		for (IConstraint constraint : getRedundantConstraints()) {
 			constraintPropertiesMap.get(constraint).setConstraintRedundancyStatus(ConstraintRedundancyStatus.REDUNDANT);

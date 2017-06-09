@@ -63,7 +63,7 @@ public class CNFSlicer extends AbstractManipulator {
 	protected final Set<DeprecatedClause> dirtyClauseSet = new HashSet<>();
 	protected final Set<DeprecatedClause> cleanClauseSet = new HashSet<>();
 
-	protected final Iterable<String> dirtyFeatures;
+	protected final LiteralSet dirtyLiterals;
 	private int numberOfDirtyFeatures = 0;
 
 	protected int[] helper;
@@ -79,9 +79,15 @@ public class CNFSlicer extends AbstractManipulator {
 	protected int dirtyListNegIndex = 0;
 	protected int newDirtyListDelIndex = 0;
 
-	public CNFSlicer(CNF orgCNF, Iterable<String> dirtyFeatures) {
+	public CNFSlicer(CNF orgCNF, List<String> dirtyFeatures) {
 		super(orgCNF);
-		this.dirtyFeatures = dirtyFeatures;
+		this.dirtyLiterals = orgCNF.getVariables().convertToVariables(dirtyFeatures);
+		this.cnfCopy = new CNF(orgCNF, false);
+	}
+	
+	public CNFSlicer(CNF orgCNF, LiteralSet dirtyLiterals) {
+		super(orgCNF);
+		this.dirtyLiterals = dirtyLiterals;
 		this.cnfCopy = new CNF(orgCNF, false);
 	}
 
@@ -93,13 +99,10 @@ public class CNFSlicer extends AbstractManipulator {
 		final String[] variableObjects = Arrays.copyOf(names, names.length);
 		map = new DeprecatedFeature[orgCNF.getVariables().size() + 1];
 		numberOfDirtyFeatures = 0;
-		for (String curFeature : dirtyFeatures) {
-			final int id = orgCNF.getVariables().getVariable(curFeature);
-			if (id != 0) {
-				map[id] = new DeprecatedFeature(curFeature, id);
-				variableObjects[id] = null;
-				numberOfDirtyFeatures++;
-			}
+		for (int curFeature : dirtyLiterals.getLiterals()) {
+			map[curFeature] = new DeprecatedFeature(curFeature);
+			variableObjects[curFeature] = null;
+			numberOfDirtyFeatures++;
 		}
 		helper = new int[map.length];
 
@@ -362,7 +365,7 @@ public class CNFSlicer extends AbstractManipulator {
 		first = true;
 		try {
 			newSolver = new SimpleSatSolver(cnfCopy);
-//		newSolver.addClauses(cleanClauseList);
+			//		newSolver.addClauses(cleanClauseList);
 		} catch (RuntimeContradictionException e) {
 			return false;
 		}
