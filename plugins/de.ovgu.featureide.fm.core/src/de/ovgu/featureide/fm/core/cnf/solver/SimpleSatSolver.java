@@ -192,17 +192,29 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 		solver.setDBSimplificationAllowed(true);
 		solver.setVerbose(false);
 	}
-
+	
 	/**
 	 * Add clauses to the solver.
 	 * Initializes the order instance.
 	 */
 	protected void initSolver(Solver<?> solver) throws RuntimeContradictionException {
-		solver.newVar(satInstance.getVariables().size());
+		final int size = satInstance.getVariables().size();
 		final List<LiteralSet> clauses = satInstance.getClauses();
 		if (!clauses.isEmpty()) {
-			solver.setExpectedNumberOfClauses(clauses.size());
+			solver.setExpectedNumberOfClauses(clauses.size() + 1);
 			addClauses(solver, clauses);
+		}
+		if (size > 0) {
+			final VecInt pseudoClause = new VecInt(size + 1);
+			for (int i = 1; i <= size; i++) {
+				pseudoClause.push(i);
+			}
+			pseudoClause.push(-1);
+			try {
+				solver.addClause(pseudoClause);
+			} catch (ContradictionException e) {
+				throw new RuntimeContradictionException(e);
+			}
 		}
 		solver.getOrder().init();
 	}

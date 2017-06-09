@@ -27,9 +27,7 @@ import java.util.List;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.ClauseLengthComparatorDsc;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
-import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
 import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
@@ -48,6 +46,16 @@ public class IndependentRedundancyAnalysis extends ARedundancyAnalysis {
 		super(solver);
 	}
 
+	public IndependentRedundancyAnalysis(ISatSolver2 solver, List<LiteralSet> clauseList) {
+		super(solver);
+		this.clauseList = clauseList;
+	}
+
+	public IndependentRedundancyAnalysis(CNF satInstance, List<LiteralSet> clauseList) {
+		super(satInstance);
+		this.clauseList = clauseList;
+	}
+
 	public List<LiteralSet> analyze(IMonitor monitor) throws Exception {
 		if (clauseList == null) {
 			return Collections.emptyList();
@@ -56,12 +64,11 @@ public class IndependentRedundancyAnalysis extends ARedundancyAnalysis {
 		
 		final List<LiteralSet> resultList = new ArrayList<>(clauseList);
 		final Integer[] index = Functional.getSortedIndex(resultList, new ClauseLengthComparatorDsc());
-		final AdvancedSatSolver emptySolver = new ModifiableSatSolver(new CNF(solver.getSatInstance(), true));
 		monitor.step();
 
 		for (int i = index.length - 1; i >= 0; --i) {
 			final LiteralSet clause = clauseList.get(index[i]);
-			if (!isRedundant(emptySolver, clause)) {
+			if (!isRedundant(solver, clause)) {
 				resultList.set(index[i], null);
 			}
 			monitor.step();

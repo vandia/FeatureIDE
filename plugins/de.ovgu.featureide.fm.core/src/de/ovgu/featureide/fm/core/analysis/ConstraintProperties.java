@@ -69,34 +69,29 @@ public class ConstraintProperties {
 		this.constraint = constraint;
 	}
 
+	public boolean hasStatus(ConstraintRedundancyStatus constraintRedundancyStatus) {
+		return this.constraintRedundancyStatus == constraintRedundancyStatus;
+	}
+
+	public boolean hasStatus(ConstraintDeadStatus constraintDeadStatus) {
+		return this.constraintDeadStatus == constraintDeadStatus;
+	}
+
+	public boolean hasStatus(ConstraintFalseOptionalStatus constraintFalseOptionalStatus) {
+		return this.constraintFalseOptionalStatus == constraintFalseOptionalStatus;
+	}
+
+	public boolean hasStatus(ConstraintFalseSatisfiabilityStatus constraintFalseSatisfiabilityStatus) {
+		return this.constraintFalseSatisfiabilityStatus == constraintFalseSatisfiabilityStatus;
+	}
+
 	public Collection<IFeature> getDeadFeatures() {
 		return Collections.unmodifiableCollection(deadFeatures);
 	}
 
-	//	public Collection<IFeature> getDeadFeatures(SatSolver solver, IFeatureModel featureModel, Collection<IFeature> exlcudeFeatuers) {
-	//
-	//		final Collection<IFeature> deadFeatures;
-	//		final Node propNode = constraint.getNode();
-	//		final Comparator<IFeature> featComp = new FeatureComparator(true);
-	//		if (propNode != null) {
-	//			deadFeatures = ProjectManager.getAnalyzer(featureModel).getDeadFeatures(solver, propNode);
-	//		} else {
-	//			deadFeatures = new TreeSet<IFeature>(featComp);
-	//		}
-	//		final Collection<IFeature> deadFeaturesAfter = new TreeSet<>(featComp);
-	//
-	//		deadFeaturesAfter.addAll(exlcudeFeatuers);
-	//		deadFeaturesAfter.retainAll(deadFeatures);
-	//		return deadFeaturesAfter;
-	//	}
-
 	public Collection<IFeature> getFalseOptionalFeatures() {
 		return falseOptionalFeatures;
 	}
-
-	//	public Collection<IFeature> getFalseOptionalFeatures() {
-	//		return falseOptionalFeatures;
-	//	}
 
 	public void setFalseOptionalFeatures(Collection<IFeature> falseOptionalFeatures) {
 		this.falseOptionalFeatures = falseOptionalFeatures;

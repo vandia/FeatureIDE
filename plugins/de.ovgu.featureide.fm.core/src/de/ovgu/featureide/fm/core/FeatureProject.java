@@ -93,6 +93,10 @@ public class FeatureProject {
 			return configurationList;
 		}
 
+		public ConfigurationPropagator getPropagator() {
+			return getPropagator(new Configuration(featureModel));
+		}
+
 		public ConfigurationPropagator getPropagator(Configuration configuration) {
 			return new ConfigurationPropagator(formula, configuration);
 		}
@@ -188,81 +192,5 @@ public class FeatureProject {
 	}
 
 }
-
-	
-	
-	//	private IFeatureGraph modalImplicationGraph;
-
-	// TODO try to save and load everything
-
-	//	private final LongRunningJob<Boolean> configurationChecker = new LongRunningJob<>(CHECKING_CONFIGURATIONS_FOR_UNUSED_FEATURES,
-	//			new LongRunningMethod<Boolean>() {
-	//				@Override
-	//				public Boolean execute(IMonitor workMonitor) throws Exception {
-	//					workMonitor.setRemainingWork(7);
-	//					next(CALCULATE_CORE_AND_DEAD_FEATURES, workMonitor);
-	//					List<String> concreteFeatures = (List<String>) getOptionalConcreteFeatures();
-	//					next(GET_SELECTION_MATRIX, workMonitor);
-	//					final boolean[][] selectionMatrix = getSelectionMatrix(concreteFeatures);
-	//					next(GET_FALSE_OPTIONAL_FEATURES, workMonitor);
-	//					final Collection<String> falseOptionalFeatures = getFalseOptionalConfigurationFeatures(selectionMatrix, concreteFeatures);
-	//					next(GET_UNUSED_FEATURES, workMonitor);
-	//					workMonitor.checkCancel();
-	//					final Collection<String> deadFeatures = getUnusedConfigurationFeatures(selectionMatrix, concreteFeatures);
-	//					next("create marker: dead features", workMonitor);
-	//					if (!deadFeatures.isEmpty()) {
-	//						createConfigurationMarker(folder, MARKER_UNUSED + deadFeatures.size() + (deadFeatures.size() > 1 ? " features are " : " feature is ")
-	//								+ "not used: " + createShortMessage(deadFeatures), -1, IMarker.SEVERITY_INFO);
-	//					}
-	//					next("create marker: false optional features", workMonitor);
-	//					if (!falseOptionalFeatures.isEmpty()) {
-	//						createConfigurationMarker(folder,
-	//								MARKER_FALSE_OPTIONAL + falseOptionalFeatures.size() + (falseOptionalFeatures.size() > 1 ? " features are " : " feature is ")
-	//										+ "optional but used in all configurations: " + createShortMessage(falseOptionalFeatures),
-	//								-1, IMarker.SEVERITY_INFO);
-	//					}
-	//					next(REFESH_CONFIGURATION_FOLER, workMonitor);
-	//					workMonitor.done();
-	//					return true;
-	//				}
-	//
-	//				private void next(String subTaskName, IMonitor workMonitor) {
-	//					workMonitor.step();
-	//					workMonitor.setTaskName(subTaskName);
-	//				}
-	//
-	//				private String createShortMessage(Collection<String> features) {
-	//					StringBuilder message = new StringBuilder();
-	//					int addedFeatures = 0;
-	//					for (String feature : features) {
-	//						message.append(feature);
-	//						message.append(", ");
-	//						if (addedFeatures++ >= 10) {
-	//							message.append("...");
-	//							break;
-	//						}
-	//					}
-	//					if(addedFeatures < 10 && addedFeatures > 0)
-	//					{
-	//						message.delete(message.lastIndexOf(", "), message.lastIndexOf(", ")+2);						
-	//					}
-	//
-	//					return message.toString();
-	//				}
-	//			});
-
-	//	public Collection<String> getFalseOptionalConfigurationFeatures() {
-	//		return getFalseOptionalConfigurationFeatures(getSelectionMatrix(), (List<String>) getOptionalConcreteFeatures());
-	//	}
-	//
-	//	public Collection<String> getFalseOptionalConfigurationFeatures(boolean[][] selections, final List<String> concreteFeatures) {
-	//		return checkValidSelections(selections, false, concreteFeatures);
-	//	}
-	//
-	//	public Collection<String> getUnusedConfigurationFeatures() {
-	//		return getUnusedConfigurationFeatures(getSelectionMatrix(), (List<String>) getOptionalConcreteFeatures());
-	//	}
-	//
-	//	public Collection<String> getUnusedConfigurationFeatures(boolean[][] selections, final List<String> concreteFeatures) {
-	//		return checkValidSelections(selections, true, concreteFeatures);
-	//	}
+// private IFeatureGraph modalImplicationGraph;
+// TODO try to save and load everything

@@ -27,9 +27,10 @@ import java.util.List;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.ClauseLengthComparatorDsc;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
+import de.ovgu.featureide.fm.core.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
+import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
 import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -51,6 +52,14 @@ public class CoreDeadCauseAnalysis extends AClauseAnalysis<List<LiteralSet>> {
 
 	protected LiteralSet variables;
 
+	protected ISatSolver2 initSolver(CNF satInstance) {
+		try {
+			return new ModifiableSatSolver(satInstance);
+		} catch (RuntimeContradictionException e) {
+			return null;
+		}
+	}
+
 	public LiteralSet getVariables() {
 		return variables;
 	}
@@ -63,26 +72,33 @@ public class CoreDeadCauseAnalysis extends AClauseAnalysis<List<LiteralSet>> {
 		if (clauseList == null) {
 			return Collections.emptyList();
 		}
-		monitor.setRemainingWork(clauseList.size() + 1);
+		monitor.setRemainingWork(clauseList.size() + 2);
 
 		final List<LiteralSet> resultList = new ArrayList<>(clauseList.size());
 		for (int i = 0; i < clauseList.size(); i++) {
 			resultList.add(null);
 		}
-		LiteralSet remainingVariables = new LiteralSet(variables);
+		LiteralSet remainingVariables = new LiteralSet(SatUtils.getVariables(variables));
 		final Integer[] index = Functional.getSortedIndex(clauseList, new ClauseLengthComparatorDsc());
-		final AdvancedSatSolver emptySolver = new ModifiableSatSolver(new CNF(solver.getSatInstance(), true));
 		monitor.step();
 
-		for (int i = index.length - 1; i >= 0; --i) {
-			emptySolver.addClause(clauseList.get(index[i]));
+		remainingVariables = remainingVariables.removeAll(LongRunningWrapper.runMethod(new CoreDeadAnalysis(solver, remainingVariables)));
+		monitor.step();
 
-			final LiteralSet newVariables = LongRunningWrapper.runMethod(new CoreDeadAnalysis(solver, remainingVariables));
-			if (newVariables.getLiterals().length != 0) {
-				resultList.set(index[i], newVariables);
-				remainingVariables = remainingVariables.removeAll(newVariables);
+		if (remainingVariables.getLiterals().length > 0) {
+			for (int i = index.length - 1; i >= 0; --i) {
+				solver.addClause(clauseList.get(index[i]));
+
+				final LiteralSet newVariables = LongRunningWrapper.runMethod(new CoreDeadAnalysis(solver, remainingVariables));
+				if (newVariables.getLiterals().length != 0) {
+					resultList.set(index[i], newVariables);
+					remainingVariables = remainingVariables.removeAll(newVariables);
+					if (remainingVariables.getLiterals().length == 0) {
+						break;
+					}
+				}
+				monitor.step();
 			}
-			monitor.step();
 		}
 
 		return resultList;

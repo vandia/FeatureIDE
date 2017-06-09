@@ -32,11 +32,14 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
+import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
 import de.ovgu.featureide.fm.core.configuration.Selection;
 import de.ovgu.featureide.fm.core.io.manager.ConfigurationManager;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.fm.core.job.monitor.NullMonitor;
 import de.ovgu.featureide.fm.core.job.monitor.ProgressMonitor;
@@ -79,14 +82,17 @@ public class QuickFixFalseOptionalFeatures extends QuickFixMissingConfigurations
 		monitor.setRemainingWork(unusedFeatures.size());
 		final List<Configuration> confs = new LinkedList<Configuration>();
 		final FileHandler<Configuration> writer = new FileHandler<>(ConfigurationManager.getDefaultFormat());
-		Configuration configuration = new Configuration(featureModel);
-		List<List<String>> solutions = configuration.coverFeatures(unusedFeatures, monitor, false);
+		final ConfigurationPropagator propagator;
+		if (project != null) {
+			propagator = project.getStatus().getPropagator();
+		} else {
+			propagator = ProjectManager.getProject(featureModel).getStatus().getPropagator();
+		}
+		List<List<String>> solutions = LongRunningWrapper.runMethod(propagator.coverFeatures(unusedFeatures, false), monitor);
 		for (List<String> solution : solutions) {
-			configuration = new Configuration(featureModel);
+			Configuration configuration = new Configuration(featureModel);
 			for (String feature : solution) {
-				if (!"True".equals(feature)) {
-					configuration.setManual(feature, Selection.SELECTED);
-				}
+				configuration.setManual(feature, Selection.SELECTED);
 			}
 			if (collect) {
 				confs.add(configuration);

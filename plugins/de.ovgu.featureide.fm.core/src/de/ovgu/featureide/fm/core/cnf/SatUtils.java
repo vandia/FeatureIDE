@@ -37,6 +37,15 @@ public class SatUtils {
 		return new LiteralSet(negSolution);
 	}
 
+	public static LiteralSet getVariables(LiteralSet solution) {
+		final int[] literals = solution.getLiterals();
+		int[] absSolution = Arrays.copyOf(literals, literals.length);
+		for (int i = 0; i < absSolution.length; i++) {
+			absSolution[i] = Math.abs(absSolution[i]);
+		}
+		return new LiteralSet(absSolution);
+	}
+
 	public static int[] negateSolution(int[] solution) {
 		int[] negSolution = Arrays.copyOf(solution, solution.length);
 		for (int i = 0; i < negSolution.length; i++) {

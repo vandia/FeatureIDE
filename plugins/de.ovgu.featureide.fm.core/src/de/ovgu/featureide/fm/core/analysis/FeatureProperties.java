@@ -66,6 +66,18 @@ public class FeatureProperties {
 		return feature;
 	}
 
+	public boolean hasStatus(FeatureSelectionStatus featureSelectionStatus) {
+		return this.featureSelectionStatus == featureSelectionStatus;
+	}
+
+	public boolean hasStatus(FeatureDeterminedStatus featureDeterminedStatus) {
+		return this.featureDeterminedStatus == featureDeterminedStatus;
+	}
+
+	public boolean hasStatus(FeatureParentStatus featureParentStatus) {
+		return this.featureParentStatus == featureParentStatus;
+	}
+
 	public Explanation getFalseOptionalExplanation() {
 		return falseOptionalExplanation;
 	}

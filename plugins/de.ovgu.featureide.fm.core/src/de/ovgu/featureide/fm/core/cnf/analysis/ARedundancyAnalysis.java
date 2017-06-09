@@ -28,6 +28,8 @@ import de.ovgu.featureide.fm.core.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
+import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
+import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
 
 /**
  * Finds core and dead features.
@@ -42,6 +44,14 @@ public abstract class ARedundancyAnalysis extends AClauseAnalysis<List<LiteralSe
 
 	public ARedundancyAnalysis(ISatSolver2 solver) {
 		super(solver);
+	}
+
+	protected ISatSolver2 initSolver(CNF satInstance) {
+		try {
+			return new ModifiableSatSolver(satInstance);
+		} catch (RuntimeContradictionException e) {
+			return null;
+		}
 	}
 
 	protected boolean isRedundant(ISimpleSatSolver solver, LiteralSet curClause) {

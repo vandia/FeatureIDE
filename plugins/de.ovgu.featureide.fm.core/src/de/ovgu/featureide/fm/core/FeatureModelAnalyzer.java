@@ -256,19 +256,28 @@ public class FeatureModelAnalyzer {
 	private final FeatureModelFormula formula;
 	private final IFeatureModel featureModel;
 
-	private final int[] constraintCNFLength;
+	private final int[] constraintCNFIndex;
 	private final List<LiteralSet> constraintClauses;
 
 	private final AnalysisWrapper<Boolean, HasSolutionAnalysis> validAnalysis = new AnalysisWrapper<>(HasSolutionAnalysis.class);
 	private final AnalysisWrapper<List<LiteralSet>, AtomicSetAnalysis> atomicSetAnalysis = new AnalysisWrapper<>(AtomicSetAnalysis.class);
 	private final AnalysisWrapper<LiteralSet, CoreDeadAnalysis> coreDeadAnalysis = new AnalysisWrapper<>(CoreDeadAnalysis.class);
-	private final AnalysisWrapper<List<LiteralSet>, RedundancyAnalysis> redundancyAnalysis = new AnalysisWrapper<>(RedundancyAnalysis.class);
-	private final AnalysisWrapper<List<LiteralSet>, IndependentRedundancyAnalysis> independentRedundancyAnalysis = new AnalysisWrapper<>(
-			IndependentRedundancyAnalysis.class);
+	private final AnalysisWrapper<List<LiteralSet>, IndependentRedundancyAnalysis> foAnalysis = new AnalysisWrapper<>(IndependentRedundancyAnalysis.class);
 	private final AnalysisWrapper<LiteralSet, DeterminedAnalysis> determinedAnalysis = new AnalysisWrapper<>(DeterminedAnalysis.class);
+	private final AnalysisWrapper<List<LiteralSet>, RedundancyAnalysis> constraintRedundancyAnalysis = new AnalysisWrapper<>(RedundancyAnalysis.class);
+	private final AnalysisWrapper<List<LiteralSet>, IndependentRedundancyAnalysis> constraintTautologyAnalysis = new AnalysisWrapper<>(
+			IndependentRedundancyAnalysis.class);
+	private final AnalysisWrapper<List<LiteralSet>, CoreDeadCauseAnalysis> constraintDeadAnalysis = new AnalysisWrapper<>(CoreDeadCauseAnalysis.class);
+	private final AnalysisWrapper<List<List<LiteralSet>>, RedundancyCauseAnalysis> constraintFalseOptionalAnalysis = new AnalysisWrapper<>(
+			RedundancyCauseAnalysis.class);
+	private final AnalysisWrapper<List<LiteralSet>, IndependentRedundancyAnalysis> constraintContradictionAnalysis = new AnalysisWrapper<>(
+			IndependentRedundancyAnalysis.class);
+	private final AnalysisWrapper<List<LiteralSet>, IndependentRedundancyAnalysis> constraintVoidAnalysis = new AnalysisWrapper<>(
+			IndependentRedundancyAnalysis.class);
 
 	private final List<AnalysisWrapper<?, ? extends AbstractAnalysis<? extends Object>>> list = Arrays.asList(validAnalysis, atomicSetAnalysis,
-			coreDeadAnalysis, redundancyAnalysis, independentRedundancyAnalysis, determinedAnalysis);
+			coreDeadAnalysis, foAnalysis, determinedAnalysis, constraintDeadAnalysis, constraintFalseOptionalAnalysis, constraintContradictionAnalysis,
+			constraintVoidAnalysis, constraintTautologyAnalysis, constraintRedundancyAnalysis);
 
 	public void reset() {
 		for (AnalysisWrapper<?, ?> analysisWrapper : list) {
@@ -310,15 +319,17 @@ public class FeatureModelAnalyzer {
 		redundantConstraintExplanationCreator = new RedundantConstraintExplanationCreator(featureModel);
 
 		final List<IConstraint> constraints = featureModel.getConstraints();
-		constraintCNFLength = new int[constraints.size()];
+		constraintCNFIndex = new int[constraints.size() + 1];
 		constraintClauses = new ArrayList<>();
 
 		final IVariables variables = formula.getEmptyCNF().getVariables();
-		int i = 0;
+		int i = 0, lastSize = 0;
+		constraintCNFIndex[i++] = lastSize;
 		for (IConstraint constraint : constraints) {
 			final List<LiteralSet> clauses = Nodes.convert(variables, constraint.getNode());
 			constraintClauses.addAll(clauses);
-			constraintCNFLength[i++] = clauses.size();
+			lastSize += clauses.size();
+			constraintCNFIndex[i++] = lastSize;
 		}
 
 		init();
@@ -408,23 +419,24 @@ public class FeatureModelAnalyzer {
 		LiteralSet result = determinedAnalysis.getCachedResult();
 		if (result == null) {
 			final DeterminedAnalysis analysis = determinedAnalysis.createNewAnalysis(cnf);
-			analysis.setVariables(cnf.getVariables()
-					.convertToVariables(Functional.mapToList(featureModel.getFeatures(), new HiddenFeatureFilter(), FeatureUtils.GET_FEATURE_NAME)));
+			final LiteralSet convertToVariables = cnf.getVariables()
+					.convertToVariables(Functional.mapToList(featureModel.getFeatures(), new HiddenFeatureFilter(), FeatureUtils.GET_FEATURE_NAME));
+			analysis.setVariables(convertToVariables);
 			result = determinedAnalysis.getResult(analysis);
 			if (result == null) {
 				return Collections.emptyList();
 			}
 		}
-		return Functional.mapToList(cnf.getVariables().convertToString(result, false, true, false), new StringToFeature(featureModel));
+		return Functional.mapToList(cnf.getVariables().convertToString(result, true, false, false), new StringToFeature(featureModel));
 	}
 
 	public List<IFeature> getFalseOptionalFeatures() {
-		List<LiteralSet> result = redundancyAnalysis.getCachedResult();
+		List<LiteralSet> result = foAnalysis.getCachedResult();
 		final List<IFeature> optionalFeatures = Functional.filterToList(featureModel.getFeatures(), new OptionalFeatureFilter());
 		if (result == null) {
 			final FeatureModelCNF cnf = formula.getCNF();
 			final IVariables variables = cnf.getVariables();
-			final RedundancyAnalysis analysis = redundancyAnalysis.createNewAnalysis(cnf);
+			final IndependentRedundancyAnalysis analysis = foAnalysis.createNewAnalysis(cnf);
 
 			final List<LiteralSet> literalSetList = new ArrayList<>();
 			for (IFeature iFeature : optionalFeatures) {
@@ -432,7 +444,7 @@ public class FeatureModelAnalyzer {
 						variables.getVariable(iFeature.getName(), true)));
 			}
 			analysis.setClauseList(literalSetList);
-			result = redundancyAnalysis.getResult(analysis);
+			result = foAnalysis.getResult(analysis);
 			if (result == null) {
 				return Collections.emptyList();
 			}
@@ -447,9 +459,6 @@ public class FeatureModelAnalyzer {
 		}
 		return resultList;
 	}
-
-	private final AnalysisWrapper<List<LiteralSet>, IndependentRedundancyAnalysis> constraintContradictionAnalysis = new AnalysisWrapper<>(
-			IndependentRedundancyAnalysis.class);
 
 	public List<IConstraint> getContradictoryConstraints() {
 		List<LiteralSet> result = constraintContradictionAnalysis.getCachedResult();
@@ -468,9 +477,9 @@ public class FeatureModelAnalyzer {
 		}
 
 		final List<IConstraint> resultList = new ArrayList<>();
-		int j = 0, i = 0;
+		int i = 0;
 		for (IConstraint constraint : featureModel.getConstraints()) {
-			for (int k = j + constraintCNFLength[i++]; j < k; j++) {
+			for (int j = constraintCNFIndex[i++], k = constraintCNFIndex[i]; j < k; j++) {
 				if (result.get(j) == null) {
 					resultList.add(constraint);
 					break;
@@ -480,12 +489,10 @@ public class FeatureModelAnalyzer {
 		return resultList;
 	}
 
-	private final AnalysisWrapper<List<LiteralSet>, RedundancyAnalysis> constraintVoidAnalysis = new AnalysisWrapper<>(RedundancyAnalysis.class);
-
 	public List<IConstraint> getVoidConstraints() {
 		List<LiteralSet> result = constraintVoidAnalysis.getCachedResult();
 		if (result == null) {
-			final RedundancyAnalysis analysis = constraintVoidAnalysis.createNewAnalysis(formula.getFeatureTreeClauses());
+			final IndependentRedundancyAnalysis analysis = constraintVoidAnalysis.createNewAnalysis(formula.getFeatureTreeClauses());
 
 			final List<LiteralSet> negatedClauses = new ArrayList<>(constraintClauses.size());
 			for (LiteralSet clause : constraintClauses) {
@@ -499,9 +506,9 @@ public class FeatureModelAnalyzer {
 		}
 
 		final List<IConstraint> resultList = new ArrayList<>();
-		int j = 0, i = 0;
+		int i = 0;
 		for (IConstraint constraint : featureModel.getConstraints()) {
-			for (int k = j + constraintCNFLength[i++]; j < k; j++) {
+			for (int j = constraintCNFIndex[i++], k = constraintCNFIndex[i]; j < k; j++) {
 				if (result.get(j) == null) {
 					resultList.add(constraint);
 					break;
@@ -511,18 +518,18 @@ public class FeatureModelAnalyzer {
 		return resultList;
 	}
 
-	private final AnalysisWrapper<List<LiteralSet>, CoreDeadCauseAnalysis> constraintDeadAnalysis = new AnalysisWrapper<>(CoreDeadCauseAnalysis.class);
-	private final AnalysisWrapper<List<List<LiteralSet>>, RedundancyCauseAnalysis> constraintFalseOptionalAnalysis = new AnalysisWrapper<>(
-			RedundancyCauseAnalysis.class);
-
 	public List<IConstraint> getDeadConstraints() {
 		final FeatureModelCNF cnf = formula.getCNF();
 
 		List<LiteralSet> result = constraintDeadAnalysis.getCachedResult();
 		if (result == null) {
 			final CoreDeadCauseAnalysis analysis = constraintDeadAnalysis.createNewAnalysis(formula.getFeatureTreeClauses());
-			// TODO !!!
-			analysis.setVariables(null);
+
+			final LiteralSet deadResult = coreDeadAnalysis.getResult(cnf);
+			if (deadResult == null) {
+				return Collections.emptyList();
+			}
+			analysis.setVariables(deadResult);
 			analysis.setClauseList(constraintClauses);
 			result = constraintDeadAnalysis.getResult(analysis);
 			if (result == null) {
@@ -531,10 +538,10 @@ public class FeatureModelAnalyzer {
 		}
 
 		final List<IConstraint> resultList = new ArrayList<>();
-		int j = 0, i = 0;
+		int i = 0;
 		for (IConstraint constraint : featureModel.getConstraints()) {
 			final ArrayList<IFeature> deadFeatures = new ArrayList<>();
-			for (int k = j + constraintCNFLength[i++]; j < k; j++) {
+			for (int j = constraintCNFIndex[i++], k = constraintCNFIndex[i]; j < k; j++) {
 				final LiteralSet literalSet = result.get(j);
 				if (literalSet != null) {
 					deadFeatures.addAll(
@@ -549,34 +556,27 @@ public class FeatureModelAnalyzer {
 		return resultList;
 	}
 
-	// TODO !!!
 	public List<IConstraint> getFalseOptionalConstraints() {
 		final FeatureModelCNF cnf = formula.getCNF();
 		final IVariables variables = cnf.getVariables();
-		final List<IFeature> optionalFeatures = new ArrayList<>();
+		final List<IFeature> foFeatures = new ArrayList<>();
 
 		List<List<LiteralSet>> result = constraintFalseOptionalAnalysis.getCachedResult();
 		if (result == null) {
 			final RedundancyCauseAnalysis analysis = constraintFalseOptionalAnalysis.createNewAnalysis(formula.getFeatureTreeClauses());
 
-			final List<LiteralSet> literalSetList = new ArrayList<>();
-			for (IFeature iFeature : optionalFeatures) {
-				literalSetList.add(new LiteralSet(variables.getVariable(FeatureUtils.getParent(iFeature).getName(), false),
-						variables.getVariable(iFeature.getName(), true)));
-			}
-
-			List<LiteralSet> initialResult = redundancyAnalysis.getCachedResult();
+			List<LiteralSet> initialResult = foAnalysis.getCachedResult();
 			final List<IFeature> initialOptionalFeatures = Functional.filterToList(featureModel.getFeatures(), new OptionalFeatureFilter());
 			if (initialResult == null) {
-				final RedundancyAnalysis initialAnalysis = redundancyAnalysis.createNewAnalysis(cnf);
+				final IndependentRedundancyAnalysis initialAnalysis = foAnalysis.createNewAnalysis(cnf);
 
 				final List<LiteralSet> initialLiteralSetList = new ArrayList<>();
 				for (IFeature iFeature : initialOptionalFeatures) {
 					initialLiteralSetList.add(new LiteralSet(variables.getVariable(FeatureUtils.getParent(iFeature).getName(), false),
 							variables.getVariable(iFeature.getName(), true)));
 				}
-				analysis.setClauseList(initialLiteralSetList);
-				initialResult = redundancyAnalysis.getResult(initialAnalysis);
+				initialAnalysis.setClauseList(initialLiteralSetList);
+				initialResult = foAnalysis.getResult(initialAnalysis);
 				if (initialResult == null) {
 					return Collections.emptyList();
 				}
@@ -587,7 +587,7 @@ public class FeatureModelAnalyzer {
 			for (IFeature iFeature : initialOptionalFeatures) {
 				final LiteralSet literalSet = initialResult.get(i++);
 				if (literalSet != null) {
-					optionalFeatures.add(iFeature);
+					foFeatures.add(iFeature);
 					folLiteralSetList.add(literalSet);
 				}
 			}
@@ -601,15 +601,15 @@ public class FeatureModelAnalyzer {
 		}
 
 		final List<IConstraint> resultList = new ArrayList<>();
-		int j = 0, i = 0;
+		int i = 0;
 		for (IConstraint constraint : featureModel.getConstraints()) {
 			final ArrayList<IFeature> falseOptionalFeatures = new ArrayList<>();
-			for (int k = j + constraintCNFLength[i++]; j < k; j++) {
+			for (int j = constraintCNFIndex[i++], k = constraintCNFIndex[i]; j < k; j++) {
 				final List<LiteralSet> literalSet = result.get(j);
 				if (literalSet != null) {
 					int l = 0;
-					for (IFeature iFeature : optionalFeatures) {
-						if (result.get(l++) != null) {
+					for (IFeature iFeature : foFeatures) {
+						if (literalSet.get(l++) != null) {
 							falseOptionalFeatures.add(iFeature);
 						}
 					}
@@ -622,9 +622,6 @@ public class FeatureModelAnalyzer {
 		}
 		return resultList;
 	}
-
-	private final AnalysisWrapper<List<LiteralSet>, IndependentRedundancyAnalysis> constraintTautologyAnalysis = new AnalysisWrapper<>(
-			IndependentRedundancyAnalysis.class);
 
 	public List<IConstraint> getTautologyConstraints() {
 		List<LiteralSet> result = constraintTautologyAnalysis.getCachedResult();
@@ -639,9 +636,9 @@ public class FeatureModelAnalyzer {
 		}
 
 		final List<IConstraint> resultList = new ArrayList<>();
-		int j = 0, i = 0;
+		int i = 0;
 		cLoop: for (IConstraint constraint : featureModel.getConstraints()) {
-			for (int k = j + constraintCNFLength[i++]; j < k; j++) {
+			for (int j = constraintCNFIndex[i++], k = constraintCNFIndex[i]; j < k; j++) {
 				if (result.get(j) == null) {
 					continue cLoop;
 				}
@@ -650,8 +647,6 @@ public class FeatureModelAnalyzer {
 		}
 		return resultList;
 	}
-
-	private final AnalysisWrapper<List<LiteralSet>, RedundancyAnalysis> constraintRedundancyAnalysis = new AnalysisWrapper<>(RedundancyAnalysis.class);
 
 	public List<IConstraint> getRedundantConstraints() {
 		List<LiteralSet> result = constraintRedundancyAnalysis.getCachedResult();
@@ -666,9 +661,9 @@ public class FeatureModelAnalyzer {
 		}
 
 		final List<IConstraint> resultList = new ArrayList<>();
-		int j = 0, i = 0;
+		int i = 0;
 		cLoop: for (IConstraint constraint : featureModel.getConstraints()) {
-			for (int k = j + constraintCNFLength[i++]; j < k; j++) {
+			for (int j = constraintCNFIndex[i++], k = constraintCNFIndex[i]; j < k; j++) {
 				if (result.get(j) == null) {
 					continue cLoop;
 				}
@@ -743,6 +738,8 @@ public class FeatureModelAnalyzer {
 		for (IConstraint constraint : featureModel.getConstraints()) {
 			constraintPropertiesMap.get(constraint).setConstraintRedundancyStatus(ConstraintRedundancyStatus.NORMAL);
 			constraintPropertiesMap.get(constraint).setConstraintSatisfiabilityStatus(ConstraintFalseSatisfiabilityStatus.SATISFIABLE);
+			constraintPropertiesMap.get(constraint).setConstraintFalseOptionalStatus(ConstraintFalseOptionalStatus.NORMAL);
+			constraintPropertiesMap.get(constraint).setConstraintDeadStatus(ConstraintDeadStatus.NORMAL);
 		}
 
 		System.out.println();

@@ -41,10 +41,14 @@ public abstract class AbstractAnalysis<T> implements IAnalysis<T> {
 	private T result;
 
 	public AbstractAnalysis(CNF satInstance) {
+		solver = initSolver(satInstance);
+	}
+
+	protected ISatSolver2 initSolver(CNF satInstance) {
 		try {
-			this.solver = new AdvancedSatSolver(satInstance);
+			return new AdvancedSatSolver(satInstance);
 		} catch (RuntimeContradictionException e) {
-			this.solver = null;
+			return null;
 		}
 	}
 

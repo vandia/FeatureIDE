@@ -28,9 +28,7 @@ import org.sat4j.specs.IConstr;
 
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.solver.AdvancedSatSolver;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
-import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -55,8 +53,7 @@ public class RedundancyAnalysis2 extends ARedundancyAnalysis {
 		monitor.setRemainingWork(clauseList.size() + 1);
 
 		final List<LiteralSet> resultList = new ArrayList<>(clauseList);
-		final AdvancedSatSolver emptySolver = new ModifiableSatSolver(new CNF(solver.getSatInstance(), true));
-		final List<IConstr> constraintMarkers = new ArrayList<>(emptySolver.addClauses(clauseList));
+		final List<IConstr> constraintMarkers = new ArrayList<>(solver.addClauses(clauseList));
 		monitor.step();
 
 		int i = 0;
@@ -64,8 +61,8 @@ public class RedundancyAnalysis2 extends ARedundancyAnalysis {
 			boolean redundant = true;
 			final IConstr constr = constraintMarkers.get(i);
 			if (constr != null) {
-				emptySolver.removeClause(constr);
-				redundant = isRedundant(emptySolver, constraint);
+				solver.removeClause(constr);
+				redundant = isRedundant(solver, constraint);
 			}
 
 			if (!redundant) {
