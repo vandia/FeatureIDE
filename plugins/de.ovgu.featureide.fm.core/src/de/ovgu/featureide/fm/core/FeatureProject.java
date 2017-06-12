@@ -137,7 +137,6 @@ public class FeatureProject {
 		//TODO synchronize with update method
 		this.featureModelManager = featureModelManager;
 		featureModelManager.addListener(new FeatureModelChangeListner());
-		featureModelManager.read();
 
 		initStatus();
 	}

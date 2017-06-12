@@ -79,7 +79,7 @@ public class AtomicSetAnalysis extends AVariableAnalysis<List<LiteralSet>> {
 					case TRUE:
 						solver.assignmentPop();
 						SatUtils.updateSolution(model1Copy, solver.getSolution());
-						solver.setOrderShuffle();
+						solver.shuffleOrder();
 						break;
 					}
 				}
@@ -184,7 +184,7 @@ public class AtomicSetAnalysis extends AVariableAnalysis<List<LiteralSet>> {
 			solver.setSelectionStrategy(SelectionStrategy.NEGATIVE);
 		} else {
 			solver.setSelectionStrategy(SelectionStrategy.POSITIVE);
-			solver.setOrderShuffle();
+			solver.shuffleOrder();
 		}
 	}
 

@@ -183,12 +183,8 @@ public class LegendFigure extends Figure implements GUIDefaults {
 		hidden = fmStructure.hasHidden();
 
 		collapsed = graphicalFeatureModel.getVisibleFeatures().size() != graphicalFeatureModel.getAllFeatures().size();
-		if (analyser.calculateDeadConstraints) {
-			dead = fmStructure.hasDeadFeatures();
-		}
-		if (analyser.calculateFOConstraints) {
-			falseoptional = fmStructure.hasFalseOptionalFeatures();
-		}
+		dead = analyser.calculateDeadConstraints && analyser.getFeatureModelProperties().hasDeadFeatures();
+		falseoptional = analyser.calculateFOConstraints && analyser.getFeatureModelProperties().hasFalseOptionalFeatures();
 		indetHidden = fmStructure.hasIndetHidden();
 
 		unsatisfiableConst = analyser.calculateConstraints && FeatureUtils.hasUnsatisfiableConst(featureModel);

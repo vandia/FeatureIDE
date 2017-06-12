@@ -21,14 +21,13 @@
 package de.ovgu.featureide.fm.core.cnf.analysis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import de.ovgu.featureide.fm.core.cnf.CNF;
-import de.ovgu.featureide.fm.core.cnf.ClauseLengthComparatorDsc;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
-import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -45,7 +44,7 @@ public class RedundancyAnalysis extends ARedundancyAnalysis {
 	public RedundancyAnalysis(ISatSolver2 solver) {
 		super(solver);
 	}
-	
+
 	public RedundancyAnalysis(CNF satInstance, List<LiteralSet> clauseList) {
 		super(satInstance);
 		this.clauseList = clauseList;
@@ -60,19 +59,35 @@ public class RedundancyAnalysis extends ARedundancyAnalysis {
 		if (clauseList == null) {
 			return Collections.emptyList();
 		}
+		if (clauseGroupSize == null) {
+			clauseGroupSize = new int[clauseList.size()];
+			Arrays.fill(clauseGroupSize, 1);
+		}
 		monitor.setRemainingWork(clauseList.size() + 1);
 
-		final List<LiteralSet> resultList = new ArrayList<>(clauseList);
-		final Integer[] index = Functional.getSortedIndex(resultList, new ClauseLengthComparatorDsc());
+		final List<LiteralSet> resultList = new ArrayList<>(clauseGroupSize.length);
+		for (int i = 0; i < clauseList.size(); i++) {
+			resultList.add(null);
+		}
+		// TODO Find a better way of sorting
+		//		final Integer[] index = Functional.getSortedIndex(resultList, new ClauseLengthComparatorDsc());
 		monitor.step();
 
-		for (int i = index.length - 1; i >= 0; --i) {
-			final LiteralSet clause = clauseList.get(index[i]);
-			if (!isRedundant(solver, clause)) {
-				solver.addClause(clause);
-				resultList.set(index[i], null);
+		int endIndex = 0;
+		for (int i = 0; i < clauseGroupSize.length; i++) {
+			int startIndex = endIndex;
+			endIndex += clauseGroupSize[i];
+			boolean completelyRedundant = true;
+			for (int j = startIndex; j < endIndex; j++) {
+				final LiteralSet clause = clauseList.get(j);
+				if (!isRedundant(solver, clause)) {
+					solver.addClause(clause);
+					completelyRedundant = false;
+				}
 			}
-			monitor.step();
+			if (completelyRedundant) {
+				resultList.set(i, clauseList.get(startIndex));
+			}
 		}
 
 		return resultList;

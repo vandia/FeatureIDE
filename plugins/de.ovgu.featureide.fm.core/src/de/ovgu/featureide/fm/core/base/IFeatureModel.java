@@ -22,6 +22,7 @@ package de.ovgu.featureide.fm.core.base;
  
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -508,7 +509,7 @@ public interface IFeatureModel extends Cloneable, IEventManager {
 	 * 
 	 * @return
 	 */
-	Iterable<IFeature> getFeatures();
+	Collection<IFeature> getFeatures();
 	
 	/**
 	 * Returns the a read-only iterable collection of features stored in this feature model, which are not hidden and not collapsed.

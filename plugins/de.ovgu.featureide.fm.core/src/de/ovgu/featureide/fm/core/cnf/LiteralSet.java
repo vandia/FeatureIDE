@@ -48,7 +48,7 @@ public class LiteralSet implements Cloneable, Serializable {
 		this.literals = literals;
 		Arrays.sort(this.literals);
 
-		hashCode = Arrays.hashCode(literals);
+		hashCode = 0; //Arrays.hashCode(literals);
 	}
 
 	public int[] getLiterals() {
@@ -247,17 +247,18 @@ public class LiteralSet implements Cloneable, Serializable {
 	public static LiteralSet cleanLiteralSet(LiteralSet literalSet, int... unwantedVariables) {
 		final HashSet<Integer> newLiteralSet = new HashSet<>(literalSet.getLiterals().length << 1);
 
-		outer: for (int literal : literalSet.getLiterals()) {
-			for (int i = 0; i < unwantedVariables.length; i++) {
-				if (unwantedVariables[i] == Math.abs(literal)) {
-					continue outer;
-				}
-			}
+		for (int literal : literalSet.getLiterals()) {
 			if (newLiteralSet.contains(-literal)) {
 				return null;
 			} else {
 				newLiteralSet.add(literal);
 			}
+		}
+		
+		for (int i = 0; i < unwantedVariables.length; i++) {
+			final int unwantedVariable = unwantedVariables[i];
+			newLiteralSet.remove(unwantedVariable);
+			newLiteralSet.remove(-unwantedVariable);
 		}
 
 		int[] uniqueVarArray = new int[newLiteralSet.size()];

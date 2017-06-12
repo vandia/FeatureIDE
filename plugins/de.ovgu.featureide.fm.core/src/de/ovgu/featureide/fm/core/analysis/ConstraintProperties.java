@@ -53,7 +53,7 @@ public class ConstraintProperties {
 	private ConstraintRedundancyStatus constraintRedundancyStatus = ConstraintRedundancyStatus.UNKNOWN;
 	private ConstraintDeadStatus constraintDeadStatus = ConstraintDeadStatus.UNKNOWN;
 	private ConstraintFalseOptionalStatus constraintFalseOptionalStatus = ConstraintFalseOptionalStatus.UNKNOWN;
-	private ConstraintFalseSatisfiabilityStatus constraintFalseSatisfiabilityStatus = ConstraintFalseSatisfiabilityStatus.UNKNOWN;
+	private ConstraintFalseSatisfiabilityStatus constraintSatisfiabilityStatus = ConstraintFalseSatisfiabilityStatus.UNKNOWN;
 
 	protected Collection<IFeature> deadFeatures = Collections.emptyList();
 	protected Collection<IFeature> falseOptionalFeatures = Collections.emptyList();
@@ -82,7 +82,7 @@ public class ConstraintProperties {
 	}
 
 	public boolean hasStatus(ConstraintFalseSatisfiabilityStatus constraintFalseSatisfiabilityStatus) {
-		return this.constraintFalseSatisfiabilityStatus == constraintFalseSatisfiabilityStatus;
+		return this.constraintSatisfiabilityStatus == constraintFalseSatisfiabilityStatus;
 	}
 
 	public Collection<IFeature> getDeadFeatures() {
@@ -138,18 +138,18 @@ public class ConstraintProperties {
 	}
 
 	public ConstraintFalseSatisfiabilityStatus getConstraintSatisfiabilityStatus() {
-		return constraintFalseSatisfiabilityStatus;
+		return constraintSatisfiabilityStatus;
 	}
 
 	public void setConstraintSatisfiabilityStatus(ConstraintFalseSatisfiabilityStatus constraintFalseSatisfiabilityStatus) {
-		this.constraintFalseSatisfiabilityStatus = constraintFalseSatisfiabilityStatus;
+		this.constraintSatisfiabilityStatus = constraintFalseSatisfiabilityStatus;
 	}
 
 	public void resetStatus() {
 		this.constraintRedundancyStatus = ConstraintRedundancyStatus.UNKNOWN;
 		this.constraintDeadStatus = ConstraintDeadStatus.UNKNOWN;
 		this.constraintFalseOptionalStatus = ConstraintFalseOptionalStatus.UNKNOWN;
-		this.constraintFalseSatisfiabilityStatus = ConstraintFalseSatisfiabilityStatus.UNKNOWN;
+		this.constraintSatisfiabilityStatus = ConstraintFalseSatisfiabilityStatus.UNKNOWN;
 	}
 
 }

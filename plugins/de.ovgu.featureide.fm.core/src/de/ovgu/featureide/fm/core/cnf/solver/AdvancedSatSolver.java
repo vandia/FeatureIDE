@@ -166,7 +166,7 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 	public SatResult hasSolution() {
 		try {
 			if (solver.isSatisfiable(assignment, globalTimeout)) {
-				solutionList.add(solver.model());
+//				solutionList.add(solver.model());
 				return SatResult.TRUE;
 			} else {
 				return SatResult.FALSE;
@@ -189,7 +189,7 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 
 		try {
 			if (solver.isSatisfiable(new VecInt(unitClauses), globalTimeout)) {
-				solutionList.add(solver.model());
+//				solutionList.add(solver.model());
 				return SatResult.TRUE;
 			} else {
 				return SatResult.FALSE;
@@ -220,7 +220,7 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 	}
 
 	@Override
-	public void setOrderShuffle() {
+	public void shuffleOrder() {
 		final Random rnd = new Random();
 		for (int i = order.length - 1; i >= 0; i--) {
 			final int index = rnd.nextInt(i + 1);
@@ -256,9 +256,9 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver2 {
 	}
 
 	@Override
-	public void setSelectionStrategy(int[] model, boolean b) {
+	public void setSelectionStrategy(int[] model, boolean min) {
 		this.strategy = SelectionStrategy.FIXED;
-		solver.setOrder(new VarOrderHeap2(new FixedLiteralSelectionStrategy(model, true), order));
+		solver.setOrder(new VarOrderHeap2(new FixedLiteralSelectionStrategy(model, min), order));
 	}
 
 	@Override

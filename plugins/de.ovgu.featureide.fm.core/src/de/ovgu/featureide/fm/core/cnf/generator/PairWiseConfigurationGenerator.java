@@ -564,7 +564,7 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 					case TRUE:
 						solver.assignmentPop();
 						SatUtils.updateSolution(model1Copy, solver.getSolution());
-						solver.setOrderShuffle();
+						solver.shuffleOrder();
 						break;
 					}
 				}
@@ -948,7 +948,7 @@ public class PairWiseConfigurationGenerator extends AbstractAnalysis<List<Litera
 						solver.assignmentPop();
 						break;
 					case TRUE:
-						solver.setOrderShuffle();
+						solver.shuffleOrder();
 						solver.assignmentPop();
 						break;
 					}

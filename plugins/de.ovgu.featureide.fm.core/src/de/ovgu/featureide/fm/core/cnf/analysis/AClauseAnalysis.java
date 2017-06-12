@@ -34,6 +34,7 @@ import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
 public abstract class AClauseAnalysis<T> extends AbstractAnalysis<T> {
 
 	protected List<LiteralSet> clauseList;
+	protected int[] clauseGroupSize;
 
 	public AClauseAnalysis(CNF satInstance) {
 		super(satInstance);
@@ -49,6 +50,14 @@ public abstract class AClauseAnalysis<T> extends AbstractAnalysis<T> {
 
 	public void setClauseList(List<LiteralSet> clauseList) {
 		this.clauseList = clauseList;
+	}
+
+	public int[] getClauseGroups() {
+		return clauseGroupSize;
+	}
+
+	public void setClauseGroupSize(int[] clauseGroups) {
+		this.clauseGroupSize = clauseGroups;
 	}
 
 }

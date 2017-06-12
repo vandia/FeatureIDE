@@ -18,43 +18,29 @@
  *
  * See http://featureide.cs.ovgu.de/ for further information.
  */
-package de.ovgu.featureide.fm.core.cnf.analysis;
+package de.ovgu.featureide.fm.core.cnf;
 
+import java.util.Comparator;
 import java.util.List;
 
-import de.ovgu.featureide.fm.core.cnf.CNF;
-import de.ovgu.featureide.fm.core.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.cnf.SatUtils;
-import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
-import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver;
-import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
-
 /**
- * Finds core and dead features.
+ * Compares list of clauses by he number of literals.
  * 
  * @author Sebastian Krieter
  */
-public abstract class ARedundancyAnalysis extends AClauseAnalysis<List<LiteralSet>> {
+public class ClauseListLengthComparatorDsc implements Comparator<List<LiteralSet>> {
 
-	public ARedundancyAnalysis(CNF satInstance) {
-		super(satInstance);
+	@Override
+	public int compare(List<LiteralSet> o1, List<LiteralSet> o2) {
+		return addLengths(o2) - addLengths(o1);
 	}
 
-	public ARedundancyAnalysis(ISatSolver2 solver) {
-		super(solver);
-	}
-
-	protected boolean isRedundant(ISimpleSatSolver solver, LiteralSet curClause) {
-		final SatResult hasSolution = solver.hasSolution(SatUtils.negateSolution(curClause.getLiterals()));
-		switch (hasSolution) {
-		case FALSE:
-			return true;
-		case TIMEOUT:
-		case TRUE:
-			return false;
-		default:
-			throw new AssertionError(hasSolution);
+	protected int addLengths(List<LiteralSet> o) {
+		int count = 0;
+		for (LiteralSet literalSet : o) {
+			count += literalSet.getLiterals().length;
 		}
+		return count;
 	}
 
 }

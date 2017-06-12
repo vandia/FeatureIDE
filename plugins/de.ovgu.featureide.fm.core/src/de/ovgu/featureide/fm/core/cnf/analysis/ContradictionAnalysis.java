@@ -28,6 +28,9 @@ import java.util.List;
 import de.ovgu.featureide.fm.core.cnf.CNF;
 import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.cnf.solver.ISatSolver2;
+import de.ovgu.featureide.fm.core.cnf.solver.ISimpleSatSolver.SatResult;
+import de.ovgu.featureide.fm.core.cnf.solver.ModifiableSatSolver;
+import de.ovgu.featureide.fm.core.cnf.solver.RuntimeContradictionException;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -35,22 +38,30 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class IndependentRedundancyAnalysis extends ARedundancyAnalysis {
+public class ContradictionAnalysis extends ARedundancyAnalysis {
 
-	public IndependentRedundancyAnalysis(CNF satInstance) {
+	public ContradictionAnalysis(CNF satInstance) {
 		super(satInstance);
 	}
 
-	public IndependentRedundancyAnalysis(ISatSolver2 solver) {
+	public ContradictionAnalysis(ISatSolver2 solver) {
 		super(solver);
 	}
 
-	public IndependentRedundancyAnalysis(ISatSolver2 solver, List<LiteralSet> clauseList) {
+	protected ISatSolver2 initSolver(CNF satInstance) {
+		try {
+			return new ModifiableSatSolver(satInstance);
+		} catch (RuntimeContradictionException e) {
+			return null;
+		}
+	}
+
+	public ContradictionAnalysis(ISatSolver2 solver, List<LiteralSet> clauseList) {
 		super(solver);
 		this.clauseList = clauseList;
 	}
 
-	public IndependentRedundancyAnalysis(CNF satInstance, List<LiteralSet> clauseList) {
+	public ContradictionAnalysis(CNF satInstance, List<LiteralSet> clauseList) {
 		super(satInstance);
 		this.clauseList = clauseList;
 	}
@@ -73,15 +84,32 @@ public class IndependentRedundancyAnalysis extends ARedundancyAnalysis {
 
 		int endIndex = 0;
 		for (int i = 0; i < clauseGroupSize.length; i++) {
-			int startIndex = endIndex;
+			final int startIndex = endIndex;
 			endIndex += clauseGroupSize[i];
-			for (int j = startIndex; j < endIndex; j++) {
-				final LiteralSet clause = clauseList.get(j);
-				if (isRedundant(solver, clause)) {
-					resultList.set(i, clause);
-					break;
-				}
+			final List<LiteralSet> subList = clauseList.subList(startIndex, endIndex);
+
+			try {
+				solver.addClauses(subList);
+			} catch (RuntimeContradictionException e) {
+				resultList.set(i, clauseList.get(startIndex));
+				monitor.step();
+				continue;
 			}
+
+			final SatResult hasSolution = solver.hasSolution();
+			switch (hasSolution) {
+			case FALSE:
+				resultList.set(i, clauseList.get(startIndex));
+				solver.removeLastClauses(subList.size());
+				break;
+			case TIMEOUT:
+			case TRUE:
+				break;
+			default:
+				throw new AssertionError(hasSolution);
+			}
+
+			monitor.step();
 		}
 
 		return resultList;

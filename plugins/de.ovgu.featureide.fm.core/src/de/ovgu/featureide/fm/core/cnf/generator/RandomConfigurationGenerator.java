@@ -53,7 +53,7 @@ public class RandomConfigurationGenerator extends PairWiseConfigurationGenerator
 			if (handleNewConfig(solver.findSolution())) {
 				break;
 			}
-			solver.setOrderShuffle();
+			solver.shuffleOrder();
 		}
 
 		return getConfigurations();

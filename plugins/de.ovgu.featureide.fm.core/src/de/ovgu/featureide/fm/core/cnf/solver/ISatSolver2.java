@@ -49,13 +49,13 @@ public interface ISatSolver2 extends ISimpleSatSolver {
 
 	void setOrderFix();
 
-	void setOrderShuffle();
+	void shuffleOrder();
 
 	SelectionStrategy getSelectionStrategy();
 
 	void setSelectionStrategy(SelectionStrategy strategy);
 
-	void setSelectionStrategy(int[] model, boolean b);
+	void setSelectionStrategy(int[] model, boolean min);
 
 	void assignmentPop();
 

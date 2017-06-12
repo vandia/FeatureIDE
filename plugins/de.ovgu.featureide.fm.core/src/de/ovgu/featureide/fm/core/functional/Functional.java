@@ -777,4 +777,14 @@ public abstract class Functional {
 		return index;
 	}
 
+	public static <T> List<T> removeNull(List<T> oldList) {
+		final List<T> newList = new ArrayList<>();
+		for (T t : oldList) {
+			if (t != null) {
+				newList.add(t);
+			}
+		}
+		return newList;
+	}
+
 }

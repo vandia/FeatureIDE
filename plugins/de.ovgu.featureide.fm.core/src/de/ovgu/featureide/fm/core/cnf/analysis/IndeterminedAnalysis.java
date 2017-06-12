@@ -43,13 +43,13 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * 
  * @author Sebastian Krieter
  */
-public class DeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
+public class IndeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
 
-	public DeterminedAnalysis(CNF satInstance) {
+	public IndeterminedAnalysis(CNF satInstance) {
 		super(satInstance);
 	}
 
-	public DeterminedAnalysis(ISatSolver2 solver) {
+	public IndeterminedAnalysis(ISatSolver2 solver) {
 		super(solver);
 	}
 
@@ -74,8 +74,6 @@ public class DeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
 			try {
 				modSolver.addClauses(relevantClauses);
 			} catch (RuntimeContradictionException e) {
-				resultList.push(literal);
-
 				relevantClauses.clear();
 				monitor.step();
 				continue;
@@ -84,10 +82,10 @@ public class DeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
 			final SatResult hasSolution = modSolver.hasSolution();
 			switch (hasSolution) {
 			case FALSE:
-				resultList.push(literal);
-				break;
 			case TIMEOUT:
+				break;
 			case TRUE:
+				resultList.push(literal);
 				break;
 			default:
 				throw new AssertionError(hasSolution);

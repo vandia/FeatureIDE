@@ -94,7 +94,7 @@ public class CoreDeadAnalysis extends AVariableAnalysis<LiteralSet> {
 					case TRUE:
 						solver.assignmentPop();
 						SatUtils.updateSolution(model1, solver.getSolution());
-						solver.setOrderShuffle();
+						solver.shuffleOrder();
 						break;
 					}
 				}
