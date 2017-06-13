@@ -60,7 +60,7 @@ public class SolutionGenerator extends AbstractAnalysis<List<LiteralSet>> {
 			final int[] solution = solver.getSolution();
 			solutionList.add(new LiteralSet(solution));
 			try {
-				solver.addClause(new LiteralSet(SatUtils.negateSolution(solution)));
+				solver.addClause(new LiteralSet(solution).negate());
 			} catch (RuntimeContradictionException e) {
 				break;
 			}

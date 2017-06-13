@@ -21,30 +21,15 @@
 package de.ovgu.featureide.fm.core.cnf;
 
 import java.util.Arrays;
+import java.util.HashSet;
+
+import javax.annotation.CheckForNull;
 
 /**
  * 
  * @author Sebastian Krieter
  */
 public class SatUtils {
-
-	public static LiteralSet negateSolution(LiteralSet solution) {
-		final int[] literals = solution.getLiterals();
-		int[] negSolution = Arrays.copyOf(literals, literals.length);
-		for (int i = 0; i < negSolution.length; i++) {
-			negSolution[i] = -negSolution[i];
-		}
-		return new LiteralSet(negSolution);
-	}
-
-	public static LiteralSet getVariables(LiteralSet solution) {
-		final int[] literals = solution.getLiterals();
-		int[] absSolution = Arrays.copyOf(literals, literals.length);
-		for (int i = 0; i < absSolution.length; i++) {
-			absSolution[i] = Math.abs(absSolution[i]);
-		}
-		return new LiteralSet(absSolution);
-	}
 
 	public static int[] negateSolution(int[] solution) {
 		int[] negSolution = Arrays.copyOf(solution, solution.length);
@@ -76,13 +61,102 @@ public class SatUtils {
 			}
 		}
 	}
-	
+
 	public static int countNegative(int[] model) {
 		int count = 0;
 		for (int i = 0; i < model.length; i++) {
 			count += model[i] >>> (Integer.SIZE - 1);
 		}
 		return count;
+	}
+
+	public static int[] cleanLiteralArray(int[] newLiterals, byte[] helper) {
+		int uniqueVarCount = newLiterals.length;
+		for (int i = 0; i < newLiterals.length; i++) {
+			final int literal = newLiterals[i];
+
+			final int index = Math.abs(literal);
+			final byte signum = (byte) Math.signum(literal);
+
+			final int h = helper[index];
+			switch (h) {
+			case 0:
+				helper[index] = signum;
+				break;
+			case 2:
+				helper[index] = signum;
+				break;
+			case -1:
+			case 1:
+				if (h == signum) {
+					newLiterals[i] = 0;
+					uniqueVarCount--;
+					break;
+				} else {
+					// reset
+					for (int j = 0; j < i; j++) {
+						helper[Math.abs(newLiterals[j])] = 0;
+					}
+					return null;
+				}
+			default:
+				assert false;
+				break;
+			}
+		}
+		if (uniqueVarCount == newLiterals.length) {
+			for (int i = 0; i < newLiterals.length; i++) {
+				final int literal = newLiterals[i];
+				helper[Math.abs(literal)] = 0;
+			}
+			return newLiterals;
+		} else {
+			final int[] uniqueVarArray = new int[uniqueVarCount];
+			int k = 0;
+			for (int i = 0; i < newLiterals.length; i++) {
+				final int literal = newLiterals[i];
+				helper[Math.abs(literal)] = 0;
+				if (literal != 0) {
+					uniqueVarArray[k++] = literal;
+				}
+			}
+			return uniqueVarArray;
+		}
+	}
+
+	/**
+	 * Constructs a new array of literals that contains no duplicates and unwanted literals.
+	 * Also checks whether the array contains a literal and its negation.
+	 * 
+	 * @param literalArray The initial literal array.
+	 * @param unwantedVariables An array of variables that should be removed.
+	 * @return A new literal array or {@code null}, if the initial set contained a literal and its negation.
+	 * 
+	 * @see #cleanLiteralSet(LiteralSet, int...)
+	 */
+	@CheckForNull
+	public static int[] cleanLiteralArray(int[] literalArray, int... unwantedVariables) {
+		final HashSet<Integer> newLiteralSet = new HashSet<>(literalArray.length << 1);
+
+		outer: for (int literal : literalArray) {
+			for (int i = 0; i < unwantedVariables.length; i++) {
+				if (unwantedVariables[i] == Math.abs(literal)) {
+					continue outer;
+				}
+			}
+			if (newLiteralSet.contains(-literal)) {
+				return null;
+			} else {
+				newLiteralSet.add(literal);
+			}
+		}
+
+		int[] uniqueVarArray = new int[newLiteralSet.size()];
+		int i = 0;
+		for (int lit : newLiteralSet) {
+			uniqueVarArray[i++] = lit;
+		}
+		return uniqueVarArray;
 	}
 
 }

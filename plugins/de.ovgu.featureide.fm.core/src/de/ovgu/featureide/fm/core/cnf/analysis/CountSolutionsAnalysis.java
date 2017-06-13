@@ -51,7 +51,7 @@ public class CountSolutionsAnalysis extends AbstractAnalysis<Long> {
         	solutionCount++;
             int[] solution = solver.getSolution();
             try {
-                solver.addClause(new LiteralSet(SatUtils.negateSolution(solution)));
+                solver.addClause(new LiteralSet(solution).negate());
             } catch (RuntimeContradictionException e) {
                 break;
             }

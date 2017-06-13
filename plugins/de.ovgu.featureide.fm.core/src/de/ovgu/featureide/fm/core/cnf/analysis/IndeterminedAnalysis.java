@@ -65,7 +65,7 @@ public class IndeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
 			final ModifiableSatSolver modSolver = new ModifiableSatSolver(slicedCNF);
 			for (LiteralSet clause : clauses) {
 				if (clause.contains(literal)) {
-					final LiteralSet newClause = LiteralSet.cleanLiteralSet(clause, literal);
+					final LiteralSet newClause = clause.clean(literal);
 					if (newClause != null) {
 						relevantClauses.add(newClause);
 					}

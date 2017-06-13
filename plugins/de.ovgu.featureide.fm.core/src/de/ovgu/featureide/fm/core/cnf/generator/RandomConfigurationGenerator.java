@@ -76,7 +76,7 @@ public class RandomConfigurationGenerator extends PairWiseConfigurationGenerator
 		time = System.nanoTime();
 
 		try {
-			solver.addClause(new LiteralSet(SatUtils.negateSolution(curModel)));
+			solver.addClause(new LiteralSet(curModel).negate());
 		} catch (RuntimeContradictionException e) {
 			return true;
 		}

@@ -106,7 +106,7 @@ public class CauseAnalysis extends AClauseAnalysis<List<CauseAnalysis.Anomalies>
 		}
 		monitor.setRemainingWork(clauseList.size() + 3);
 
-		LiteralSet remainingVariables = new LiteralSet(SatUtils.getVariables(anomalies.deadVariables));
+		LiteralSet remainingVariables = anomalies.deadVariables.getVariables();
 		List<LiteralSet> remainingClauses = new ArrayList<>(anomalies.redundantClauses);
 		monitor.step();
 

@@ -178,7 +178,7 @@ public class BFeatureModelAnalyzerWithRuntimeConstraints extends RuntimeTest {
 	 * Analyzes features only
 	 */
 	private void BUpdateFeatures(final int i) {
-		ProjectManager.getAnalyzer(getFM(i)).analyzeFeatureModel(monitor).updateFeatures();
+		ProjectManager.getAnalyzer(getFM(i)).updateFeatures();
 	}
 
 	@Constraint(samples = 5, allowedPlus = 1100)
