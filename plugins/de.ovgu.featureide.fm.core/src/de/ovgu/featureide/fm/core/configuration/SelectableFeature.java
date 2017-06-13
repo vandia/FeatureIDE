@@ -28,9 +28,9 @@ import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 
+import de.ovgu.featureide.fm.core.analysis.cnf.IVariables;
+import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.base.IFeature;
-import de.ovgu.featureide.fm.core.cnf.IVariables;
-import de.ovgu.featureide.fm.core.cnf.LiteralSet;
 
 /**
  * A representation of a selectable feature for the configuration process.

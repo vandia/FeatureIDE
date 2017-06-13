@@ -26,8 +26,8 @@ import java.util.List;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
+import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.base.impl.ExtendedFeatureModel;
-import de.ovgu.featureide.fm.core.cnf.FeatureModelFormula;
 
 /**
  * Checks the {@link ExtendedFeatureModel} for validation.

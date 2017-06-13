@@ -38,9 +38,9 @@ import de.fosd.typechef.options.FrontendOptions;
 import de.fosd.typechef.options.FrontendOptionsWithConfigFiles;
 import de.fosd.typechef.options.OptionException;
 import de.fosd.typechef.options.Options;
+import de.ovgu.featureide.fm.core.analysis.cnf.CNFCreator;
+import de.ovgu.featureide.fm.core.analysis.cnf.Nodes;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.cnf.Nodes;
-import de.ovgu.featureide.fm.core.cnf.CNFCreator;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 
 @SuppressWarnings(RESTRICTION)

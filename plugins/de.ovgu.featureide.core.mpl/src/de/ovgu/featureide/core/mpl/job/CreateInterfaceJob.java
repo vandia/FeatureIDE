@@ -51,7 +51,6 @@ import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
-import de.ovgu.featureide.fm.core.editing.cnf.UnkownLiteralException;
 import de.ovgu.featureide.fm.core.io.FileSystem;
 import de.ovgu.featureide.fm.core.io.ProblemList;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
@@ -135,8 +134,6 @@ public class CreateInterfaceJob extends AProjectJob<CreateInterfaceJob.Arguments
 			cnf = (selectedFeatureNames.size() > 1) ? CorePlugin.removeFeatures(m, removeFeatures) : new Literal(m.getStructure().getRoot().getFeature()
 					.getName());
 		} catch (java.util.concurrent.TimeoutException e1) {
-			e1.printStackTrace();
-		} catch (UnkownLiteralException e1) {
 			e1.printStackTrace();
 		}
 		workMonitor.worked();

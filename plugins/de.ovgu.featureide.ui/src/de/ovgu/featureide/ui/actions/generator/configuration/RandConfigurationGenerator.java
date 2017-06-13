@@ -21,10 +21,10 @@
 package de.ovgu.featureide.ui.actions.generator.configuration;
 
 import de.ovgu.featureide.core.IFeatureProject;
+import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
+import de.ovgu.featureide.fm.core.analysis.cnf.generator.PairWiseConfigurationGenerator;
+import de.ovgu.featureide.fm.core.analysis.cnf.generator.RandomConfigurationGenerator;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
-import de.ovgu.featureide.fm.core.cnf.CNF;
-import de.ovgu.featureide.fm.core.cnf.generator.PairWiseConfigurationGenerator;
-import de.ovgu.featureide.fm.core.cnf.generator.RandomConfigurationGenerator;
 import de.ovgu.featureide.ui.actions.generator.ConfigurationBuilder;
 
 /**
