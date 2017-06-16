@@ -42,8 +42,9 @@ import org.prop4j.SatSolver;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureComparator;
-import de.ovgu.featureide.fm.core.FeatureStatus;
+import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.ProjectManager;
+import de.ovgu.featureide.fm.core.analysis.FeatureProperties.FeatureParentStatus;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
@@ -151,15 +152,20 @@ public final class ConstraintTextValidator {
 				clonedModel.removeConstraint(constraint);
 			}
 		}
-		
+
 		for (IFeature feature : model.getFeatures()) {
 			if (input.contains(feature.getName())) {
-				//if (feature.getFeatureStatus() != FeatureStatus.FALSE_OPTIONAL) {
 				clonedModel.addConstraint(new Constraint(clonedModel, propNode));
-				ProjectManager.getAnalyzer(clonedModel).analyzeFeatureModel(null);
-				if (clonedModel.getFeature(feature.getName()).getProperty().getFeatureStatus() == FeatureStatus.FALSE_OPTIONAL && !list.contains(feature))
+			}
+		}
+		final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(clonedModel);
+		analyzer.analyzeFeatureModel(null);
+
+		for (IFeature feature : model.getFeatures()) {
+			if (input.contains(feature.getName())) {
+				if (analyzer.getFeatureProperties(feature).getFeatureParentStatus() == FeatureParentStatus.FALSE_OPTIONAL && !list.contains(feature)) {
 					list.add(feature);
-				//}
+				}
 			}
 		}
 
@@ -185,7 +191,7 @@ public final class ConstraintTextValidator {
 		}
 		IFeatureModel clonedModel = featureModel.clone(null);
 		Node propNode = new NodeReader().stringToNode(input, Functional.toList(FeatureUtils.extractFeatureNames(clonedModel.getFeatures())));
-		
+
 		// The following code fixes issue #406; should be enhanced in further development 
 		// to not always clone the whole feature model for every performed analysis
 		if (propNode != null) {
@@ -193,10 +199,10 @@ public final class ConstraintTextValidator {
 				clonedModel.removeConstraint(constraint);
 			}
 		}
-		
+
 		AdvancedNodeCreator nodeCreator = new AdvancedNodeCreator(clonedModel);
 		Node check = new Implies(nodeCreator.createNodes(), propNode);
-		
+
 		SatSolver satsolver = new SatSolver(new Not(check), timeOut);
 
 		try {
@@ -345,7 +351,7 @@ public final class ConstraintTextValidator {
 						return Status.OK_STATUS;
 					}
 				}
-				
+
 				// ---------------------------------------------------------
 				if (!canceled) {
 					final boolean problemFoundNotSatisfiable = !isSatisfiable(con, timeOut);

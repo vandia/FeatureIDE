@@ -130,7 +130,8 @@ public class DecisionPropagationAnalysisMIG extends AbstractAnalysis<LiteralSet>
 					}
 					break;
 				case TIMEOUT:
-					throw new RuntimeException();
+					reportTimeout();
+					break;
 				case TRUE:
 					solver.assignmentPop();
 					SatUtils.updateSolution(model1, solver.getSolution());

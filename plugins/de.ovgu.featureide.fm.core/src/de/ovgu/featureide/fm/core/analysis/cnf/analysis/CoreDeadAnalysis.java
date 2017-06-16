@@ -90,6 +90,7 @@ public class CoreDeadAnalysis extends AVariableAnalysis<LiteralSet> {
 						break;
 					case TIMEOUT:
 						solver.assignmentPop();
+						reportTimeout();
 						break;
 					case TRUE:
 						solver.assignmentPop();

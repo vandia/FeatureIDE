@@ -26,7 +26,6 @@ import org.eclipse.gef.ui.parts.GraphicalViewerImpl;
 import org.eclipse.jface.action.Action;
 
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
-import de.ovgu.featureide.fm.core.FeatureStatus;
 import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
@@ -53,7 +52,7 @@ public class AutomatedCalculationsAction extends Action {
 		final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(featureModel);
 		if (analyzer.runCalculationAutomatically) {
 			for (IFeature f : featureModel.getFeatures()) {
-				f.getProperty().setFeatureStatus(FeatureStatus.NORMAL, false);
+				analyzer.getFeatureProperties(f).resetStatus();
 			}
 			for (IConstraint c : featureModel.getConstraints()) {
 				analyzer.getConstraintProperties(c).resetStatus();

@@ -34,11 +34,11 @@ import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISimpleSatSolver.SatResult
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
- * Finds core and dead features.
+ * Finds contradictions.
  * 
  * @author Sebastian Krieter
  */
-public class ContradictionAnalysis extends ARedundancyAnalysis {
+public class ContradictionAnalysis extends AClauseAnalysis<List<LiteralSet>> {
 
 	public ContradictionAnalysis(CNF satInstance) {
 		super(satInstance);
@@ -103,6 +103,8 @@ public class ContradictionAnalysis extends ARedundancyAnalysis {
 				solver.removeLastClauses(subList.size());
 				break;
 			case TIMEOUT:
+				reportTimeout();
+				break;
 			case TRUE:
 				break;
 			default:

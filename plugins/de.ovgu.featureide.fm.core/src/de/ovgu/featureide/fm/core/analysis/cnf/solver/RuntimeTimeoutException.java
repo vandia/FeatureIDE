@@ -18,45 +18,32 @@
  *
  * See http://featureide.cs.ovgu.de/ for further information.
  */
-package de.ovgu.featureide.fm.core.analysis.cnf.analysis;
-
-import java.util.List;
-
-import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
-import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
-import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISatSolver;
+package de.ovgu.featureide.fm.core.analysis.cnf.solver;
 
 /**
+ * Exception thrown when an {@link analysis IAnalysis} experiences a solver timeout.<br/>
+ * Doesn't need to be caught explicitly.
  * 
  * @author Sebastian Krieter
  */
-public abstract class AClauseAnalysis<T> extends AbstractAnalysis<T> {
+public class RuntimeTimeoutException extends RuntimeException {
 
-	protected List<LiteralSet> clauseList;
-	protected int[] clauseGroupSize;
+	private static final long serialVersionUID = -6922001608864037759L;
 
-	public AClauseAnalysis(CNF satInstance) {
-		super(satInstance);
+	public RuntimeTimeoutException() {
+		super();
 	}
 
-	public AClauseAnalysis(ISatSolver solver) {
-		super(solver);
+	public RuntimeTimeoutException(String message) {
+		super(message);
 	}
 
-	public List<LiteralSet> getClauseList() {
-		return clauseList;
+	public RuntimeTimeoutException(Throwable cause) {
+		super(cause);
 	}
 
-	public void setClauseList(List<LiteralSet> clauseList) {
-		this.clauseList = clauseList;
-	}
-
-	public int[] getClauseGroups() {
-		return clauseGroupSize;
-	}
-
-	public void setClauseGroupSize(int[] clauseGroups) {
-		this.clauseGroupSize = clauseGroups;
+	public RuntimeTimeoutException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 }

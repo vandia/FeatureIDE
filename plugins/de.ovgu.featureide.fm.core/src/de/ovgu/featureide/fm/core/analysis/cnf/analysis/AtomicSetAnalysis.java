@@ -75,6 +75,7 @@ public class AtomicSetAnalysis extends AVariableAnalysis<List<LiteralSet>> {
 						break;
 					case TIMEOUT:
 						solver.assignmentPop();
+						reportTimeout();
 						break;
 					case TRUE:
 						solver.assignmentPop();
@@ -117,6 +118,7 @@ public class AtomicSetAnalysis extends AVariableAnalysis<List<LiteralSet>> {
 								done[j] = 1;
 								break;
 							case TIMEOUT:
+								reportTimeout();
 								break;
 							case TRUE:
 								SatUtils.updateSolution(xModel0, solver.getSolution());
@@ -137,6 +139,7 @@ public class AtomicSetAnalysis extends AVariableAnalysis<List<LiteralSet>> {
 						for (int j = i + 1; j < xModel0.length; j++) {
 							done[j] = 0;
 						}
+						reportTimeout();
 						break;
 					case TRUE:
 						xModel0 = solver.getSolution();
@@ -157,6 +160,7 @@ public class AtomicSetAnalysis extends AVariableAnalysis<List<LiteralSet>> {
 								case TIMEOUT:
 									done[j] = 0;
 									solver.assignmentPop();
+									reportTimeout();
 									break;
 								case TRUE:
 									done[j] = 0;

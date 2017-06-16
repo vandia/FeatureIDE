@@ -44,7 +44,6 @@ import de.ovgu.featureide.fm.core.ColorschemeTable;
 import de.ovgu.featureide.fm.core.ConstraintAttribute;
 import de.ovgu.featureide.fm.core.FeatureConnection;
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
-import de.ovgu.featureide.fm.core.FeatureStatus;
 import de.ovgu.featureide.fm.core.IFeatureModelLayout;
 import de.ovgu.featureide.fm.core.IGraphicItem.GraphicItem;
 import de.ovgu.featureide.fm.core.Operator;
@@ -617,12 +616,6 @@ public final class FeatureUtils {
 		return featureModel.getStructure().getFeaturesPreorder();
 	}
 
-	public static final FeatureStatus getFeatureStatus(IFeature feature) {
-		requireNonNull(feature);
-
-		return feature.getProperty().getFeatureStatus();
-	}
-
 	public static final Map<String, IFeature> getFeatureTable(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
@@ -690,13 +683,13 @@ public final class FeatureUtils {
 		return null;
 	}
 
-	public static final Iterable<Node> getPropositionalNodes(IFeatureModel featureModel) {
+	public static final List<Node> getPropositionalNodes(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return Functional.map(featureModel.getConstraints(), CONSTRAINT_TO_NODE);
+		return Functional.mapToList(featureModel.getConstraints(), CONSTRAINT_TO_NODE);
 	}
 
-	public static Iterable<Node> getPropositionalNodes(Iterable<IConstraint> constraints) {
+	public static List<Node> getPropositionalNodes(Iterable<IConstraint> constraints) {
 		requireNonNull(constraints);
 
 		return Functional.toList(Functional.map(constraints, CONSTRAINT_TO_NODE));
@@ -857,7 +850,7 @@ public final class FeatureUtils {
 	public static final boolean hasIndetHidden(IFeatureModel featureModel) {
 		requireNonNull(featureModel);
 
-		return featureModel.getStructure().hasIndetHidden();
+		return getFeatureModelProperties(featureModel).hasIndeterminateHiddenFeatures();
 	}
 
 	public static final boolean hasInlineRule(IFeature feature) {
@@ -1282,13 +1275,6 @@ public final class FeatureUtils {
 		requireNonNull(featureModel);
 
 		featureModel.setFeatureOrderUserDefined(featureOrderUserDefined);
-	}
-
-	public static final void setFeatureStatus(IFeature feature, FeatureStatus stat, boolean fire) {
-		requireNonNull(feature);
-		requireNonNull(stat);
-
-		feature.getProperty().setFeatureStatus(stat, fire);
 	}
 
 	public static final void setFeatureTable(IFeatureModel featureModel, final Hashtable<String, IFeature> featureTable) {

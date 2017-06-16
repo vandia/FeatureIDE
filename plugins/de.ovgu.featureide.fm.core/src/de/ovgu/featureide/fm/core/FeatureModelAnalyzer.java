@@ -981,53 +981,67 @@ public class FeatureModelAnalyzer {
 	 *            set of features that form a conjunction
 	 * @return
 	 * @throws TimeoutException
+	 * 
+	 * @deprecated Use ConfigurationPropagator instead.
 	 */
+	@Deprecated
 	public boolean checkImplies(Collection<IFeature> a, Collection<IFeature> b) throws TimeoutException {
 		if (b.isEmpty()) {
 			return true;
 		}
+
 		final FeatureModelCNF cnf = formula.getCNF();
+		final IVariables variables = cnf.getVariables();
 
-		// (A1 and ... An) => (B1 or ... Bm)
-		int[] literals = new int[a.size() + b.size()];
+		// (A1 and ... or An) => (B1 or ... or Bm)
+		// 	 |= -A1 or ... or -An or B1 or ... or Bm
+		//   |= -(A1 and ... and An and -B1 and ... and -Bm)
+		final int[] literals = new int[a.size() + b.size()];
 		int index = 0;
-		for (IFeature feature : a) {
-			literals[index++] = cnf.getVariables().getVariable(feature.getName());
-		}
 		for (IFeature feature : b) {
-			literals[index++] = -cnf.getVariables().getVariable(feature.getName());
+			literals[index++] = -variables.getVariable(feature.getName());
+		}
+		for (IFeature feature : a) {
+			literals[index++] = variables.getVariable(feature.getName());
 		}
 
-		final AdvancedSatSolver advancedSatSolver = new AdvancedSatSolver(cnf);
-		advancedSatSolver.assignmentPushAll(literals);
+		final HasSolutionAnalysis analysis = new HasSolutionAnalysis(cnf);
+		analysis.setAssumptions(new LiteralSet(literals));
 
-		return advancedSatSolver.hasSolution() == SatResult.FALSE;
+		return LongRunningWrapper.runMethod(analysis);
 	}
 
-	//	public boolean checkIfFeatureCombinationNotPossible(IFeature a, Collection<IFeature> b) throws TimeoutException {
-	//		if (b.isEmpty())
-	//			return true;
-	//
-	//		Node featureModel = NodeCreator.createNodes(featureModel.clone(null));
-	//		boolean notValid = true;
-	//		for (IFeature f : b) {
-	//			Node node = new And(new And(featureModel, new Literal(NodeCreator.getVariable(f, featureModel.clone(null)))),
-	//					new Literal(NodeCreator.getVariable(a, featureModel.clone(null))));
-	//			notValid &= !new SatSolver(node, 1000).hasSolution();
-	//		}
-	//		return notValid;
-	//	}
-	//
-	//	/**
-	//	 * checks some condition against the feature model. use only if you know
-	//	 * what you are doing!
-	//	 * 
-	//	 * @return
-	//	 * @throws TimeoutException
-	//	 */
-	//	public boolean checkCondition(Node condition) {
-	//		final FeatureModelCNF cnf = formula.getCNF();
-	//		return false;
-	//	}
+	/**
+	 * @deprecated Use ConfigurationPropagator instead.
+	 */
+	@Deprecated
+	public boolean checkIfFeatureCombinationPossible(IFeature feature1, Collection<IFeature> dependingFeatures) throws TimeoutException {
+		if (dependingFeatures.isEmpty()) {
+			return true;
+		}
+
+		final CoreDeadAnalysis analysis = new CoreDeadAnalysis(formula.getCNF());
+
+		Node featureModel = NodeCreator.createNodes(featureModel.clone(null));
+		boolean notValid = true;
+		for (IFeature f : dependingFeatures) {
+			Node node = new And(new And(featureModel, new Literal(NodeCreator.getVariable(f, featureModel.clone(null)))),
+					new Literal(NodeCreator.getVariable(feature1, featureModel.clone(null))));
+			notValid &= !new SatSolver(node, 1000).hasSolution();
+		}
+		return notValid;
+	}
+
+//	/**
+//	 * checks some condition against the feature model. use only if you know
+//	 * what you are doing!
+//	 * 
+//	 * @return
+//	 * @throws TimeoutException
+//	 */
+//	public boolean checkCondition(Node condition) {
+//		final FeatureModelCNF cnf = formula.getCNF();
+//		return false;
+//	}
 
 }

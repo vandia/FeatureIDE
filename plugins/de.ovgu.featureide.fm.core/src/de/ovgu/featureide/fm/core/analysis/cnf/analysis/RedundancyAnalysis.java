@@ -27,15 +27,17 @@ import java.util.List;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
 import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
+import de.ovgu.featureide.fm.core.analysis.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISatSolver;
+import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISimpleSatSolver.SatResult;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
- * Finds core and dead features.
+ * Finds redundancies.
  * 
  * @author Sebastian Krieter
  */
-public class RedundancyAnalysis extends ARedundancyAnalysis {
+public class RedundancyAnalysis extends AClauseAnalysis<List<LiteralSet>> {
 
 	public RedundancyAnalysis(CNF satInstance) {
 		super(satInstance);
@@ -80,9 +82,18 @@ public class RedundancyAnalysis extends ARedundancyAnalysis {
 			boolean completelyRedundant = true;
 			for (int j = startIndex; j < endIndex; j++) {
 				final LiteralSet clause = clauseList.get(j);
-				if (!isRedundant(solver, clause)) {
+				final SatResult hasSolution = solver.hasSolution(SatUtils.negateSolution(clause.getLiterals()));
+				switch (hasSolution) {
+				case FALSE:
+					break;
+				case TIMEOUT:
+					reportTimeout();
+				case TRUE:
 					solver.addClause(clause);
 					completelyRedundant = false;
+					break;
+				default:
+					throw new AssertionError(hasSolution);
 				}
 			}
 			if (completelyRedundant) {

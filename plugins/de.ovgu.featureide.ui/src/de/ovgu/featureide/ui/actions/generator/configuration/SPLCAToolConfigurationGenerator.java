@@ -74,7 +74,6 @@ public class SPLCAToolConfigurationGenerator extends AConfigurationGenerator {
 		return null;
 	}
 
-	@SuppressWarnings("deprecation")
 	private void runSPLCATool() {
 		CoveringArray ca = null;
 		final boolean casa = algorithm.equals(CASA.substring(0, CASA.indexOf(" ")));
@@ -90,7 +89,7 @@ public class SPLCAToolConfigurationGenerator extends AConfigurationGenerator {
 				CoveringArrayCASA.CASA_PATH = path.toOSString();
 			}
 
-			ca = new GUIDSL(new de.ovgu.featureide.fm.core.FeatureModel(featureModel)).getSXFM().getCNF().getCoveringArrayGenerator(algorithm, t);
+			ca = new GUIDSL(featureModel).getSXFM().getCNF().getCoveringArrayGenerator(algorithm, t);
 			if (ca == null) {
 				return;
 			}

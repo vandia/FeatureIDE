@@ -217,6 +217,7 @@ public class CorePlugin extends AbstractCorePlugin {
 		if (featureProjectMap.containsKey(project) || !project.isOpen())
 			return;
 
+		// TODO add to ProjectManager
 		IFeatureProject data = new FeatureProject(project);
 		featureProjectMap.put(project, data);
 		logInfo("Feature project " + project.getName() + " added");
