@@ -35,9 +35,8 @@ import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent.EventType;
-import de.ovgu.featureide.fm.core.job.SliceFeatureModelJob;
-import de.ovgu.featureide.fm.core.job.SliceFeatureModelJob.Arguments;
-import de.ovgu.featureide.fm.core.job.monitor.NullMonitor;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
+import de.ovgu.featureide.fm.core.job.SliceFeatureModel;
 import de.ovgu.featureide.fm.ui.wizards.AbstractWizard;
 import de.ovgu.featureide.fm.ui.wizards.SubtreeDependencyWizard;
 
@@ -102,9 +101,7 @@ public class CalculateDependencyOperation extends AbstractFeatureModelOperation 
 		ArrayList<String> subtreeFeatures = getSubtreeFeatures(subtreeRoot);
 		boolean isCoreFeature = false;
 		// feature model slicing 
-		final Arguments arguments = new SliceFeatureModelJob.Arguments(null, completeFm, subtreeFeatures, true);
-		SliceFeatureModelJob slice = arguments.createJob();
-		IFeatureModel slicedModel = slice.sliceModel(new NullMonitor()).clone(); // returns new feature model
+		final IFeatureModel slicedModel = LongRunningWrapper.runMethod(new SliceFeatureModel(completeFm, subtreeFeatures, true));
 		
 		// only replace root with selected feature if feature is core-feature
 		List<IFeature> coreFeatures = ProjectManager.getAnalyzer(completeFm).getCoreFeatures();
@@ -120,7 +117,8 @@ public class CalculateDependencyOperation extends AbstractFeatureModelOperation 
 		TrayDialog.setDialogHelpAvailable(false);
 		final WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wizard);
 		dialog.open();
-		ProjectManager.getAnalyzer(completeFm).clearExplanations();
+		// TODO !!! Check if this is correct
+		ProjectManager.getAnalyzer(completeFm).analyzeFeatureModel(null);
 		return new FeatureIDEEvent(completeFm, EventType.DEPENDENCY_CALCULATED, null, subtreeRoot);
 	}
 

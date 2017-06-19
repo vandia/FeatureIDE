@@ -30,7 +30,6 @@ import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureProject;
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
-import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelCNF;
 import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.analysis.cnf.analysis.CoreDeadAnalysis;
@@ -347,7 +346,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 			}
 			configuration.resetAutomaticValues();
 
-			final FeatureModelCNF rootNode = formula.getCNF();
+			final CNF rootNode = formula.getCNF();
 			final ArrayList<Integer> manualLiterals = new ArrayList<>();
 			for (SelectableFeature feature : featureOrder) {
 				if (feature.getManual() != Selection.UNDEFINED && (includeAbstractFeatures || feature.getFeature().getStructure().isConcrete())) {

@@ -24,10 +24,13 @@ import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.ovgu.featureide.fm.core.analysis.cnf.generator.ModalImplicationGraph;
+import de.ovgu.featureide.fm.core.analysis.cnf.generator.ModalImplicationGraphBuilder;
 import de.ovgu.featureide.fm.core.analysis.cnf.manipulator.remove.CNFSlicer;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
+import de.ovgu.featureide.fm.core.base.IModalImplicationGraph;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator.CNFType;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator.ModelType;
@@ -44,20 +47,28 @@ import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
  */
 public class FeatureModelFormula {
 
-	private static final int numberOfSlicedCNFs = 5;
+	private static final int CNF_COMPLETE = 0;
+	private static final int CNF_EMPTY = 1;
+	private static final int CNF_NO_HIDDEN = 2;
+	private static final int CNF_NO_ABSTRACT = 3;
+	private static final int CNF_NO_HIDDEN_NO_ABSTRACT = 4;
+	private static final int CNF_TREE_ONLY = 5;
+	private static final int CNF_CONSTRAINTS_ONLY = 6;
+	private static final int MIG = 7;
 
-	private final CNF[] slicedCNFs = new CNF[numberOfSlicedCNFs];
-	private final Lock[] slicingLocks = new Lock[numberOfSlicedCNFs];
+	private static final int numberOfCNFs = 7;
+
+	private final CNF[] cnfs = new CNF[numberOfCNFs];
+	private final Lock[] locks = new Lock[numberOfCNFs + 1];
 	{
-		for (int i = 0; i < slicingLocks.length; i++) {
-			slicingLocks[i] = new ReentrantLock();
+		for (int i = 0; i < locks.length; i++) {
+			locks[i] = new ReentrantLock();
 		}
 	}
 
-	private final Lock cnfLock = new ReentrantLock();
 	private final IFeatureModel featureModel;
 
-	private FeatureModelCNF cnf;
+	private ModalImplicationGraph modalImplicationGraph;
 
 	public FeatureModelFormula(IFeatureModel featureModel) {
 		this.featureModel = featureModel.clone();
@@ -67,25 +78,32 @@ public class FeatureModelFormula {
 		return featureModel;
 	}
 
-	public FeatureModelCNF getCNF() {
-		cnfLock.lock();
+	public Variables getVariables() {
+		return new Variables(FeatureUtils.getFeatureNamesList(featureModel));
+	}
+
+	public CNF getCNF() {
+		final Lock lock = locks[CNF_COMPLETE];
+		lock.lock();
 		try {
+			CNF cnf = cnfs[CNF_COMPLETE];
 			if (cnf == null) {
 				cnf = new FeatureModelCNF(featureModel, false);
 				cnf.addClauses(Nodes.convert(cnf.getVariables(), AdvancedNodeCreator.createRegularCNF(featureModel)));
+				cnfs[CNF_COMPLETE] = cnf;
 			}
 			return cnf;
 		} finally {
-			cnfLock.unlock();
+			lock.unlock();
 		}
 	}
 
 	public CNF getSlicedCNF(int index) {
-		final FeatureModelCNF cnf2 = getCNF();
-		final Lock slicingLock = slicingLocks[index];
-		slicingLock.lock();
+		final CNF completeCNF = getCNF();
+		final Lock lock = locks[index];
+		lock.lock();
 		try {
-			CNF slicedCNF = slicedCNFs[index];
+			CNF slicedCNF = cnfs[index];
 			if (slicedCNF == null) {
 				final IFilter<IFeature> filter;
 				switch (index) {
@@ -99,30 +117,24 @@ public class FeatureModelFormula {
 					filter = new OrFilter<IFeature>(Arrays.asList(new HiddenFeatureFilter(), new AbstractFeatureFilter()));
 					break;
 				default:
-					return cnf2;
+					return completeCNF;
 				}
-				final CNFSlicer slicer = new CNFSlicer(cnf2, Functional.mapToList(featureModel.getFeatures(), filter, FeatureUtils.GET_FEATURE_NAME));
+				final CNFSlicer slicer = new CNFSlicer(completeCNF, Functional.mapToList(featureModel.getFeatures(), filter, FeatureUtils.GET_FEATURE_NAME));
 				slicedCNF = LongRunningWrapper.runMethod(slicer);
-				slicedCNFs[index] = slicedCNF;
+				cnfs[index] = slicedCNF;
 			}
 			return slicedCNF;
 		} finally {
-			slicingLock.unlock();
+			lock.unlock();
 		}
 	}
 
 	public void resetCNF() {
-		cnfLock.lock();
-		try {
-			cnf = null;
-		} finally {
-			cnfLock.unlock();
-		}
-		for (int i = 0; i < slicedCNFs.length; i++) {
-			final Lock slicingLock = slicingLocks[i];
+		for (int i = 0; i < cnfs.length; i++) {
+			final Lock slicingLock = locks[i];
 			slicingLock.lock();
 			try {
-				slicedCNFs[i] = null;
+				cnfs[i] = null;
 			} finally {
 				slicingLock.unlock();
 			}
@@ -143,49 +155,83 @@ public class FeatureModelFormula {
 	//	}
 
 	public CNF getCNFWithoutAbstract() {
-		return getSlicedCNF(0);
+		return getSlicedCNF(CNF_NO_ABSTRACT);
 	}
 
 	public CNF getClausesWithoutHidden() {
-		return getSlicedCNF(1);
+		return getSlicedCNF(CNF_NO_HIDDEN);
 	}
 
 	public CNF getClausesWithoutAbstractAndHidden() {
-		return getSlicedCNF(2);
+		return getSlicedCNF(CNF_NO_HIDDEN_NO_ABSTRACT);
 	}
 
 	public CNF getFeatureTreeClauses() {
-		final Lock slicingLock = slicingLocks[3];
-		slicingLock.lock();
+		final Lock lock = locks[CNF_TREE_ONLY];
+		lock.lock();
 		try {
-			CNF slicedCNF = slicedCNFs[3];
-			if (slicedCNF == null) {
+			CNF cnf = cnfs[CNF_TREE_ONLY];
+			if (cnf == null) {
 				final AdvancedNodeCreator nodeCreator = new AdvancedNodeCreator(featureModel);
 				nodeCreator.setModelType(ModelType.OnlyStructure);
 				nodeCreator.setCnfType(CNFType.Regular);
 				nodeCreator.setIncludeBooleanValues(false);
-				slicedCNF = new FeatureModelCNF(featureModel, false);
-				slicedCNF.addClauses(Nodes.convert(slicedCNF.getVariables(), nodeCreator.createNodes()));
-				slicedCNFs[3] = slicedCNF;
+				cnf = new FeatureModelCNF(featureModel, false);
+				cnf.addClauses(Nodes.convert(cnf.getVariables(), nodeCreator.createNodes()));
+				cnfs[CNF_TREE_ONLY] = cnf;
 			}
-			return slicedCNF;
+			return cnf;
 		} finally {
-			slicingLock.unlock();
+			lock.unlock();
+		}
+	}
+
+	public CNF getConstraintClauses() {
+		final Lock lock = locks[CNF_CONSTRAINTS_ONLY];
+		lock.lock();
+		try {
+			CNF cnf = cnfs[CNF_CONSTRAINTS_ONLY];
+			if (cnf == null) {
+				final AdvancedNodeCreator nodeCreator = new AdvancedNodeCreator(featureModel);
+				nodeCreator.setModelType(ModelType.OnlyConstraints);
+				nodeCreator.setCnfType(CNFType.Regular);
+				nodeCreator.setIncludeBooleanValues(false);
+				cnf = new FeatureModelCNF(featureModel, false);
+				cnf.addClauses(Nodes.convert(cnf.getVariables(), nodeCreator.createNodes()));
+				cnfs[CNF_CONSTRAINTS_ONLY] = cnf;
+			}
+			return cnf;
+		} finally {
+			lock.unlock();
 		}
 	}
 
 	public CNF getEmptyCNF() {
-		final Lock slicingLock = slicingLocks[4];
-		slicingLock.lock();
+		final Lock lock = locks[CNF_EMPTY];
+		lock.lock();
 		try {
-			CNF slicedCNF = slicedCNFs[4];
-			if (slicedCNF == null) {
-				slicedCNF = new FeatureModelCNF(featureModel, false);
-				slicedCNFs[4] = slicedCNF;
+			CNF cnf = cnfs[CNF_EMPTY];
+			if (cnf == null) {
+				cnf = new FeatureModelCNF(featureModel, false);
+				cnfs[CNF_EMPTY] = cnf;
 			}
-			return slicedCNF;
+			return cnf;
 		} finally {
-			slicingLock.unlock();
+			lock.unlock();
+		}
+	}
+
+	public IModalImplicationGraph getModalImplicationGraph() {
+		final CNF completeCNF = getCNF();
+		final Lock lock = locks[MIG];
+		lock.lock();
+		try {
+			if (modalImplicationGraph == null) {
+				modalImplicationGraph = LongRunningWrapper.runMethod(new ModalImplicationGraphBuilder(completeCNF, false));
+			}
+			return modalImplicationGraph;
+		} finally {
+			lock.unlock();
 		}
 	}
 

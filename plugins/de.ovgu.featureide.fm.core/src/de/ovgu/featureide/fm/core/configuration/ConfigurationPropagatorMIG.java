@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelCNF;
+import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
 import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.analysis.cnf.analysis.DecisionPropagationAnalysisMIG;
@@ -59,7 +59,7 @@ public class ConfigurationPropagatorMIG extends ConfigurationPropagator {
 			}
 			configuration.resetAutomaticValues();
 
-			final FeatureModelCNF rootNode = formula.getCNF();
+			final CNF rootNode = formula.getCNF();
 			final ArrayList<Integer> manualLiterals = new ArrayList<>();
 			for (SelectableFeature feature : featureOrder) {
 				if (feature.getManual() != Selection.UNDEFINED && (includeAbstractFeatures || feature.getFeature().getStructure().isConcrete())) {

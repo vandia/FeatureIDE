@@ -43,22 +43,22 @@ public class FeaturesOnlyCalculationAction extends Action {
 		super(CALCULATE_FEATURES);
 		this.featureModel = featureModel;
 		setToolTipText("Test");
-		setChecked(ProjectManager.getAnalyzer(featureModel).calculateFeatures);
+		setChecked(ProjectManager.getAnalyzer(featureModel).isCalculateFeatures());
 	}
 
 	@Override
 	public void run() {
-		if (ProjectManager.getAnalyzer(featureModel).calculateFeatures) {
-			ProjectManager.getAnalyzer(featureModel).calculateFeatures = false;
-			ProjectManager.getAnalyzer(featureModel).calculateConstraints = false;
-			ProjectManager.getAnalyzer(featureModel).calculateRedundantConstraints = false;
-			ProjectManager.getAnalyzer(featureModel).calculateTautologyConstraints = false;
-			ProjectManager.getAnalyzer(featureModel).calculateDeadConstraints = false;
-			ProjectManager.getAnalyzer(featureModel).calculateFOConstraints = false;
+		if (ProjectManager.getAnalyzer(featureModel).isCalculateFeatures()) {
+			ProjectManager.getAnalyzer(featureModel).setCalculateFeatures(false);
+			ProjectManager.getAnalyzer(featureModel).setCalculateConstraints(false);
+			ProjectManager.getAnalyzer(featureModel).setCalculateRedundantConstraints(false);
+			ProjectManager.getAnalyzer(featureModel).setCalculateTautologyConstraints(false);
+			ProjectManager.getAnalyzer(featureModel).setCalculateDeadConstraints(false);
+			ProjectManager.getAnalyzer(featureModel).setCalculateFOConstraints(false);
 		} else {
-			ProjectManager.getAnalyzer(featureModel).calculateFeatures = true;
-			ProjectManager.getAnalyzer(featureModel).calculateDeadConstraints = true;
-			ProjectManager.getAnalyzer(featureModel).calculateFOConstraints = true;
+			ProjectManager.getAnalyzer(featureModel).setCalculateFeatures(true);
+			ProjectManager.getAnalyzer(featureModel).setCalculateDeadConstraints(true);
+			ProjectManager.getAnalyzer(featureModel).setCalculateFOConstraints(true);
 		}
 		featureModel.handleModelDataChanged();
 	}

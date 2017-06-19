@@ -99,8 +99,9 @@ import de.ovgu.featureide.fm.core.explanations.Explanation;
 import de.ovgu.featureide.fm.core.io.IPersistentFormat;
 import de.ovgu.featureide.fm.core.io.manager.AFileManager;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
-import de.ovgu.featureide.fm.core.job.LongRunningJob;
+import de.ovgu.featureide.fm.core.job.IRunner;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
+import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.fm.ui.FMUIPlugin;
 import de.ovgu.featureide.fm.ui.editors.elements.GraphicalFeatureModel;
@@ -232,11 +233,9 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 
 	private int index;
 
-	private Job analyzeJob;
+	private IRunner<Boolean> analyzeJob;
 
 	private boolean waiting = false;
-
-	private FeatureModelAnalyzer analyzer;
 
 	final FeatureDiagramEditorKeyHandler editorKeyHandler;
 
@@ -837,38 +836,35 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 		}
 		waiting = true;
 		final FeatureModelAnalyzer analyzer2 = ProjectManager.getAnalyzer(featureModelEditor.getFeatureModel());
-		final boolean runAnalysis = analyzer2.runCalculationAutomatically
-				&& analyzer2.calculateFeatures;
+		final boolean runAnalysis = analyzer2.isRunCalculationAutomatically() && analyzer2.isCalculateFeatures();
 		/**
 		 * This extra job is necessary, else the UI will stop.
 		 */
 		Job waiter = new Job("Analyze feature model (waiting)") {
-
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-
 				try {
-					if (analyzeJob != null && analyzer != null) {
+					if (analyzeJob != null) {
 						// waiting for analyzing job to finish
-						analyzer.cancel(true);
+						analyzeJob.cancel();
 						analyzeJob.join();
 					}
 				} catch (InterruptedException e) {
 					FMUIPlugin.getDefault().logError(e);
 				} finally {
 					// avoid a dead lock
-					if (analyzer != null) {
-						analyzer.cancel(false);
+					if (analyzeJob != null) {
+						analyzeJob.cancel();
 					}
 					waiting = false;
 				}
-				analyzeJob = new LongRunningJob<>(ANALYZE_FEATURE_MODEL, new LongRunningMethod<Boolean>() {
+				analyzeJob = LongRunningWrapper.getRunner(new LongRunningMethod<Boolean>() {
 					@Override
 					public Boolean execute(IMonitor monitor) throws Exception {
 						if (waiting) {
 							return true;
 						}
-						analyzer = ProjectManager.getAnalyzer(getFeatureModel());
+						final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(getFeatureModel());
 
 						// TODO could be combined with analysis results
 						for (IFeature f : featureModelEditor.getFeatureModel().getFeatures()) {
@@ -887,8 +883,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 						refreshGraphics(changedAttributes);
 						return true;
 					}
-				});
-				analyzeJob.setPriority(Job.LONG);
+				}, ANALYZE_FEATURE_MODEL);
 				analyzeJob.schedule();
 				return Status.OK_STATUS;
 			}
@@ -1124,7 +1119,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 					if (extraPath != null) {
 						FileHandler.load(extraPath, graphicalFeatureModel, format);
 					}
-					
+
 					setContents(graphicalFeatureModel);
 					refreshChildAll(graphicalFeatureModel.getFeatureModel().getStructure().getRoot().getFeature());
 					reload();
@@ -1297,8 +1292,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 						elementNewActiveReasons.get(element)));
 			}
 			LegendFigure legend = FeatureUIHelper.getLegendFigure(graphicalFeatureModel);
-			if (legend != null && legend.isVisible())
-			{
+			if (legend != null && legend.isVisible()) {
 				legend.recreateLegend();
 			}
 			break;

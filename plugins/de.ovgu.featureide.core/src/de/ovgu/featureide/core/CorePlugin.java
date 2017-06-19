@@ -102,7 +102,8 @@ import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.XMLConfFormat;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelFormat;
-import de.ovgu.featureide.fm.core.job.util.JobArguments;
+import de.ovgu.featureide.fm.core.job.LongRunningMethod;
+import de.ovgu.featureide.fm.core.localization.StringTable;
 
 /**
  * The activator class controls the plug-in life cycle.
@@ -781,36 +782,35 @@ public class CorePlugin extends AbstractCorePlugin {
 	}
 
 	public void buildContextDocumentation(List<IProject> pl, String options, String featureName) {
-		final ArrayList<JobArguments<?>> arguments = new ArrayList<>(pl.size());
+		final ArrayList<LongRunningMethod<?>> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
-			arguments.add(new PrintDocumentationJob.Arguments("Docu_Context_" + featureName, options.split("\\s+"), new ContextMerger(), featureName, iProject));
+			arguments.add(new PrintDocumentationJob("Docu_Context_" + featureName, options.split("\\s+"), new ContextMerger(), featureName, iProject));
 		}
-		ProjectManager.startJobs(arguments, true);
+		ProjectManager.startJobs(arguments, StringTable.BUILD_DOCUMENTATION, true);
 	}
 
 	public void buildVariantDocumentation(List<IProject> pl, String options) {
-		final ArrayList<JobArguments<?>> arguments = new ArrayList<>(pl.size());
+		final ArrayList<LongRunningMethod<?>> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
-			arguments.add(new PrintDocumentationJob.Arguments("Docu_Variant", options.split("\\s+"), new VariantMerger(), null, iProject));
+			arguments.add(new PrintDocumentationJob("Docu_Variant", options.split("\\s+"), new VariantMerger(), null, iProject));
 		}
-		ProjectManager.startJobs(arguments, true);
+		ProjectManager.startJobs(arguments, StringTable.BUILD_DOCUMENTATION, true);
 	}
 
 	public void buildFeatureDocumentation(List<IProject> pl, String options, String featureName) {
-		final ArrayList<JobArguments<?>> arguments = new ArrayList<>(pl.size());
+		final ArrayList<LongRunningMethod<?>> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
-			arguments.add(new PrintDocumentationJob.Arguments("Docu_Feature_" + featureName, options.split("\\s+"), new FeatureModuleMerger(), featureName,
-					iProject));
+			arguments.add(new PrintDocumentationJob("Docu_Feature_" + featureName, options.split("\\s+"), new FeatureModuleMerger(), featureName, iProject));
 		}
-		ProjectManager.startJobs(arguments, true);
+		ProjectManager.startJobs(arguments, StringTable.BUILD_DOCUMENTATION, true);
 	}
 
 	public void buildSPLDocumentation(List<IProject> pl, String options) {
-		final ArrayList<JobArguments<?>> arguments = new ArrayList<>(pl.size());
+		final ArrayList<LongRunningMethod<?>> arguments = new ArrayList<>(pl.size());
 		for (IProject iProject : pl) {
-			arguments.add(new PrintDocumentationJob.Arguments("Docu_SPL", options.split("\\s+"), new SPLMerger(), null, iProject));
+			arguments.add(new PrintDocumentationJob("Docu_SPL", options.split("\\s+"), new SPLMerger(), null, iProject));
 		}
-		ProjectManager.startJobs(arguments, true);
+		ProjectManager.startJobs(arguments, StringTable.BUILD_DOCUMENTATION, true);
 	}
 
 }

@@ -44,7 +44,6 @@ import de.ovgu.featureide.fm.core.io.manager.VirtualFileManager;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelFormat;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
-import de.ovgu.featureide.fm.core.job.util.JobArguments;
 import de.ovgu.featureide.fm.core.job.util.JobSequence;
 
 /**
@@ -69,26 +68,24 @@ public class ProjectManager {
 	 * @return the created job or a {@link JobSequence} if more than one project is given.
 	 *         Returns {@code null} if {@code projects} is empty.
 	 */
-	public static LongRunningMethod<?> startJobs(List<JobArguments<?>> projects, boolean autostart) {
+	public static LongRunningMethod<?> startJobs(List<LongRunningMethod<?>> projects, String jobName, boolean autostart) {
 		LongRunningMethod<?> ret;
 		switch (projects.size()) {
 		case 0:
 			return null;
 		case 1:
-			LongRunningMethod<?> newJob = projects.get(0).createJob();
-			ret = newJob;
+			ret = projects.get(0);
 			break;
 		default:
 			final JobSequence jobSequence = new JobSequence();
 			jobSequence.setIgnorePreviousJobFail(true);
-			for (JobArguments<?> p : projects) {
-				LongRunningMethod<?> newSequenceJob = p.createJob();
-				jobSequence.addJob(newSequenceJob);
+			for (LongRunningMethod<?> p : projects) {
+				jobSequence.addJob(p);
 			}
 			ret = jobSequence;
 		}
 		if (autostart) {
-			LongRunningWrapper.getRunner(ret).schedule();
+			LongRunningWrapper.getRunner(ret, jobName).schedule();
 		}
 		return ret;
 	}

@@ -141,11 +141,11 @@ public class XmlFeatureModelFormat extends AXMLFormat<IFeatureModel> implements 
 		}
 
 		root.appendChild(calculations);
-		calculations.setAttribute(CALCULATE_AUTO, "" + ProjectManager.getAnalyzer(object).runCalculationAutomatically);
-		calculations.setAttribute(CALCULATE_FEATURES, "" + ProjectManager.getAnalyzer(object).calculateFeatures);
-		calculations.setAttribute(CALCULATE_CONSTRAINTS, "" + ProjectManager.getAnalyzer(object).calculateConstraints);
-		calculations.setAttribute(CALCULATE_REDUNDANT, "" + ProjectManager.getAnalyzer(object).calculateRedundantConstraints);
-		calculations.setAttribute(CALCULATE_TAUTOLOGY, "" + ProjectManager.getAnalyzer(object).calculateTautologyConstraints);
+		calculations.setAttribute(CALCULATE_AUTO, "" + ProjectManager.getAnalyzer(object).isRunCalculationAutomatically());
+		calculations.setAttribute(CALCULATE_FEATURES, "" + ProjectManager.getAnalyzer(object).isCalculateFeatures());
+		calculations.setAttribute(CALCULATE_CONSTRAINTS, "" + ProjectManager.getAnalyzer(object).isCalculateConstraints());
+		calculations.setAttribute(CALCULATE_REDUNDANT, "" + ProjectManager.getAnalyzer(object).isCalculateRedundantConstraints());
+		calculations.setAttribute(CALCULATE_TAUTOLOGY, "" + ProjectManager.getAnalyzer(object).isCalculateTautologyConstraints());
 
 		root.appendChild(comments);
 		for (final String comment : object.getProperty().getComments()) {
@@ -353,15 +353,15 @@ public class XmlFeatureModelFormat extends AXMLFormat<IFeatureModel> implements 
 					final String nodeName = node.getNodeName();
 					final boolean value = node.getNodeValue().equals(TRUE);
 					if (nodeName.equals(CALCULATE_AUTO)) {
-						ProjectManager.getAnalyzer(object).runCalculationAutomatically = value;
+						ProjectManager.getAnalyzer(object).setRunCalculationAutomatically(value);
 					} else if (nodeName.equals(CALCULATE_CONSTRAINTS)) {
-						ProjectManager.getAnalyzer(object).calculateConstraints = value;
+						ProjectManager.getAnalyzer(object).setCalculateConstraints(value);
 					} else if (nodeName.equals(CALCULATE_REDUNDANT)) {
-						ProjectManager.getAnalyzer(object).calculateRedundantConstraints = value;
+						ProjectManager.getAnalyzer(object).setCalculateRedundantConstraints(value);
 					} else if (nodeName.equals(CALCULATE_FEATURES)) {
-						ProjectManager.getAnalyzer(object).calculateFeatures = value;
+						ProjectManager.getAnalyzer(object).setCalculateFeatures(value);
 					} else if (nodeName.equals(CALCULATE_TAUTOLOGY)) {
-						ProjectManager.getAnalyzer(object).calculateTautologyConstraints = value;
+						ProjectManager.getAnalyzer(object).setCalculateTautologyConstraints(value);
 					} else {
 						throwError("Unknown calculations attribute: " + nodeName, e);
 					}

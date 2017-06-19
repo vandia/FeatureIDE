@@ -18,19 +18,27 @@
  *
  * See http://featureide.cs.ovgu.de/ for further information.
  */
-package de.ovgu.featureide.fm.core.job.util;
+package de.ovgu.featureide.fm.core.analysis.cnf;
 
-import de.ovgu.featureide.fm.core.job.LongRunningMethod;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
- * This class is implemented by callers as an anonymous class to encapsulate
- * parameters for the job constructor, so multiple {@code Job}s can be called
- * with low effort.
+ * Test methods of {@link LiteralSet}.
  * 
  * @author Sebastian Krieter
  */
-public interface JobArguments<T> {
+public class TLiteralSet {
 
-	LongRunningMethod<T> createJob();
+	private final LiteralSet refLiteralSet = new LiteralSet(-1, 2, 4, 6);
 
+	@Test
+	public void containsAllTest() {
+		assertTrue(refLiteralSet.containsAll(new LiteralSet(2, 4, 6)));
+		assertTrue(refLiteralSet.containsAll(new LiteralSet()));
+		assertFalse(refLiteralSet.containsAll(new LiteralSet(-2, -1, 2, 4, 6)));
+		assertFalse(refLiteralSet.containsAll(new LiteralSet(2, 4, 7)));
+	}
 }

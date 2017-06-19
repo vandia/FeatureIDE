@@ -109,11 +109,11 @@ public class XmlFeatureModelWriter extends AbstractXMLFeatureModelWriter<IFeatur
     	}
 
 		root.appendChild(calculations);
-		calculations.setAttribute(CALCULATE_AUTO, "" + ProjectManager.getAnalyzer(object).runCalculationAutomatically);
-		calculations.setAttribute(CALCULATE_FEATURES, "" + ProjectManager.getAnalyzer(object).calculateFeatures);
-		calculations.setAttribute(CALCULATE_CONSTRAINTS, "" + ProjectManager.getAnalyzer(object).calculateConstraints);
-		calculations.setAttribute(CALCULATE_REDUNDANT, "" + ProjectManager.getAnalyzer(object).calculateRedundantConstraints);
-		calculations.setAttribute(CALCULATE_TAUTOLOGY, "" + ProjectManager.getAnalyzer(object).calculateTautologyConstraints);
+		calculations.setAttribute(CALCULATE_AUTO, "" + ProjectManager.getAnalyzer(object).isRunCalculationAutomatically());
+		calculations.setAttribute(CALCULATE_FEATURES, "" + ProjectManager.getAnalyzer(object).isCalculateFeatures());
+		calculations.setAttribute(CALCULATE_CONSTRAINTS, "" + ProjectManager.getAnalyzer(object).isCalculateConstraints());
+		calculations.setAttribute(CALCULATE_REDUNDANT, "" + ProjectManager.getAnalyzer(object).isCalculateRedundantConstraints());
+		calculations.setAttribute(CALCULATE_TAUTOLOGY, "" + ProjectManager.getAnalyzer(object).isCalculateTautologyConstraints());
 
     	root.appendChild(comments);
     	for(String comment : object.getProperty().getComments()){

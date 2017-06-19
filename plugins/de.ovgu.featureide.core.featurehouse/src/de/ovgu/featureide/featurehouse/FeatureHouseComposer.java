@@ -52,7 +52,6 @@ import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.prop4j.NodeWriter;
-import org.sat4j.specs.TimeoutException;
 
 import AST.Problem;
 import AST.Program;
@@ -478,21 +477,21 @@ public class FeatureHouseComposer extends ComposerExtensionClass {
 									if (checkForIllegitimateMethodRefinement(m, mm)) {
 										List<IFeature> finalMethodList = new LinkedList<IFeature>();
 										finalMethodList.add(featureRole2);
-										if (!ProjectManager.getAnalyzer(featureModel).checkIfFeatureCombinationNotPossible(featureRole1, finalMethodList))
+										if (ProjectManager.getAnalyzer(featureModel).checkIfFeatureCombinationPossible(featureRole1, finalMethodList))
 											setContractErrorMarker(m, "keyword \"\\final_method\" found but possibly later refinement.");
 									}
 
 									if (checkForIllegitimateContract(m, mm)) {
 										List<IFeature> finalContractList = new LinkedList<IFeature>();
 										finalContractList.add(featureRole2);
-										if (mm.getCompKey().contains(FINAL_CONTRACT) && !ProjectManager.getAnalyzer(featureModel).checkIfFeatureCombinationNotPossible(factory.createFeature(featureModel, r.getFeature().getName()), finalContractList))
+										if (mm.getCompKey().contains(FINAL_CONTRACT) && ProjectManager.getAnalyzer(featureModel).checkIfFeatureCombinationPossible(factory.createFeature(featureModel, r.getFeature().getName()), finalContractList))
 											setContractErrorMarker(m, "keyword \"\\final_contract\" found but possibly later contract refinement.");
 									}
 
 									if (checkForIllegitimaterefinement(m, mm)) {
 										LinkedList<IFeature> treeDependencyList = new LinkedList<IFeature>();
 										treeDependencyList.add(featureRole2);
-										if (!ProjectManager.getAnalyzer(featureModel).checkIfFeatureCombinationNotPossible(featureRole1, treeDependencyList))
+										if (ProjectManager.getAnalyzer(featureModel).checkIfFeatureCombinationPossible(featureRole1, treeDependencyList))
 											setContractErrorMarker(m, "Contract with composition keyword " + mm.getCompKey() + " possibily illegitimately redefined with keyword " + m.getCompKey() + ".");
 									}
 
@@ -506,10 +505,7 @@ public class FeatureHouseComposer extends ComposerExtensionClass {
 			}
 		} catch (CoreException e2) {
 			LOGGER.logError(e2);
-		} catch (TimeoutException e) {
-			LOGGER.logError(e);
 		}
-
 	}
 
 	/**

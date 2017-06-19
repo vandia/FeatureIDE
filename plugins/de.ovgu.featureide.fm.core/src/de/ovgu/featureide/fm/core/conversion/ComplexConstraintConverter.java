@@ -221,10 +221,10 @@ public class ComplexConstraintConverter {
 	protected boolean prepare() {
 		FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(fm);
 		
-		analyzer.calculateFeatures = true;
-		analyzer.calculateConstraints = true;
-		analyzer.calculateRedundantConstraints = true;
-		analyzer.calculateTautologyConstraints = true;
+		analyzer.setCalculateFeatures(true);
+		analyzer.setCalculateConstraints(true);
+		analyzer.setCalculateRedundantConstraints(true);
+		analyzer.setCalculateTautologyConstraints(true);
 		
 		analyzer.analyzeFeatureModel(null);
 		List<IConstraint> toRemove = new LinkedList<IConstraint>();

@@ -112,12 +112,12 @@ public class SubtreeDependencyPage extends AbstractWizardPage {
 		FeatureDiagramEditor diagramEditor = new FeatureDiagramEditor(modeleditor, comp, subtreeModel);
 		subtreeModel.addListener(diagramEditor);
 
-		analyzer.calculateFeatures = ProjectManager.getAnalyzer(completeFm).calculateFeatures;
-		analyzer.calculateConstraints = ProjectManager.getAnalyzer(completeFm).calculateConstraints;
-		analyzer.calculateRedundantConstraints = ProjectManager.getAnalyzer(completeFm).calculateRedundantConstraints;
-		analyzer.calculateTautologyConstraints = ProjectManager.getAnalyzer(completeFm).calculateTautologyConstraints;
-		analyzer.calculateDeadConstraints = ProjectManager.getAnalyzer(completeFm).calculateDeadConstraints;
-		analyzer.calculateFOConstraints = ProjectManager.getAnalyzer(completeFm).calculateFOConstraints;
+		analyzer.setCalculateFeatures(ProjectManager.getAnalyzer(completeFm).isCalculateFeatures());
+		analyzer.setCalculateConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateConstraints());
+		analyzer.setCalculateRedundantConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateRedundantConstraints());
+		analyzer.setCalculateTautologyConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateTautologyConstraints());
+		analyzer.setCalculateDeadConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateDeadConstraints());
+		analyzer.setCalculateFOConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateFOConstraints());
 
 		analyzer.analyzeFeatureModel(null); // analyze the subtree model
 		explainImplicitConstraints(analyzer, diagramEditor.getGraphicalFeatureModel()); // explain implicit, i.e. redundant, constraints

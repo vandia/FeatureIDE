@@ -42,10 +42,14 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Shell;
 
 import de.ovgu.featureide.fm.core.Features;
+import de.ovgu.featureide.fm.core.ProjectManager;
+import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
+import de.ovgu.featureide.fm.core.analysis.cnf.Variables;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
+import de.ovgu.featureide.fm.core.base.IModalImplicationGraph;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.base.impl.Feature;
 import de.ovgu.featureide.fm.ui.editors.DeleteOperationAlternativeDialog;
@@ -154,11 +158,18 @@ public class ElementDeleteOperation extends MultiFeatureModelOperation implement
 				alreadyDeleted.add(feature);
 			} else {
 				// check for all equivalent features
-				FeatureDependencies featureDependencies = new FeatureDependencies(featureModel, false);
-				List<IFeature> equivalent = new LinkedList<IFeature>();
-				for (IFeature f2 : featureDependencies.getImpliedFeatures(feature)) {
-					if (featureDependencies.isAlways(f2, feature)) {
-						equivalent.add(f2);
+				final FeatureModelFormula formula = ProjectManager.getProject(featureModel).getStatus().getFormula();
+				final Variables variables = formula.getVariables();
+				final int variable = variables.getVariable(feature.getName());
+
+				final IModalImplicationGraph modalImplicationGraph = formula.getModalImplicationGraph();
+				modalImplicationGraph.complete(variable);
+				
+				final List<IFeature> equivalent = new ArrayList<>();
+				for (int strongylConnectedVar : modalImplicationGraph.getTraverser().getStronglyConnected(variable).getLiterals()) {
+					modalImplicationGraph.complete(strongylConnectedVar);
+					if (modalImplicationGraph.isStrongPath(variable, strongylConnectedVar)) {
+						equivalent.add(featureModel.getFeature(variables.getName(strongylConnectedVar)));
 					}
 				}
 				removalMap.put(feature, equivalent);

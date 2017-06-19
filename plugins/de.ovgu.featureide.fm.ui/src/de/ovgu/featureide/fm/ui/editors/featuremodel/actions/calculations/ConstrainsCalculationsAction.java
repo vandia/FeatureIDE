@@ -39,22 +39,22 @@ public class ConstrainsCalculationsAction extends Action {
 	public ConstrainsCalculationsAction(GraphicalViewerImpl viewer, IFeatureModel featureModel) {
 		super(CALCULATE_CONSTRAINT_ERRORS);
 		this.featureModel = featureModel;
-		setChecked(ProjectManager.getAnalyzer(featureModel).calculateConstraints);
+		setChecked(ProjectManager.getAnalyzer(featureModel).isCalculateConstraints());
 	}
 
 	@Override
 	public void run() {
-		if (ProjectManager.getAnalyzer(featureModel).calculateConstraints) {
-			ProjectManager.getAnalyzer(featureModel).calculateConstraints = false;
-			ProjectManager.getAnalyzer(featureModel).calculateRedundantConstraints = false;
-			ProjectManager.getAnalyzer(featureModel).calculateTautologyConstraints = false;
+		if (ProjectManager.getAnalyzer(featureModel).isCalculateConstraints()) {
+			ProjectManager.getAnalyzer(featureModel).setCalculateConstraints(false);
+			ProjectManager.getAnalyzer(featureModel).setCalculateRedundantConstraints(false);
+			ProjectManager.getAnalyzer(featureModel).setCalculateTautologyConstraints(false);
 		} else {
-			ProjectManager.getAnalyzer(featureModel).calculateConstraints = true;
-			ProjectManager.getAnalyzer(featureModel).calculateFeatures = true;
-			ProjectManager.getAnalyzer(featureModel).calculateRedundantConstraints = true;
-			ProjectManager.getAnalyzer(featureModel).calculateTautologyConstraints = true;
-			ProjectManager.getAnalyzer(featureModel).calculateDeadConstraints = true;
-			ProjectManager.getAnalyzer(featureModel).calculateFOConstraints = true;
+			ProjectManager.getAnalyzer(featureModel).setCalculateConstraints(true);
+			ProjectManager.getAnalyzer(featureModel).setCalculateFeatures(true);
+			ProjectManager.getAnalyzer(featureModel).setCalculateRedundantConstraints(true);
+			ProjectManager.getAnalyzer(featureModel).setCalculateTautologyConstraints(true);
+			ProjectManager.getAnalyzer(featureModel).setCalculateDeadConstraints(true);
+			ProjectManager.getAnalyzer(featureModel).setCalculateFOConstraints(true);
 		}
 		featureModel.handleModelDataChanged();
 	}

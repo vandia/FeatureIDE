@@ -39,6 +39,8 @@ public interface IVariables extends Cloneable {
 
 	LiteralSet convertToVariables(List<String> variableNames);
 
+	LiteralSet convertToVariables(List<String> variableNames, boolean sign);
+
 	int size();
 
 	int getVariable(String varName);
