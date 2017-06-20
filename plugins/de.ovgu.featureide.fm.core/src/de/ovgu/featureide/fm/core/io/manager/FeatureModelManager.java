@@ -118,7 +118,9 @@ public class FeatureModelManager extends AFileManager<IFeatureModel> {
 	}
 
 	public static FileHandler<IFeatureModel> load(Path path) {
-		return getFileHandler(path, objectCreator);
+		final FileHandler<IFeatureModel> fileHandler = getFileHandler(path, objectCreator);
+		fileHandler.getObject().setSourceFile(path);
+		return fileHandler;
 	}
 
 	@Override
