@@ -39,6 +39,7 @@ import org.eclipse.core.runtime.CoreException;
 import de.ovgu.featureide.core.CorePlugin;
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.core.signature.ProjectSignatures;
+import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.fm.core.io.FileSystem;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -65,14 +66,14 @@ public class PrintDocumentationStatisticsJob implements LongRunningMethod<Boolea
 			return false;
 		}
 
-		IFolder folder = CorePlugin.createFolder(project, foldername);
+		IFolder folder = FMCorePlugin.createFolder(project, foldername);
 		try {
 			folder.delete(true, null);
 		} catch (CoreException e) {
 			CorePlugin.getDefault().logError(e);
 			return false;
 		}
-		CorePlugin.createFolder(project, foldername);
+		FMCorePlugin.createFolder(project, foldername);
 
 		final ProjectSignatures projectSignatures = featureProject.getProjectSignatures();
 		if (projectSignatures == null) {

@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
 import de.ovgu.featureide.fm.core.analysis.cnf.CNFCreator;
 import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
@@ -42,6 +41,7 @@ import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModelFactory;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
 import de.ovgu.featureide.fm.core.base.impl.FMFactoryManager;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -61,7 +61,7 @@ public class SliceFeatureModel implements LongRunningMethod<IFeatureModel> {
 	private final Collection<String> featureNames;
 
 	public SliceFeatureModel(IFeatureModel featuremodel, Collection<String> featureNames, boolean considerConstraints) {
-		this.formula = ProjectManager.getProject(featuremodel).getStatus().getFormula();
+		this.formula = FeatureModelManager.getInstance(featuremodel).getSnapshot().getFormula();
 		this.featureNames = featureNames;
 		this.considerConstraints = considerConstraints;
 	}

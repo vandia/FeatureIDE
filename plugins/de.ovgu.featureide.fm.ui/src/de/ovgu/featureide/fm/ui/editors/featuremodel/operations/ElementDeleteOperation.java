@@ -42,7 +42,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Shell;
 
 import de.ovgu.featureide.fm.core.Features;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.analysis.cnf.Variables;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
@@ -52,6 +51,7 @@ import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IModalImplicationGraph;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.base.impl.Feature;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.ui.editors.DeleteOperationAlternativeDialog;
 import de.ovgu.featureide.fm.ui.editors.FeatureModelEditor;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.GUIDefaults;
@@ -158,7 +158,7 @@ public class ElementDeleteOperation extends MultiFeatureModelOperation implement
 				alreadyDeleted.add(feature);
 			} else {
 				// check for all equivalent features
-				final FeatureModelFormula formula = ProjectManager.getProject(featureModel).getStatus().getFormula();
+				final FeatureModelFormula formula = FeatureModelManager.getInstance(featureModel).getSnapshot().getFormula();
 				final Variables variables = formula.getVariables();
 				final int variable = variables.getVariable(feature.getName());
 

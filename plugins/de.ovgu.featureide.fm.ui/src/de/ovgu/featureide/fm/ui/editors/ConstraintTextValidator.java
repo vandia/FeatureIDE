@@ -43,7 +43,6 @@ import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.FeatureComparator;
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.analysis.FeatureProperties.FeatureParentStatus;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IConstraint;
@@ -53,6 +52,7 @@ import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.editing.AdvancedNodeCreator;
 import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.functional.Functional.IConsumer;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.ui.FMUIPlugin;
 
 /**
@@ -86,14 +86,14 @@ public final class ConstraintTextValidator {
 			if (constraint != null) {
 				clonedModel.removeConstraint(constraint);
 			}
-			deadFeaturesBefore = ProjectManager.getAnalyzer(clonedModel).getDeadFeatures();
+			deadFeaturesBefore = FeatureModelManager.getAnalyzer(clonedModel).getDeadFeatures();
 			clonedModel.addConstraint(new Constraint(clonedModel, propNode));
 			clonedModel.handleModelDataChanged();
 		}
 
 		final SortedSet<IFeature> deadFeaturesAfter = new TreeSet<IFeature>(new FeatureComparator(true));
 
-		for (IFeature l : ProjectManager.getAnalyzer(clonedModel).getDeadFeatures()) {
+		for (IFeature l : FeatureModelManager.getAnalyzer(clonedModel).getDeadFeatures()) {
 			if (!deadFeaturesBefore.contains(l)) {
 				deadFeaturesAfter.add(l);
 
@@ -158,7 +158,7 @@ public final class ConstraintTextValidator {
 				clonedModel.addConstraint(new Constraint(clonedModel, propNode));
 			}
 		}
-		final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(clonedModel);
+		final FeatureModelAnalyzer analyzer = FeatureModelManager.getAnalyzer(clonedModel);
 		analyzer.analyzeFeatureModel(null);
 
 		for (IFeature feature : model.getFeatures()) {
@@ -450,7 +450,7 @@ public final class ConstraintTextValidator {
 	 *            * @throws TimeoutException
 	 */
 	private boolean voidsModel(final IConstraint constraint, String input, IFeatureModel model) throws TimeoutException {
-		if (!ProjectManager.getAnalyzer(model).isValid()) {
+		if (!FeatureModelManager.getAnalyzer(model).isValid()) {
 
 			return false;
 		}
@@ -470,7 +470,7 @@ public final class ConstraintTextValidator {
 			clonedModel.handleModelDataChanged();
 		}
 
-		return (!ProjectManager.getAnalyzer(clonedModel).isValid());
+		return (!FeatureModelManager.getAnalyzer(clonedModel).isValid());
 
 	}
 }

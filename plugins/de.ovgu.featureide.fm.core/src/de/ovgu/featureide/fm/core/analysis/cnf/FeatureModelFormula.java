@@ -107,13 +107,13 @@ public class FeatureModelFormula {
 			if (slicedCNF == null) {
 				final IFilter<IFeature> filter;
 				switch (index) {
-				case 0:
+				case CNF_NO_ABSTRACT:
 					filter = new AbstractFeatureFilter();
 					break;
-				case 1:
+				case CNF_NO_HIDDEN:
 					filter = new HiddenFeatureFilter();
 					break;
-				case 2:
+				case CNF_NO_HIDDEN_NO_ABSTRACT:
 					filter = new OrFilter<IFeature>(Arrays.asList(new HiddenFeatureFilter(), new AbstractFeatureFilter()));
 					break;
 				default:

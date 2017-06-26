@@ -29,7 +29,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 
-import de.ovgu.featureide.core.CorePlugin;
 import de.ovgu.featureide.core.mpl.InterfaceProject;
 import de.ovgu.featureide.core.mpl.MPLPlugin;
 import de.ovgu.featureide.core.signature.ProjectSignatures;
@@ -37,6 +36,7 @@ import de.ovgu.featureide.core.signature.ProjectSignatures.SignatureIterator;
 import de.ovgu.featureide.core.signature.ProjectStructure;
 import de.ovgu.featureide.core.signature.base.AbstractClassFragment;
 import de.ovgu.featureide.core.signature.filter.FeatureFilter;
+import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.fm.core.configuration.SelectableFeature;
 import de.ovgu.featureide.fm.core.io.FileSystem;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
@@ -67,7 +67,7 @@ public class PrintFeatureInterfacesJob implements LongRunningMethod<Boolean> {
 		ProjectSignatures projectSignatures = interfaceProject.getProjectSignatures();
 		List<SelectableFeature> features = interfaceProject.getConfiguration().getFeatures();
 
-		IFolder folder = CorePlugin.createFolder(interfaceProject.getProjectReference(), foldername);
+		IFolder folder = FMCorePlugin.createFolder(interfaceProject.getProjectReference(), foldername);
 
 		try {
 			folder.delete(true, null);
@@ -91,7 +91,7 @@ public class PrintFeatureInterfacesJob implements LongRunningMethod<Boolean> {
 
 				String path = foldername + "/" + feature.getName() + (packagename.isEmpty() ? "" : "/" + packagename);
 
-				folder = CorePlugin.createFolder(interfaceProject.getProjectReference(), path);
+				folder = FMCorePlugin.createFolder(interfaceProject.getProjectReference(), path);
 
 				FileSystem.write(Paths.get(folder.getFile(role.getSignature().getName() + ".java").getLocationURI()),
 						role.toShortString());

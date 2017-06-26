@@ -48,6 +48,7 @@ import de.ovgu.featureide.fm.core.base.impl.ExtendedFeatureModel.UsedModel;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
 import de.ovgu.featureide.fm.core.configuration.SelectableFeature;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager.FeatureModelSnapshot;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
@@ -250,8 +251,9 @@ public class MPLBuildProjectJob implements LongRunningMethod<Boolean> {
 				String prefix = usedModel.getPrefix()
 					+ ".";
 
-				final Configuration newConfiguration = new Configuration(externalFeatureProject.getFeatureModel());
-				final ConfigurationPropagator propagator = externalFeatureProject.getStatus().getPropagator(newConfiguration);
+				final FeatureModelSnapshot snapshot = externalFeatureProject.getFeatureModelManager().getSnapshot();
+				final Configuration newConfiguration = new Configuration(snapshot.getFeatureModel());
+				final ConfigurationPropagator propagator = snapshot.getPropagator(newConfiguration);
 
 				for (SelectableFeature feature : configuration.getFeatures()) {
 					if (feature.getName().startsWith(prefix)) {

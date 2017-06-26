@@ -43,6 +43,8 @@ public interface IVariables extends Cloneable {
 
 	int size();
 
+	int maxVariableID();
+
 	int getVariable(String varName);
 
 	int getVariable(String varName, boolean sign);

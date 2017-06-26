@@ -55,9 +55,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import de.ovgu.featureide.fm.core.FMCorePlugin;
-import de.ovgu.featureide.fm.core.FeatureProject;
 import de.ovgu.featureide.fm.core.ModelMarkerHandler;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.IEventListener;
@@ -68,6 +66,7 @@ import de.ovgu.featureide.fm.core.io.Problem;
 import de.ovgu.featureide.fm.core.io.ProblemList;
 import de.ovgu.featureide.fm.core.io.manager.ConfigurationManager;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager.FeatureModelSnapshot;
 import de.ovgu.featureide.fm.ui.FMUIPlugin;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.GUIDefaults;
 
@@ -88,8 +87,6 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 
 	private final JobSynchronizer configJobManager = new JobSynchronizer();
 
-	public FeatureProject featureProject;
-
 	private final List<IConfigurationEditorPage> allPages = new ArrayList<>(5);
 	private List<IConfigurationEditorPage> extensionPages;
 	private List<IConfigurationEditorPage> internalPages;
@@ -103,12 +100,13 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 
 	private ConfigurationManager configurationManager;
 	private FeatureModelManager featureModelManager;
+	private FeatureModelSnapshot featureModelSnapshot;
 
 	private EXPAND_ALGORITHM currentExpandAlgorithm = EXPAND_ALGORITHM.DEFUALT;
 
 	private int currentPageIndex = -1;
 
-	private boolean autoSelectFeatures = false;
+	private boolean autoSelectFeatures = true;
 	private boolean invalidFeatureModel = true;
 	private boolean containsError = false;
 
@@ -214,21 +212,15 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 				}
 			}
 		}
-		final Path path = Paths.get(res.getLocationURI());
+		final Path modelPath = Paths.get(res.getLocationURI());
 
-		if (ProjectManager.hasProjectData(path)) {
-			featureProject = ProjectManager.getProject(path);
-		} else {
-			featureProject = ProjectManager.addProject(Paths.get(project.getLocationURI()), path);
-		}
-
-		configurationManager = (ConfigurationManager) featureProject.getConfigurationManager(Paths.get(file.getLocationURI()));
-
-		featureModelManager = FeatureModelManager.getInstance(path);
+		featureModelManager = FeatureModelManager.getInstance(modelPath);
+		featureModelSnapshot = featureModelManager.getSnapshot();
 		invalidFeatureModel = featureModelManager.getLastProblems().containsError();
 		if (invalidFeatureModel) {
 			return;
 		}
+		configurationManager = ConfigurationManager.getInstance(Paths.get(file.getLocationURI()), new Configuration(featureModelSnapshot.getFeatureModel()));
 
 		//TODO mapping model
 		//		if (mappingModel) {
@@ -538,7 +530,7 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 
 	@Override
 	public ConfigurationPropagator getPropagator() {
-		return featureProject.getStatus().getPropagator(getConfiguration());
+		return featureModelSnapshot.getPropagator(getConfiguration());
 	}
 
 	public ConfigurationManager getConfigurationManager() {

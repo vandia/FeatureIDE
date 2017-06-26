@@ -48,7 +48,7 @@ import de.ovgu.featureide.core.mpl.builder.InterfaceProjectNature;
 import de.ovgu.featureide.core.mpl.builder.MSPLNature;
 import de.ovgu.featureide.core.mpl.job.PrintFeatureInterfacesJob;
 import de.ovgu.featureide.fm.core.AbstractCorePlugin;
-import de.ovgu.featureide.fm.core.ProjectManager;
+import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent.EventType;
 import de.ovgu.featureide.fm.core.base.event.IEventListener;
@@ -315,7 +315,7 @@ public class MPLPlugin extends AbstractCorePlugin {
 		for (IProject iProject : projects) {
 			arguments.add(new PrintFeatureInterfacesJob(folder, iProject));
 		}
-		ProjectManager.startJobs(arguments, StringTable.BUILD_FEATURE_INTERFACES, true);
+		FMCorePlugin.startJobs(arguments, StringTable.BUILD_FEATURE_INTERFACES, true);
 	}
 
 	public void buildConfigurationInterfaces(LinkedList<IProject> projects, String viewName, int viewLevel, int configLimit) {
@@ -354,7 +354,7 @@ public class MPLPlugin extends AbstractCorePlugin {
 	public void createInterface(IProject mplProject, IFeatureProject featureProject, Collection<String> featureNames) {
 		ArrayList<LongRunningMethod<?>> arguments = new ArrayList<>(1);
 		arguments.add(new SliceFeatureModel(featureProject.getFeatureModel(), featureNames, true));
-		ProjectManager.startJobs(arguments, StringTable.CREATE_INTERFACE, true);
+		FMCorePlugin.startJobs(arguments, StringTable.CREATE_INTERFACE, true);
 	}
 
 }

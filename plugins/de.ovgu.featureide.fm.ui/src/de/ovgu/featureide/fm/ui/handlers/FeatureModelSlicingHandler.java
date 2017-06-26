@@ -29,8 +29,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 
-import de.ovgu.featureide.fm.core.FeatureProject;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.core.job.IJob;
@@ -49,8 +47,8 @@ public class FeatureModelSlicingHandler extends AFileHandler {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void singleAction(final IFile file) {
-		final FeatureProject project = ProjectManager.getProject(Paths.get(file.getProject().getLocationURI()));
-		final IFeatureModel featureModel = project.getStatus().getFeatureModel();
+		final FeatureModelManager project = FeatureModelManager.getInstance(Paths.get(file.getProject().getLocationURI()));
+		final IFeatureModel featureModel = project.getSnapshot().getFeatureModel();
 		if (featureModel != null) {
 			final AbstractWizard wizard = new FeatureModelSlicingWizard("Feature-Model Slicing");
 			wizard.putData(WizardConstants.KEY_IN_FEATUREMODEL, featureModel);

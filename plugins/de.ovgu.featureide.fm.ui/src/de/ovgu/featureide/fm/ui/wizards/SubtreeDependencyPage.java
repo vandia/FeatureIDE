@@ -30,11 +30,11 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.analysis.ConstraintProperties;
 import de.ovgu.featureide.fm.core.analysis.ConstraintProperties.ConstraintRedundancyStatus;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.core.io.manager.VirtualFileManager;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelFormat;
 import de.ovgu.featureide.fm.ui.editors.FeatureDiagramEditor;
@@ -81,7 +81,7 @@ public class SubtreeDependencyPage extends AbstractWizardPage {
 				+ "they are presented below the feature model in a red border.");
 		subtreeModel = fm;
 		completeFm = completeModel;
-		subTreeAnalyzer = ProjectManager.getAnalyzer(subtreeModel);
+		subTreeAnalyzer = FeatureModelManager.getAnalyzer(subtreeModel);
 	}
 
 	/**
@@ -106,18 +106,18 @@ public class SubtreeDependencyPage extends AbstractWizardPage {
 	 * @param comp A composite which contains the sub feature model
 	 */
 	private void insertFeatureModel(Composite comp) {
-		FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(subtreeModel);
+		FeatureModelAnalyzer analyzer = FeatureModelManager.getAnalyzer(subtreeModel);
 
 		FeatureModelEditor modeleditor = new FeatureModelEditor(new VirtualFileManager<IFeatureModel>(subtreeModel, new XmlFeatureModelFormat()));
 		FeatureDiagramEditor diagramEditor = new FeatureDiagramEditor(modeleditor, comp, subtreeModel);
 		subtreeModel.addListener(diagramEditor);
 
-		analyzer.setCalculateFeatures(ProjectManager.getAnalyzer(completeFm).isCalculateFeatures());
-		analyzer.setCalculateConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateConstraints());
-		analyzer.setCalculateRedundantConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateRedundantConstraints());
-		analyzer.setCalculateTautologyConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateTautologyConstraints());
-		analyzer.setCalculateDeadConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateDeadConstraints());
-		analyzer.setCalculateFOConstraints(ProjectManager.getAnalyzer(completeFm).isCalculateFOConstraints());
+		analyzer.setCalculateFeatures(FeatureModelManager.getAnalyzer(completeFm).isCalculateFeatures());
+		analyzer.setCalculateConstraints(FeatureModelManager.getAnalyzer(completeFm).isCalculateConstraints());
+		analyzer.setCalculateRedundantConstraints(FeatureModelManager.getAnalyzer(completeFm).isCalculateRedundantConstraints());
+		analyzer.setCalculateTautologyConstraints(FeatureModelManager.getAnalyzer(completeFm).isCalculateTautologyConstraints());
+		analyzer.setCalculateDeadConstraints(FeatureModelManager.getAnalyzer(completeFm).isCalculateDeadConstraints());
+		analyzer.setCalculateFOConstraints(FeatureModelManager.getAnalyzer(completeFm).isCalculateFOConstraints());
 
 		analyzer.analyzeFeatureModel(null); // analyze the subtree model
 		explainImplicitConstraints(analyzer, diagramEditor.getGraphicalFeatureModel()); // explain implicit, i.e. redundant, constraints

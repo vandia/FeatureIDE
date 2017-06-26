@@ -163,7 +163,7 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	private boolean checkClauseValidity(final int[] literals) {
 		for (int i = 0; i < literals.length; i++) {
 			final int l = literals[i];
-			if (l == 0 || Math.abs(l) > satInstance.getVariables().size()) {
+			if (l == 0 || Math.abs(l) > satInstance.getVariables().maxVariableID()) {
 				return false;
 			}
 		}

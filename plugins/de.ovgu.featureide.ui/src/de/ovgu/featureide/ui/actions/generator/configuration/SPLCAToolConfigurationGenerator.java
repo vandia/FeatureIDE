@@ -39,7 +39,6 @@ import org.eclipse.ui.internal.util.BundleUtility;
 
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.fm.core.base.IFeature;
-import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.configuration.Selection;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 import de.ovgu.featureide.fm.ui.editors.featuremodel.GUIDefaults;
@@ -62,8 +61,8 @@ public class SPLCAToolConfigurationGenerator extends AConfigurationGenerator {
 	private final String algorithm;
 	private final int t;
 
-	public SPLCAToolConfigurationGenerator(ConfigurationBuilder builder, IFeatureModel featureModel, IFeatureProject featureProject, String algorithm, int t) {
-		super(builder, featureModel, featureProject);
+	public SPLCAToolConfigurationGenerator(ConfigurationBuilder builder, IFeatureProject featureProject, String algorithm, int t) {
+		super(builder, featureProject);
 		this.algorithm = algorithm;
 		this.t = t;
 	}

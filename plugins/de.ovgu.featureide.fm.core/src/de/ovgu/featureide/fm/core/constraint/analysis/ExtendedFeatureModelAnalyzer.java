@@ -45,7 +45,7 @@ public class ExtendedFeatureModelAnalyzer extends FeatureModelAnalyzer  {
 	private RestrictionFactory<DeRestriction> deFactory;
 
 	public ExtendedFeatureModelAnalyzer(FeatureModelFormula formula, ExtendedFeatureModel featureModel) {
-		super(formula, featureModel);
+		super(formula);
 
 		this.efm = featureModel;
 		this.idGen = new UniqueId();

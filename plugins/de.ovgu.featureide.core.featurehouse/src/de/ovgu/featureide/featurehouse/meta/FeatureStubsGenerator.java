@@ -44,7 +44,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
-import de.ovgu.featureide.core.CorePlugin;
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.core.fstmodel.FSTFeature;
 import de.ovgu.featureide.core.fstmodel.FSTMethod;
@@ -58,6 +57,7 @@ import de.ovgu.featureide.core.signature.base.FOPFeatureData;
 import de.ovgu.featureide.core.signature.filter.MethodFilter;
 import de.ovgu.featureide.featurehouse.ExtendedFujiSignaturesJob;
 import de.ovgu.featureide.featurehouse.FeatureHouseCorePlugin;
+import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.fm.core.job.IJob;
 import de.ovgu.featureide.fm.core.job.IRunner;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
@@ -129,7 +129,7 @@ public class FeatureStubsGenerator {
 					File file = null;
 					String fileText = "";
 					int featureID = signatures.getFeatureID(feat.getName());
-					CorePlugin.createFolder(featureProject.getProject(), featureProject.getFeaturestubPath() + File.separator + feat.getName());
+					FMCorePlugin.createFolder(featureProject.getProject(), featureProject.getFeaturestubPath() + File.separator + feat.getName());
 					final HashSet<String> alreadyUsedSigs = new HashSet<String>();
 					copyRolesToFeatureStubsFolder(feat);
 					
@@ -211,7 +211,7 @@ public class FeatureStubsGenerator {
 	
 	private void getFeatures(final ProjectSignatures signatures) {
 		final LinkedList<FSTFeature> features = new LinkedList<FSTFeature>(this.featureProject.getFSTModel().getFeatures());
-		featureStubFolder = CorePlugin.createFolder(featureProject.getProject(), featureProject.getFeaturestubPath());
+		featureStubFolder = FMCorePlugin.createFolder(featureProject.getProject(), featureProject.getFeaturestubPath());
 		for (FSTFeature fstfeat : features) {
 			try {
 				featureStubFolder.getFolder(fstfeat.getName()).delete(true, null);

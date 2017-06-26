@@ -26,10 +26,10 @@ import org.eclipse.gef.ui.parts.GraphicalViewerImpl;
 import org.eclipse.jface.action.Action;
 
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 
 /**
  * An action to activate/deactivate automated calculations on changes to the feature model.
@@ -44,12 +44,12 @@ public class AutomatedCalculationsAction extends Action {
 	public AutomatedCalculationsAction(GraphicalViewerImpl viewer, IFeatureModel featureModel) {
 		super(AUTOMATED_CALCULATIONS);
 		this.featureModel = featureModel;
-		setChecked(ProjectManager.getAnalyzer(featureModel).isRunCalculationAutomatically());
+		setChecked(FeatureModelManager.getAnalyzer(featureModel).isRunCalculationAutomatically());
 	}
 
 	@Override
 	public void run() {
-		final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(featureModel);
+		final FeatureModelAnalyzer analyzer = FeatureModelManager.getAnalyzer(featureModel);
 		if (analyzer.isRunCalculationAutomatically()) {
 			for (IFeature f : featureModel.getFeatures()) {
 				analyzer.getFeatureProperties(f).resetStatus();

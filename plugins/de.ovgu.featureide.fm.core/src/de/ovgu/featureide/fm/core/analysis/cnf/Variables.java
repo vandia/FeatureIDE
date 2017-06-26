@@ -125,6 +125,11 @@ public class Variables implements Serializable, IVariables, IInternalVariables {
 	}
 
 	@Override
+	public int maxVariableID() {
+		return intToVar.length - 1;
+	}
+
+	@Override
 	public int getVariable(String varName) {
 		final Integer var = varToInt.get(varName);
 		return var == null ? 0 : var;

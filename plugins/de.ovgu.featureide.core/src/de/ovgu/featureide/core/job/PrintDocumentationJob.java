@@ -52,6 +52,7 @@ import de.ovgu.featureide.core.signature.documentation.base.BlockTag;
 import de.ovgu.featureide.core.signature.documentation.base.DocumentationBuilder;
 import de.ovgu.featureide.core.signature.filter.ConstraintFilter;
 import de.ovgu.featureide.core.signature.filter.FeatureFilter;
+import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.fm.core.base.impl.ConfigFormatManager;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.SelectableFeature;
@@ -203,7 +204,7 @@ public class PrintDocumentationJob implements LongRunningMethod<Boolean> {
 	protected String folderPath = null;
 
 	private boolean deleteOldFolder() {
-		final IFolder folder = CorePlugin.createFolder(project, foldername);
+		final IFolder folder = FMCorePlugin.createFolder(project, foldername);
 		folderPath = folder.getLocation().toOSString();
 
 		try {
@@ -218,7 +219,7 @@ public class PrintDocumentationJob implements LongRunningMethod<Boolean> {
 	private void buildJavaDoc(final SignatureIterator it) {
 		final String extFoldername = foldername + "/src/";
 
-		CorePlugin.createFolder(project, extFoldername);
+		FMCorePlugin.createFolder(project, extFoldername);
 
 		final HashSet<String> packageSet = new HashSet<String>();
 		final LinkedList<String> classList = new LinkedList<String>();
@@ -239,7 +240,7 @@ public class PrintDocumentationJob implements LongRunningMethod<Boolean> {
 				packageSet.add(packagename);
 			}
 
-			final IFolder folder = CorePlugin.createFolder(project, path);
+			final IFolder folder = FMCorePlugin.createFolder(project, path);
 			IFile file = folder.getFile(javaClass.getSignature().getName() + ".java");
 			try {
 				FileSystem.write(Paths.get(file.getLocationURI()), javaClass.toString().getBytes(Charset.forName("UTF-8")));
@@ -248,7 +249,7 @@ public class PrintDocumentationJob implements LongRunningMethod<Boolean> {
 			}
 			workMonitor.worked();
 		}
-		final IFolder folder = CorePlugin.createFolder(project, foldername + "/doc/");
+		final IFolder folder = FMCorePlugin.createFolder(project, foldername + "/doc/");
 
 		final int defaultArguments = 4;
 		int numDefaultArguments = defaultArguments;

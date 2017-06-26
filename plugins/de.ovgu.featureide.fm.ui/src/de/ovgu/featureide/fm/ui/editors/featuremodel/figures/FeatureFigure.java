@@ -45,7 +45,6 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.analysis.FeatureProperties;
 import de.ovgu.featureide.fm.core.analysis.FeatureProperties.FeatureDeterminedStatus;
 import de.ovgu.featureide.fm.core.analysis.FeatureProperties.FeatureParentStatus;
@@ -58,6 +57,7 @@ import de.ovgu.featureide.fm.core.base.impl.Feature;
 import de.ovgu.featureide.fm.core.color.ColorPalette;
 import de.ovgu.featureide.fm.core.color.FeatureColor;
 import de.ovgu.featureide.fm.core.color.FeatureColorManager;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.ui.editors.FeatureDiagramExtension;
 import de.ovgu.featureide.fm.ui.editors.IGraphicalFeature;
 import de.ovgu.featureide.fm.ui.editors.IGraphicalFeatureModel;
@@ -142,7 +142,7 @@ public class FeatureFigure extends ModelElementFigure implements GUIDefaults {
 		setBorder(FMPropertyManager.getFeatureBorder(feature.isConstraintSelected()));
 
 		IFeature feature = this.feature.getObject();
-		final FeatureModelAnalyzer analyser = ProjectManager.getAnalyzer(feature.getFeatureModel());
+		final FeatureModelAnalyzer analyser = FeatureModelManager.getAnalyzer(feature.getFeatureModel());
 
 		if (feature.getStructure().isRoot() && !analyser.isValid()) {
 			setBackgroundColor(FMPropertyManager.getDeadFeatureBackgroundColor());

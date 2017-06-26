@@ -92,7 +92,6 @@ import de.ovgu.featureide.fm.core.FMComposerManager;
 import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.ModelMarkerHandler;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
@@ -112,6 +111,7 @@ import de.ovgu.featureide.fm.core.io.Problem;
 import de.ovgu.featureide.fm.core.io.ProblemList;
 import de.ovgu.featureide.fm.core.io.manager.ConfigurationManager;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager.FeatureModelSnapshot;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.job.LongRunningJob;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
@@ -126,7 +126,7 @@ import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
  * @author Tom Brosch
  * @author Marcus Pinnecke (Feature Interface)
  */
-public class FeatureProject extends de.ovgu.featureide.fm.core.FeatureProject implements IFeatureProject, IResourceChangeListener, IBuilderMarkerHandler, IEventListener {
+public class FeatureProject implements IFeatureProject, IResourceChangeListener, IBuilderMarkerHandler, IEventListener {
 
 	private static final CorePlugin LOGGER = CorePlugin.getDefault();
 
@@ -294,10 +294,10 @@ public class FeatureProject extends de.ovgu.featureide.fm.core.FeatureProject im
 			});
 	
 	private static FeatureModelManager getFeatureModelManager(IProject project) {
-		ModelMarkerHandler<IFile> modelFile = (project.getFile("mpl.velvet").exists()) ? new ModelMarkerHandler<>(project.getFile("mpl.velvet"))
-				: new ModelMarkerHandler<>(project.getFile("model.xml"));
+		IFile modelFile = (project.getFile("mpl.velvet").exists()) ? project.getFile("mpl.velvet")
+				: project.getFile("model.xml");
 
-		return FeatureModelManager.getInstance(Paths.get(modelFile.getModelFile().getLocationURI()));
+		return FeatureModelManager.getInstance(Paths.get(modelFile.getLocationURI()));
 	}
 
 	/**
@@ -308,7 +308,7 @@ public class FeatureProject extends de.ovgu.featureide.fm.core.FeatureProject im
 	 *            the FeatureIDE project
 	 */
 	public FeatureProject(IProject aProject) {
-		super(getFeatureModelManager(aProject));
+		super();
 		project = aProject;
 
 		try {
@@ -323,7 +323,7 @@ public class FeatureProject extends de.ovgu.featureide.fm.core.FeatureProject im
 			modelFile = new ModelMarkerHandler<>(project.getFile("model.xml"));
 		}
 
-		featureModelManager = FeatureModelManager.getInstance(Paths.get(modelFile.getModelFile().getLocationURI()));
+		featureModelManager = getFeatureModelManager(aProject);
 		featureModelManager.addListener(new FeatureModelChangeListner());
 		featureModelManager.read();
 
@@ -338,10 +338,10 @@ public class FeatureProject extends de.ovgu.featureide.fm.core.FeatureProject im
 		String projectBuildPath = getProjectBuildPath();
 
 		libFolder = project.getFolder("lib");
-		binFolder = CorePlugin.getFolder(project, "bin");
-		buildFolder = CorePlugin.getFolder(project, projectBuildPath);
-		configFolder = CorePlugin.getFolder(project, getProjectConfigurationPath());
-		sourceFolder = CorePlugin.getFolder(project, getProjectSourcePath());
+		binFolder = FMCorePlugin.getFolder(project, "bin");
+		buildFolder = FMCorePlugin.getFolder(project, projectBuildPath);
+		configFolder = FMCorePlugin.getFolder(project, getProjectConfigurationPath());
+		sourceFolder = FMCorePlugin.getFolder(project, getProjectSourcePath());
 		fstModel = null;
 		// loading model data and listen to changes in the model file
 		addModelListener();
@@ -1014,7 +1014,8 @@ public class FeatureProject extends de.ovgu.featureide.fm.core.FeatureProject im
 			public Boolean execute(IMonitor workMonitor) throws Exception {
 				workMonitor.setRemainingWork(2);
 
-				final Configuration config = new Configuration(featureModelManager.getObject());
+				final FeatureModelSnapshot snapshot = featureModelManager.getSnapshot();
+				final Configuration config = new Configuration(snapshot.getFeatureModel());
 				try {
 					IMonitor subTask = workMonitor.subTask(1);
 					subTask.setTaskName(DELETE_CONFIGURATION_MARKERS);
@@ -1030,13 +1031,12 @@ public class FeatureProject extends de.ovgu.featureide.fm.core.FeatureProject im
 					for (IFile file : files) {
 						subTask.setTaskName(CHECK_VALIDITY_OF + " - " + file.getName());
 						final ProblemList lastProblems = FileHandler.load(Paths.get(file.getLocationURI()), config, ConfigFormatManager.getInstance());
-						final ConfigurationPropagator propagator = de.ovgu.featureide.fm.core.FeatureProject.getPropagator(config, true);
+						final ConfigurationPropagator propagator = snapshot.getPropagator(config, true);
 						if (!LongRunningWrapper.runMethod(propagator.isValid())) {
 							String name = file.getName();
 							name = name.substring(0, name.lastIndexOf('.'));
 							String message = CONFIGURATION_ + name + IS_INVALID;
 							createConfigurationMarker(file, message, 0, IMarker.SEVERITY_ERROR);
-
 						}
 						// create warnings (e.g., for features that are not available anymore)
 						for (Problem warning : lastProblems) {
@@ -1136,7 +1136,7 @@ public class FeatureProject extends de.ovgu.featureide.fm.core.FeatureProject im
 	private Collection<String> getOptionalConcreteFeatures() {
 		final IFeatureModel featureModel = featureModelManager.getObject();
 		final Collection<String> concreteFeatures = FeatureUtils.extractConcreteFeaturesAsStringList(featureModel);
-		final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(featureModel);
+		final FeatureModelAnalyzer analyzer = FeatureModelManager.getAnalyzer(featureModel);
 		final List<IFeature> coreList = analyzer.getCoreFeatures();
 		final List<IFeature> deadList = analyzer.getDeadFeatures();
 		for (final IFeature feature : coreList) {

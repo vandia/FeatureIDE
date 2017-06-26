@@ -84,7 +84,6 @@ import org.eclipse.ui.progress.UIJob;
 
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
 import de.ovgu.featureide.fm.core.Features;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
@@ -98,6 +97,7 @@ import de.ovgu.featureide.fm.core.color.FeatureColorManager;
 import de.ovgu.featureide.fm.core.explanations.Explanation;
 import de.ovgu.featureide.fm.core.io.IPersistentFormat;
 import de.ovgu.featureide.fm.core.io.manager.AFileManager;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.job.IRunner;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
@@ -431,7 +431,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 			return;
 		}
 		final IFeatureModelElement primaryModel = primary.getModel().getObject();
-		final Explanation activeExplanation = ProjectManager.getAnalyzer(getFeatureModel()).getExplanation(primaryModel);
+		final Explanation activeExplanation = FeatureModelManager.getAnalyzer(getFeatureModel()).getExplanation(primaryModel);
 		setActiveExplanation(activeExplanation);
 	}
 
@@ -835,7 +835,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 			return;
 		}
 		waiting = true;
-		final FeatureModelAnalyzer analyzer2 = ProjectManager.getAnalyzer(featureModelEditor.getFeatureModel());
+		final FeatureModelAnalyzer analyzer2 = FeatureModelManager.getAnalyzer(featureModelEditor.getFeatureModel());
 		final boolean runAnalysis = analyzer2.isRunCalculationAutomatically() && analyzer2.isCalculateFeatures();
 		/**
 		 * This extra job is necessary, else the UI will stop.
@@ -864,7 +864,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 						if (waiting) {
 							return true;
 						}
-						final FeatureModelAnalyzer analyzer = ProjectManager.getAnalyzer(getFeatureModel());
+						final FeatureModelAnalyzer analyzer = FeatureModelManager.getAnalyzer(getFeatureModel());
 
 						// TODO could be combined with analysis results
 						for (IFeature f : featureModelEditor.getFeatureModel().getFeatures()) {

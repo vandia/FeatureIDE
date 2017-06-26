@@ -34,13 +34,13 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 
 import de.ovgu.featureide.fm.core.FeatureModelAnalyzer;
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModelStructure;
 import de.ovgu.featureide.fm.core.base.impl.Constraint;
 import de.ovgu.featureide.fm.core.base.impl.ExtendedFeatureModel;
 import de.ovgu.featureide.fm.core.explanations.Explanation;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.ui.editors.FeatureUIHelper;
 import de.ovgu.featureide.fm.ui.editors.IGraphicalConstraint;
 import de.ovgu.featureide.fm.ui.editors.IGraphicalFeatureModel;
@@ -174,7 +174,7 @@ public class LegendFigure extends Figure implements GUIDefaults {
 	
 	private void refreshProperties(IFeatureModel featureModel)
 	{
-		final FeatureModelAnalyzer analyser = ProjectManager.getAnalyzer(featureModel);
+		final FeatureModelAnalyzer analyser = FeatureModelManager.getAnalyzer(featureModel);
 		
 		final IFeatureModelStructure fmStructure = featureModel.getStructure();
 		showHidden = graphicalFeatureModel.getLayout().showHiddenFeatures();
@@ -674,7 +674,7 @@ public class LegendFigure extends Figure implements GUIDefaults {
 		//Label left
 		Label labelExplanation = new Label();
 
-		if (!ProjectManager.getAnalyzer(graphicalFeatureModel.getFeatureModel()).isValid()) {
+		if (!FeatureModelManager.getAnalyzer(graphicalFeatureModel.getFeatureModel()).isValid()) {
 			labelExplanation.setText("Feature model is void because of highlighted dependencies:");
 			explanationFigure.setToolTip(createToolTipContent("Feature model is void because of highlighted dependencies"));
 		} else {

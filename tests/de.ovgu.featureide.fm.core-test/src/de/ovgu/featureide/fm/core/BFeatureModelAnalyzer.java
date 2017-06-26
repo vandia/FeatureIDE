@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import de.ovgu.featureide.common.Commons;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 
 /**
  * This is a benchmark for analyzes at the {@link IFeatureModel}.
@@ -51,7 +52,7 @@ public class BFeatureModelAnalyzer {
 	 * Analyzes the model completely.
 	 */
 	private static void analyze(final int i) {
-		ProjectManager.getAnalyzer(getFM(i)).analyzeFeatureModel(null);
+		FeatureModelManager.getAnalyzer(getFM(i)).analyzeFeatureModel(null);
 	}
 
 	@Test (timeout=6000) // 0.749s @ i5(3,3GHz)
@@ -113,7 +114,7 @@ public class BFeatureModelAnalyzer {
 	 * Analyzes constraints only
 	 */
 	private void BUpdateConstraints(final int i) {
-		ProjectManager.getAnalyzer(getFM(i)).updateConstraints();
+		FeatureModelManager.getAnalyzer(getFM(i)).updateConstraints();
 	}
 	
 	@Test (timeout=2500) // 0.509 @ i5(3,3GHz)
@@ -175,7 +176,7 @@ public class BFeatureModelAnalyzer {
 	 * Analyzes features only
 	 */
 	private void BUpdateFeatures(final int i) {
-		ProjectManager.getAnalyzer(getFM(i)).updateFeatures();
+		FeatureModelManager.getAnalyzer(getFM(i)).updateFeatures();
 	}
 	
 	@Test (timeout=1000) // 0.053s @ i5(3,3GHz)

@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.sat4j.specs.TimeoutException;
 
-import de.ovgu.featureide.fm.core.FeatureProject;
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
 import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
@@ -184,7 +183,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 				return Collections.emptyList();
 			}
 			final CNF clausesWithoutHidden = formula.getClausesWithoutHidden();
-			final boolean[] results = new boolean[clausesWithoutHidden.getVariables().size() + 1];
+			final boolean[] results = new boolean[clausesWithoutHidden.getVariables().maxVariableID() + 1];
 			final List<LiteralSet> openClauses = new ArrayList<>();
 
 			for (SelectableFeature selectableFeature : featureList) {
@@ -192,9 +191,10 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 				selectableFeature.clearOpenClauses();
 			}
 
-			workMonitor.setRemainingWork(clausesWithoutHidden.getClauses().size());
+			final List<LiteralSet> clauses = clausesWithoutHidden.getClauses();
+			workMonitor.setRemainingWork(clauses.size());
 
-			loop: for (LiteralSet clause : clausesWithoutHidden.getClauses()) {
+			loop: for (LiteralSet clause : clauses) {
 				workMonitor.step();
 				final int[] orLiterals = clause.getLiterals();
 				for (int j = 0; j < orLiterals.length; j++) {
@@ -460,7 +460,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 
 	/**
 	 * @deprecated Use {@link #ConfigurationPropagator(FeatureModelFormula, Configuration)} instead and receive a {@link FeatureModelFormula} instance from a
-	 *             {@link FeatureProject}.
+	 *             {@link FeatureProjectData}.
 	 * @param configuration
 	 */
 	@Deprecated
@@ -470,7 +470,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 
 	/**
 	 * @deprecated Use {@link #ConfigurationPropagator(FeatureModelFormula, Configuration)} instead and receive a {@link FeatureModelFormula} instance from a
-	 *             {@link FeatureProject}.
+	 *             {@link FeatureProjectData}.
 	 * @param configuration
 	 */
 	@Deprecated

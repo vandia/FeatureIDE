@@ -25,8 +25,8 @@ import static de.ovgu.featureide.fm.core.localization.StringTable.CALCULATE_CONS
 import org.eclipse.gef.ui.parts.GraphicalViewerImpl;
 import org.eclipse.jface.action.Action;
 
-import de.ovgu.featureide.fm.core.ProjectManager;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
+import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 
 /**
  * @author Jens Meinicke
@@ -39,22 +39,22 @@ public class ConstrainsCalculationsAction extends Action {
 	public ConstrainsCalculationsAction(GraphicalViewerImpl viewer, IFeatureModel featureModel) {
 		super(CALCULATE_CONSTRAINT_ERRORS);
 		this.featureModel = featureModel;
-		setChecked(ProjectManager.getAnalyzer(featureModel).isCalculateConstraints());
+		setChecked(FeatureModelManager.getAnalyzer(featureModel).isCalculateConstraints());
 	}
 
 	@Override
 	public void run() {
-		if (ProjectManager.getAnalyzer(featureModel).isCalculateConstraints()) {
-			ProjectManager.getAnalyzer(featureModel).setCalculateConstraints(false);
-			ProjectManager.getAnalyzer(featureModel).setCalculateRedundantConstraints(false);
-			ProjectManager.getAnalyzer(featureModel).setCalculateTautologyConstraints(false);
+		if (FeatureModelManager.getAnalyzer(featureModel).isCalculateConstraints()) {
+			FeatureModelManager.getAnalyzer(featureModel).setCalculateConstraints(false);
+			FeatureModelManager.getAnalyzer(featureModel).setCalculateRedundantConstraints(false);
+			FeatureModelManager.getAnalyzer(featureModel).setCalculateTautologyConstraints(false);
 		} else {
-			ProjectManager.getAnalyzer(featureModel).setCalculateConstraints(true);
-			ProjectManager.getAnalyzer(featureModel).setCalculateFeatures(true);
-			ProjectManager.getAnalyzer(featureModel).setCalculateRedundantConstraints(true);
-			ProjectManager.getAnalyzer(featureModel).setCalculateTautologyConstraints(true);
-			ProjectManager.getAnalyzer(featureModel).setCalculateDeadConstraints(true);
-			ProjectManager.getAnalyzer(featureModel).setCalculateFOConstraints(true);
+			FeatureModelManager.getAnalyzer(featureModel).setCalculateConstraints(true);
+			FeatureModelManager.getAnalyzer(featureModel).setCalculateFeatures(true);
+			FeatureModelManager.getAnalyzer(featureModel).setCalculateRedundantConstraints(true);
+			FeatureModelManager.getAnalyzer(featureModel).setCalculateTautologyConstraints(true);
+			FeatureModelManager.getAnalyzer(featureModel).setCalculateDeadConstraints(true);
+			FeatureModelManager.getAnalyzer(featureModel).setCalculateFOConstraints(true);
 		}
 		featureModel.handleModelDataChanged();
 	}
