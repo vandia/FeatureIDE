@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 
 import de.ovgu.featureide.fm.core.Logger;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.ModalImplicationGraphCreator;
 import de.ovgu.featureide.fm.core.base.IModalImplicationGraph;
 import de.ovgu.featureide.fm.core.io.FileSystem;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
@@ -62,7 +63,7 @@ public class FeatureDependenciesHandler extends AFileHandler {
 		final FeatureModelManager instance = FeatureModelManager.getInstance(Paths.get(inputFile.getLocationURI()));
 		Job job = new Job(CALCULATING_FEATURE_DEPENDENCIES) {
 			protected IStatus run(IProgressMonitor monitor) {
-				final IModalImplicationGraph modalImplicationGraph = instance.getSnapshot().getFormula().getModalImplicationGraph();
+				final IModalImplicationGraph modalImplicationGraph = instance.getSnapshot().getFormula().getElement(new ModalImplicationGraphCreator());
 				// TODO !!!
 				final String text = modalImplicationGraph.toString();
 				try {

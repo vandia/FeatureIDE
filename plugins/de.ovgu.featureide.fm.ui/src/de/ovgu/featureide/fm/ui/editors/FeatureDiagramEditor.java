@@ -96,7 +96,7 @@ import de.ovgu.featureide.fm.core.base.impl.ExtendedFeatureModel;
 import de.ovgu.featureide.fm.core.color.FeatureColorManager;
 import de.ovgu.featureide.fm.core.explanations.Explanation;
 import de.ovgu.featureide.fm.core.io.IPersistentFormat;
-import de.ovgu.featureide.fm.core.io.manager.AFileManager;
+import de.ovgu.featureide.fm.core.io.manager.FileManager;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
 import de.ovgu.featureide.fm.core.job.IRunner;
@@ -257,7 +257,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 		graphicalFeatureModel.init();
 
 		if (featureModelEditor.fmManager != null) { // read-only feature model is currently only a view on the editable feature model and not persistent
-			extraPath = AFileManager.constructExtraPath(featureModelEditor.fmManager.getPath(), format);
+			extraPath = FileManager.constructExtraPath(featureModelEditor.fmManager.getPath(), format);
 			FileHandler.load(extraPath, graphicalFeatureModel, format);
 			featureModelEditor.fmManager.addListener(this);
 		} else {

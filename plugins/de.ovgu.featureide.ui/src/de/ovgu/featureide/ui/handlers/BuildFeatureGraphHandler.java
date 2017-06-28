@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.LinkedList;
 
 import de.ovgu.featureide.core.IFeatureProject;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.ModalImplicationGraphCreator;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.ModalImplicationGraph;
 import de.ovgu.featureide.fm.core.io.MIGAdjListFormat;
 import de.ovgu.featureide.fm.core.io.manager.FileHandler;
@@ -53,7 +54,7 @@ public class BuildFeatureGraphHandler extends AFeatureProjectHandler {
 			final IRunner<ModalImplicationGraph> runner = LongRunningWrapper.getRunner(new LongRunningMethod<ModalImplicationGraph>() {
 				@Override
 				public ModalImplicationGraph execute(IMonitor monitor) throws Exception {
-					return (ModalImplicationGraph) project.getFeatureModelManager().getSnapshot().getFormula().getModalImplicationGraph();
+					return project.getFeatureModelManager().getSnapshot().getFormula().getElement(new ModalImplicationGraphCreator());
 				}
 			});
 			runner.addJobFinishedListener(new JobFinishListener<ModalImplicationGraph>() {

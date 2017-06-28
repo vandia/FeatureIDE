@@ -149,10 +149,10 @@ public class FeatureIDEEvent {
 		 * The model data was saved to file.
 		 */
 		MODEL_DATA_SAVED,
-		/**
-		 * The model data was loaded from file.
-		 */
-		MODEL_DATA_LOADED,
+//		/**
+//		 * The model data was loaded from file.
+//		 */
+//		MODEL_DATA_LOADED,
 		/**
 		 * The model data loaded from a file has overridden the internal model instance.
 		 */

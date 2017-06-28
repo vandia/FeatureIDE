@@ -214,13 +214,14 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 		}
 		final Path modelPath = Paths.get(res.getLocationURI());
 
-		featureModelManager = FeatureModelManager.getInstance(modelPath);
+		
+		configurationManager = ConfigurationManager.getInstance(Paths.get(file.getLocationURI()), modelPath);
+		featureModelManager = configurationManager.getFeatureModelManager();
 		featureModelSnapshot = featureModelManager.getSnapshot();
 		invalidFeatureModel = featureModelManager.getLastProblems().containsError();
 		if (invalidFeatureModel) {
 			return;
 		}
-		configurationManager = ConfigurationManager.getInstance(Paths.get(file.getLocationURI()), new Configuration(featureModelSnapshot.getFeatureModel()));
 
 		//TODO mapping model
 		//		if (mappingModel) {

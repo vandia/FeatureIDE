@@ -72,14 +72,17 @@ public class IndependentRedundancyAnalysis extends AClauseAnalysis<List<LiteralS
 			resultList.add(null);
 		}
 		monitor.step();
-
+		
 		int endIndex = 0;
 		groupLoop: for (int i = 0; i < clauseGroupSize.length; i++) {
 			int startIndex = endIndex;
 			endIndex += clauseGroupSize[i];
 			for (int j = startIndex; j < endIndex; j++) {
 				final LiteralSet clause = clauseList.get(j);
-				final SatResult hasSolution = solver.hasSolution(SatUtils.negateSolution(clause.getLiterals()));
+				final int[] negateClause = SatUtils.negateSolution(clause.getLiterals());
+				
+
+				final SatResult hasSolution = solver.hasSolution(negateClause);
 				switch (hasSolution) {
 				case FALSE:
 					resultList.set(i, clause);

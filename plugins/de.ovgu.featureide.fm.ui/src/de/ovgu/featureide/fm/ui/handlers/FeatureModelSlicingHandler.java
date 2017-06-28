@@ -48,7 +48,7 @@ public class FeatureModelSlicingHandler extends AFileHandler {
 	@Override
 	protected void singleAction(final IFile file) {
 		final FeatureModelManager project = FeatureModelManager.getInstance(Paths.get(file.getProject().getLocationURI()));
-		final IFeatureModel featureModel = project.getSnapshot().getFeatureModel();
+		final IFeatureModel featureModel = project.getSnapshot().getObject();
 		if (featureModel != null) {
 			final AbstractWizard wizard = new FeatureModelSlicingWizard("Feature-Model Slicing");
 			wizard.putData(WizardConstants.KEY_IN_FEATUREMODEL, featureModel);

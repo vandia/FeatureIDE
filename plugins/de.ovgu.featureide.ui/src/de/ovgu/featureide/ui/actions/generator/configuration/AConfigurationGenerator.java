@@ -22,6 +22,7 @@ package de.ovgu.featureide.ui.actions.generator.configuration;
 
 import de.ovgu.featureide.core.IFeatureProject;
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.NoAbstractCNFCreator;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
@@ -58,11 +59,11 @@ public abstract class AConfigurationGenerator implements LongRunningMethod<Void>
 	public AConfigurationGenerator(ConfigurationBuilder builder, IFeatureProject featureProject) {
 		final FeatureModelSnapshot snapshot = featureProject.getFeatureModelManager().getSnapshot();
 		this.builder = builder;
-		this.featureModel = snapshot.getFeatureModel();
+		this.featureModel = snapshot.getObject();
 		this.featureProject = featureProject;
 		configuration = new Configuration(featureModel);
 		configurationPropagator = snapshot.getPropagator(configuration);
-		cnf = snapshot.getFormula().getCNFWithoutAbstract();
+		cnf = snapshot.getFormula().getElement(new NoAbstractCNFCreator());
 	}
 	
 	protected void cancelGenerationJobs() {

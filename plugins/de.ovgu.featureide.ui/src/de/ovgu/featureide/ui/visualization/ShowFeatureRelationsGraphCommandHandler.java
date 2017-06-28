@@ -38,8 +38,10 @@ import org.eclipse.swt.widgets.Shell;
 
 import de.ovgu.featureide.core.CorePlugin;
 import de.ovgu.featureide.core.IFeatureProject;
-import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
+import de.ovgu.featureide.fm.core.analysis.cnf.IVariables;
 import de.ovgu.featureide.fm.core.analysis.cnf.Variables;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.FeatureModelFormula;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.ModalImplicationGraphCreator;
 import de.ovgu.featureide.fm.core.base.IFeature;
 import de.ovgu.featureide.fm.core.base.IModalImplicationGraph;
 import de.ovgu.featureide.fm.core.io.manager.FeatureModelManager.FeatureModelSnapshot;
@@ -119,17 +121,17 @@ public class ShowFeatureRelationsGraphCommandHandler extends ASelectionHandler {
 		final FeatureModelSnapshot snapshot = featureProject.getFeatureModelManager().getSnapshot();
 
 		// Get feature in the center
-		IFeature fc = snapshot.getFeatureModel().getFeature(featureCenter);
+		IFeature fc = snapshot.getObject().getFeature(featureCenter);
 
 		// Get formalized constraints, implies and excludes
 		List<String> formalizedRequires = new ArrayList<>();
 		List<String> formalizedExcludes = new ArrayList<>();
 
 		final FeatureModelFormula formula = snapshot.getFormula();
-		final Variables variables = formula.getVariables();
+		final IVariables variables = formula.getVariables();
 		final int variable = variables.getVariable(fc.getName());
 
-		final IModalImplicationGraph modalImplicationGraph = formula.getModalImplicationGraph();
+		final IModalImplicationGraph modalImplicationGraph = formula.getElement(new ModalImplicationGraphCreator());
 		modalImplicationGraph.complete(variable);
 
 		for (int strongylConnectedVar : modalImplicationGraph.getTraverser().getStronglyConnected(variable).getLiterals()) {

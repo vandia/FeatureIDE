@@ -47,7 +47,7 @@ public class DeadFeatureFilter extends ConfigurationMapFilter {
 	@Override
 	public void initialize(ConfigurationMap configurationMap) {
 		final FeatureModelSnapshot snapshot = configurationMap.getFeatureProject().getFeatureModelManager().getSnapshot();
-		IFeatureModel featureModel = snapshot.getFeatureModel();
+		IFeatureModel featureModel = snapshot.getObject();
 		if (featureModel != featureModelFilterIsInitializedFor) {
 			this.deadFeatures = snapshot.getAnalyzer().getDeadFeatures();
 			featureModelFilterIsInitializedFor = featureModel;

@@ -42,8 +42,9 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Shell;
 
 import de.ovgu.featureide.fm.core.Features;
-import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
-import de.ovgu.featureide.fm.core.analysis.cnf.Variables;
+import de.ovgu.featureide.fm.core.analysis.cnf.IVariables;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.FeatureModelFormula;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.ModalImplicationGraphCreator;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
@@ -159,10 +160,10 @@ public class ElementDeleteOperation extends MultiFeatureModelOperation implement
 			} else {
 				// check for all equivalent features
 				final FeatureModelFormula formula = FeatureModelManager.getInstance(featureModel).getSnapshot().getFormula();
-				final Variables variables = formula.getVariables();
+				final IVariables variables = formula.getVariables();
 				final int variable = variables.getVariable(feature.getName());
 
-				final IModalImplicationGraph modalImplicationGraph = formula.getModalImplicationGraph();
+				final IModalImplicationGraph modalImplicationGraph = formula.getElement(new ModalImplicationGraphCreator());
 				modalImplicationGraph.complete(variable);
 				
 				final List<IFeature> equivalent = new ArrayList<>();

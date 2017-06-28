@@ -292,10 +292,9 @@ public class FeatureProject implements IFeatureProject, IResourceChangeListener,
 					return message.toString();
 				}
 			});
-	
+
 	private static FeatureModelManager getFeatureModelManager(IProject project) {
-		IFile modelFile = (project.getFile("mpl.velvet").exists()) ? project.getFile("mpl.velvet")
-				: project.getFile("model.xml");
+		IFile modelFile = (project.getFile("mpl.velvet").exists()) ? project.getFile("mpl.velvet") : project.getFile("model.xml");
 
 		return FeatureModelManager.getInstance(Paths.get(modelFile.getLocationURI()));
 	}
@@ -543,13 +542,11 @@ public class FeatureProject implements IFeatureProject, IResourceChangeListener,
 					configFolder.accept(new IResourceVisitor() {
 						private final String suffix = "." + composer.getConfigurationExtension();
 
-						private final Configuration config = new Configuration(model);
-
 						@Override
 						public boolean visit(IResource resource) throws CoreException {
 							final String name = resource.getName();
 							if (resource instanceof IFile && name.endsWith(suffix)) {
-								ConfigurationManager.load(Paths.get(resource.getLocationURI()), config).write();
+								ConfigurationManager.getInstance(Paths.get(resource.getLocationURI()), model.getSourceFile()).save();
 							}
 							return true;
 						}
@@ -848,7 +845,7 @@ public class FeatureProject implements IFeatureProject, IResourceChangeListener,
 				setAllFeatureModuleMarkers();
 			}
 		}
-		
+
 		IPath modelPath = modelFile.getModelFile().getFullPath();
 		if (checkModelChange(event.getDelta().findMember(modelPath))) {
 			return;
@@ -1015,7 +1012,7 @@ public class FeatureProject implements IFeatureProject, IResourceChangeListener,
 				workMonitor.setRemainingWork(2);
 
 				final FeatureModelSnapshot snapshot = featureModelManager.getSnapshot();
-				final Configuration config = new Configuration(snapshot.getFeatureModel());
+				final Configuration config = new Configuration(snapshot.getObject());
 				try {
 					IMonitor subTask = workMonitor.subTask(1);
 					subTask.setTaskName(DELETE_CONFIGURATION_MARKERS);

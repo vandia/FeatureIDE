@@ -72,7 +72,7 @@ public class TConfigurationReader {
 		assertNotNull(listFiles);
 		for (File f : listFiles) {
 			if (f.getName().equals(name)) {
-				fm = FeatureModelManager.load(f.toPath()).getObject();
+				fm = FeatureModelManager.load(f.toPath());
 				if (fm != null) {
 					break;
 				}

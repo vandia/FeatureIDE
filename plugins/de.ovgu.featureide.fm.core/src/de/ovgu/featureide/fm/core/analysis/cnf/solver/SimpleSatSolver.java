@@ -49,7 +49,6 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	protected final IInternalVariables internalMapping;
 	protected final Solver<?> solver;
 
-
 	public SimpleSatSolver(CNF satInstance) throws RuntimeContradictionException {
 		this.satInstance = satInstance;
 		this.internalMapping = satInstance.getInternalVariables();
@@ -192,7 +191,7 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 		solver.setDBSimplificationAllowed(true);
 		solver.setVerbose(false);
 	}
-	
+
 	/**
 	 * Add clauses to the solver.
 	 * Initializes the order instance.

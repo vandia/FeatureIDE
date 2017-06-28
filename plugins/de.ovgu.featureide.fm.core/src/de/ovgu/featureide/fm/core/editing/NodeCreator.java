@@ -79,7 +79,6 @@ public class NodeCreator {
 
 		if (node instanceof Literal) {
 			((Literal) node).setOriginConstraint(constraintIndex);
-
 			return;
 		}
 

@@ -29,10 +29,13 @@ import java.util.List;
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
-import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.analysis.cnf.analysis.CoreDeadAnalysis;
 import de.ovgu.featureide.fm.core.analysis.cnf.analysis.CountSolutionsAnalysis;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.FeatureModelFormula;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.NoAbstractCNFCreator;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.NoAbstractNoHiddenCNFCreator;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.NoHiddenCNFCreator;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.OneWiseConfigurationGenerator;
 import de.ovgu.featureide.fm.core.analysis.cnf.generator.SolutionGenerator;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.AdvancedSatSolver;
@@ -182,7 +185,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 			if (formula == null) {
 				return Collections.emptyList();
 			}
-			final CNF clausesWithoutHidden = formula.getClausesWithoutHidden();
+			final CNF clausesWithoutHidden = formula.getElement(new NoHiddenCNFCreator());
 			final boolean[] results = new boolean[clausesWithoutHidden.getVariables().maxVariableID() + 1];
 			final List<LiteralSet> openClauses = new ArrayList<>();
 
@@ -301,7 +304,7 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 			if (formula == null) {
 				return null;
 			}
-			final CNF clausesWithoutHidden = formula.getClausesWithoutHidden();
+			final CNF clausesWithoutHidden = formula.getElement(new NoHiddenCNFCreator());
 			final OneWiseConfigurationGenerator oneWiseConfigurationGenerator = new OneWiseConfigurationGenerator(
 					getSolverForCurrentConfiguration(false, false));
 			oneWiseConfigurationGenerator.setCoverMode(selection ? 1 : 0);
@@ -508,13 +511,13 @@ public class ConfigurationPropagator implements IConfigurationPropagator {
 			if (includeHiddenFeatures) {
 				satInstance = formula.getCNF();
 			} else {
-				satInstance = formula.getClausesWithoutHidden();
+				satInstance = formula.getElement(new NoHiddenCNFCreator());
 			}
 		} else {
 			if (includeHiddenFeatures) {
-				satInstance = formula.getCNFWithoutAbstract();
+				satInstance = formula.getElement(new NoAbstractCNFCreator());
 			} else {
-				satInstance = formula.getClausesWithoutAbstractAndHidden();
+				satInstance = formula.getElement(new NoAbstractNoHiddenCNFCreator());
 			}
 		}
 		try {

@@ -252,7 +252,7 @@ public class MPLBuildProjectJob implements LongRunningMethod<Boolean> {
 					+ ".";
 
 				final FeatureModelSnapshot snapshot = externalFeatureProject.getFeatureModelManager().getSnapshot();
-				final Configuration newConfiguration = new Configuration(snapshot.getFeatureModel());
+				final Configuration newConfiguration = new Configuration(snapshot.getObject());
 				final ConfigurationPropagator propagator = snapshot.getPropagator(newConfiguration);
 
 				for (SelectableFeature feature : configuration.getFeatures()) {

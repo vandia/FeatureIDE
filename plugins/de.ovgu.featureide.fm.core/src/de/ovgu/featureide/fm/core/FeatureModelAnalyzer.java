@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.CheckForNull;
+
 import org.sat4j.specs.TimeoutException;
 
 import de.ovgu.featureide.fm.core.analysis.ConstraintProperties;
@@ -43,7 +45,6 @@ import de.ovgu.featureide.fm.core.analysis.FeatureProperties.FeatureDeterminedSt
 import de.ovgu.featureide.fm.core.analysis.FeatureProperties.FeatureParentStatus;
 import de.ovgu.featureide.fm.core.analysis.FeatureProperties.FeatureSelectionStatus;
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
-import de.ovgu.featureide.fm.core.analysis.cnf.FeatureModelFormula;
 import de.ovgu.featureide.fm.core.analysis.cnf.IVariables;
 import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.analysis.cnf.Nodes;
@@ -59,6 +60,9 @@ import de.ovgu.featureide.fm.core.analysis.cnf.analysis.IndependentContradiction
 import de.ovgu.featureide.fm.core.analysis.cnf.analysis.IndependentRedundancyAnalysis;
 import de.ovgu.featureide.fm.core.analysis.cnf.analysis.IndeterminedAnalysis;
 import de.ovgu.featureide.fm.core.analysis.cnf.analysis.RedundancyAnalysis;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.EmptyCNFCreator;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.FeatureModelFormula;
+import de.ovgu.featureide.fm.core.analysis.cnf.formula.FeatureTreeCNFCreator;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IConstraint;
 import de.ovgu.featureide.fm.core.base.IFeature;
@@ -67,6 +71,7 @@ import de.ovgu.featureide.fm.core.base.IFeatureModelElement;
 import de.ovgu.featureide.fm.core.base.IFeatureStructure;
 import de.ovgu.featureide.fm.core.explanations.DeadFeatureExplanationCreator;
 import de.ovgu.featureide.fm.core.explanations.Explanation;
+import de.ovgu.featureide.fm.core.explanations.ExplanationCreator;
 import de.ovgu.featureide.fm.core.explanations.FalseOptionalFeatureExplanationCreator;
 import de.ovgu.featureide.fm.core.explanations.RedundantConstraintExplanationCreator;
 import de.ovgu.featureide.fm.core.filter.FeatureSetFilter;
@@ -233,24 +238,24 @@ public class FeatureModelAnalyzer {
 	 * Creates explanations for dead features.
 	 * Stored for performance so the underlying CNF is not recreated for every explanation.
 	 */
-	private final DeadFeatureExplanationCreator deadFeatureExplanationCreator;
+	private DeadFeatureExplanationCreator deadFeatureExplanationCreator = new DeadFeatureExplanationCreator();
 	/**
 	 * Creates explanations for false-optional features.
 	 * Stored for performance so the underlying CNF is not recreated for every explanation.
 	 */
-	private final FalseOptionalFeatureExplanationCreator falseOptionalFeatureExplanationCreator;
+	private FalseOptionalFeatureExplanationCreator falseOptionalFeatureExplanationCreator = new FalseOptionalFeatureExplanationCreator();
 	/**
 	 * Creates explanations for redundant constraints.
 	 * Stored for performance so the underlying CNF is not recreated for every explanation.
 	 */
-	private final RedundantConstraintExplanationCreator redundantConstraintExplanationCreator;
+	private RedundantConstraintExplanationCreator redundantConstraintExplanationCreator = new RedundantConstraintExplanationCreator();
 
-	private final FeatureModelFormula formula;
-	private final IFeatureModel featureModel;
-	private final List<IConstraint> constraints;
+	private FeatureModelFormula formula;
+	private IFeatureModel featureModel;
+	private List<IConstraint> constraints;
 
-	private final int[] clauseGroupSize;
-	private final List<LiteralSet> constraintClauses;
+	private int[] clauseGroupSize;
+	private List<LiteralSet> constraintClauses;
 
 	private final AnalysisWrapper<Boolean> validAnalysis = new AnalysisWrapper<>();
 	private final AnalysisWrapper<List<LiteralSet>> atomicSetAnalysis = new AnalysisWrapper<>();
@@ -266,14 +271,18 @@ public class FeatureModelAnalyzer {
 	private final List<AnalysisWrapper<?>> list = Arrays.asList(validAnalysis, atomicSetAnalysis, coreDeadAnalysis, foAnalysis, determinedAnalysis,
 			constraintContradictionAnalysis, constraintVoidAnalysis, constraintTautologyAnalysis, constraintRedundancyAnalysis, constraintAnomaliesAnalysis);
 
-	public void reset() {
+	public void reset(IFeatureModel featureModel) {
 		for (AnalysisWrapper<?> analysisWrapper : list) {
 			analysisWrapper.reset();
 		}
-		init();
+		init(featureModel);
 	}
 
-	private void init() {
+	private void init(IFeatureModel featureModel) {
+		constraints = featureModel.getConstraints();
+		constraintClauses = new ArrayList<>();
+		clauseGroupSize = getClauseGroups(constraints, constraintClauses);
+
 		featurePropertiesMap.clear();
 		constraintPropertiesMap.clear();
 
@@ -298,20 +307,12 @@ public class FeatureModelAnalyzer {
 		constraintPropertiesMap = new HashMap<>();
 		elementPropertiesMap = new HashMap<>();
 
-		deadFeatureExplanationCreator = new DeadFeatureExplanationCreator(featureModel);
-		falseOptionalFeatureExplanationCreator = new FalseOptionalFeatureExplanationCreator(featureModel);
-		redundantConstraintExplanationCreator = new RedundantConstraintExplanationCreator(featureModel);
-
-		constraints = featureModel.getConstraints();
-		constraintClauses = new ArrayList<>();
-		clauseGroupSize = getClauseGroups(constraints, constraintClauses);
-
-		init();
+		init(featureModel);
 	}
 
 	protected int[] getClauseGroups(List<IConstraint> constraints, List<LiteralSet> constraintClauses) {
 		int[] clauseGroupSize = new int[constraints.size()];
-		final IVariables variables = formula.getEmptyCNF().getVariables();
+		final IVariables variables = formula.getElement(new EmptyCNFCreator()).getVariables();
 		int i = 0;
 		for (IConstraint constraint : constraints) {
 			final List<LiteralSet> clauses = Nodes.convert(variables, constraint.getNode());
@@ -455,7 +456,7 @@ public class FeatureModelAnalyzer {
 				IndependentContradictionAnalysis.class) {
 			@Override
 			public CNF getCNF() {
-				return formula.getEmptyCNF();
+				return formula.getElement(new EmptyCNFCreator());
 			}
 
 			@Override
@@ -484,7 +485,7 @@ public class FeatureModelAnalyzer {
 				ContradictionAnalysis.class) {
 			@Override
 			public CNF getCNF() {
-				return formula.getFeatureTreeClauses();
+				return formula.getElement(new FeatureTreeCNFCreator());
 			}
 
 			@Override
@@ -513,7 +514,7 @@ public class FeatureModelAnalyzer {
 		final AnalysisCreator<List<Anomalies>, CauseAnalysis> analysisCreator = new AnalysisCreator<List<Anomalies>, CauseAnalysis>(CauseAnalysis.class) {
 			@Override
 			public CNF getCNF() {
-				return formula.getFeatureTreeClauses();
+				return formula.getElement(new FeatureTreeCNFCreator());
 			}
 
 			@Override
@@ -572,7 +573,7 @@ public class FeatureModelAnalyzer {
 				IndependentRedundancyAnalysis.class) {
 			@Override
 			public CNF getCNF() {
-				return formula.getEmptyCNF();
+				return formula.getElement(new EmptyCNFCreator());
 			}
 
 			@Override
@@ -601,7 +602,7 @@ public class FeatureModelAnalyzer {
 				RedundancyAnalysis.class) {
 			@Override
 			public CNF getCNF() {
-				return formula.getFeatureTreeClauses();
+				return formula.getElement(new FeatureTreeCNFCreator());
 			}
 
 			@Override
@@ -778,18 +779,75 @@ public class FeatureModelAnalyzer {
 	 * @return an explanation why the given feature model element is defect or null if it cannot be explained
 	 */
 	public Explanation getExplanation(IFeatureModelElement modelElement) {
-		Explanation explanation = null;
+		return getExplanation(modelElement, null);
+	}
+
+	/**
+	 * Returns an explanation why the given feature model element is defect or null if it cannot be explained.
+	 * 
+	 * @param modelElement potentially defect feature model element
+	 * @param context another feature model that is used as reference for the explanations
+	 * @return an explanation why the given feature model element is defect or null if it cannot be explained
+	 */
+	@CheckForNull
+	public Explanation getExplanation(IFeatureModelElement modelElement, FeatureModelFormula context) {
 		if (modelElement instanceof IFeature) {
-			final FeatureProperties featureProperties = featurePropertiesMap.get(modelElement);
+			return getFeatureExplanation((IFeature) modelElement, context);
+		} else if (modelElement instanceof IConstraint) {
+			return getConstraintExplanation((IConstraint) modelElement, context);
+		}
+		return null;
+	}
+
+	/**
+	 * Returns an explanation why the given constraint is defect or null if it cannot be explained.
+	 * 
+	 * @param constraint potentially defect constraint
+	 * @return an explanation why the given constraint is defect or null if it cannot be explained
+	 */
+	public Explanation getConstraintExplanation(IConstraint constraint, FeatureModelFormula context) {
+		synchronized (constraint) {
+			Explanation explanation = null;
+			final ConstraintProperties constraintProperties = constraintPropertiesMap.get(constraint);
+
+			if (constraintProperties != null) {
+				switch (constraintProperties.getConstraintRedundancyStatus()) {
+				case REDUNDANT:
+				case TAUTOLOGY:
+					break;
+				case IMPLICIT:
+					explanation = constraintProperties.getRedundantExplanation();
+					if (explanation != null) {
+						// TODO use context
+						explanation = createExplanation(redundantConstraintExplanationCreator, constraint, context);
+						constraintProperties.setRedundantExplanation(explanation);
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			return explanation;
+		}
+	}
+
+	/**
+	 * Returns an explanation why the given feature is defect or null if it cannot be explained.
+	 * 
+	 * @param feature potentially defect feature
+	 * @return an explanation why the given feature is defect or null if it cannot be explained
+	 */
+	public Explanation getFeatureExplanation(IFeature feature, FeatureModelFormula context) {
+		synchronized (feature) {
+			Explanation explanation = null;
+			final FeatureProperties featureProperties = featurePropertiesMap.get(feature);
 			if (featureProperties != null) {
-				final IFeature feature = (IFeature) modelElement;
 				switch (featureProperties.getFeatureSelectionStatus()) {
 				case DEAD:
 					explanation = featureProperties.getDeadExplanation();
 					if (explanation != null) {
-						deadFeatureExplanationCreator.setDeadFeature(feature);
-						explanation = deadFeatureExplanationCreator.getExplanation();
-						featureProperties.setFalseOptionalExplanation(explanation);
+						explanation = createExplanation(deadFeatureExplanationCreator, feature, context);
+						featureProperties.setDeadExplanation(explanation);
 					}
 					break;
 				default:
@@ -799,8 +857,7 @@ public class FeatureModelAnalyzer {
 				case FALSE_OPTIONAL:
 					explanation = featureProperties.getFalseOptionalExplanation();
 					if (explanation != null) {
-						falseOptionalFeatureExplanationCreator.setFalseOptionalFeature(feature);
-						explanation = falseOptionalFeatureExplanationCreator.getExplanation();
+						explanation = createExplanation(falseOptionalFeatureExplanationCreator, feature, context);
 						featureProperties.setFalseOptionalExplanation(explanation);
 					}
 					break;
@@ -808,28 +865,13 @@ public class FeatureModelAnalyzer {
 					break;
 				}
 			}
-		} else if (modelElement instanceof IConstraint) {
-			final ConstraintProperties constraintProperties = constraintPropertiesMap.get(modelElement);
-
-			if (constraintProperties != null) {
-				final IConstraint constraint = (IConstraint) modelElement;
-				switch (constraintProperties.getConstraintRedundancyStatus()) {
-				case REDUNDANT:
-				case TAUTOLOGY:
-				case IMPLICIT:
-					explanation = constraintProperties.getRedundantExplanation();
-					if (explanation != null) {
-						redundantConstraintExplanationCreator.setRedundantConstraint(constraint);
-						explanation = redundantConstraintExplanationCreator.getExplanation();
-						constraintProperties.setRedundantExplanation(explanation);
-					}
-					break;
-				default:
-					break;
-				}
-			}
+			return explanation;
 		}
-		return explanation;
+	}
+
+	private <D extends IFeatureModelElement> Explanation createExplanation(ExplanationCreator<D> creator, D element, FeatureModelFormula formula) {
+		creator.setDefectElement(element);
+		return creator.getExplanation(formula != null ? formula : this.formula);
 	}
 
 	/**

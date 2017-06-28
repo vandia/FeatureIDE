@@ -125,7 +125,7 @@ public class FMCorePlugin extends AbstractCorePlugin {
 		}
 
 		final FeatureModelSnapshot snapshot = FeatureModelManager.getInstance(Paths.get(file.getProject().getLocationURI())).getSnapshot();
-		final IFeatureModel fm = snapshot.getFeatureModel();
+		final IFeatureModel fm = snapshot.getObject();
 		try {
 			FeatureModelAnalyzer fma = snapshot.getAnalyzer();
 			fma.analyzeFeatureModel(null);

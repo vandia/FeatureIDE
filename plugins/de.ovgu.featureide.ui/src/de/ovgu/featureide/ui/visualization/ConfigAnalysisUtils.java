@@ -101,6 +101,6 @@ public class ConfigAnalysisUtils {
 		final IFilter<IFeature> coreFeatureFilter = new FeatureSetFilter(snapshot.getAnalyzer().getCoreFeatures());
 		final IFilter<IFeature> hiddenFeatureFilter = new HiddenFeatureFilter();
 		final IFilter<IFeature> noCoreNoHiddenFilter = new InverseFilter<>(new OrFilter<>(Arrays.asList(hiddenFeatureFilter, coreFeatureFilter)));
-		return Functional.mapToList(snapshot.getFeatureModel().getFeatures(), noCoreNoHiddenFilter, FeatureUtils.GET_FEATURE_NAME);
+		return Functional.mapToList(snapshot.getObject().getFeatures(), noCoreNoHiddenFilter, FeatureUtils.GET_FEATURE_NAME);
 	}
 }

@@ -29,6 +29,7 @@ import org.sat4j.core.VecInt;
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
 import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.analysis.cnf.manipulator.remove.CNFSlicer;
+import de.ovgu.featureide.fm.core.analysis.cnf.solver.EmptySatSolver;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISatSolver;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISimpleSatSolver.SatResult;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.ModifiableSatSolver;
@@ -49,6 +50,10 @@ public class IndeterminedAnalysis extends AVariableAnalysis<LiteralSet> {
 
 	public IndeterminedAnalysis(ISatSolver solver) {
 		super(solver);
+	}
+	
+	protected ISatSolver initSolver(CNF satInstance) {
+		return new EmptySatSolver(satInstance);
 	}
 
 	public LiteralSet analyze(IMonitor monitor) throws Exception {

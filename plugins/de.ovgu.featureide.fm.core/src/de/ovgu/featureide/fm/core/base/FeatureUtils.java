@@ -759,11 +759,11 @@ public final class FeatureUtils {
 		featureModel.handleModelDataChanged();
 	}
 
-	public static final void handleModelDataLoaded(IFeatureModel featureModel) {
-		requireNonNull(featureModel);
-
-		featureModel.handleModelDataLoaded();
-	}
+//	public static final void handleModelDataLoaded(IFeatureModel featureModel) {
+//		requireNonNull(featureModel);
+//
+//		featureModel.handleModelDataLoaded();
+//	}
 
 	public static final void handleModelLayoutChanged(IFeatureModel featureModel) {
 		//		featureModel.getGraphicRepresenation().handleModelLayoutChanged();
