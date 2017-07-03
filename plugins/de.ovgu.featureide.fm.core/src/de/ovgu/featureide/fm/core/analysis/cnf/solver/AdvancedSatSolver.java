@@ -221,7 +221,7 @@ public class AdvancedSatSolver extends SimpleSatSolver implements ISatSolver {
 
 	@Override
 	public void shuffleOrder() {
-		final Random rnd = new Random();
+		final Random rnd = new Random(0);
 		for (int i = order.length - 1; i >= 0; i--) {
 			final int index = rnd.nextInt(i + 1);
 			final int a = order[index];

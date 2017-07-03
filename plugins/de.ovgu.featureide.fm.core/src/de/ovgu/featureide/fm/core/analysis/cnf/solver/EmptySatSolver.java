@@ -199,6 +199,16 @@ public class EmptySatSolver implements ISatSolver {
 	}
 
 	@Override
+	public IConstr addClause(int[] mainClause, int start, int end) throws RuntimeContradictionException {
+		return null;
+	}
+
+	@Override
+	public IConstr addClause(VecInt vec) throws RuntimeContradictionException {
+		return null;
+	}
+
+	@Override
 	public List<IConstr> addClauses(Iterable<? extends LiteralSet> clauses) throws RuntimeContradictionException {
 		return null;
 	}

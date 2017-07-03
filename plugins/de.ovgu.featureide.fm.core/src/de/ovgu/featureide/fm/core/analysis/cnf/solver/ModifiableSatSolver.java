@@ -23,7 +23,9 @@ package de.ovgu.featureide.fm.core.analysis.cnf.solver;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sat4j.core.VecInt;
 import org.sat4j.minisat.core.Solver;
+import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.IConstr;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
@@ -50,7 +52,7 @@ public class ModifiableSatSolver extends AdvancedSatSolver {
 
 		try {
 			for (LiteralSet clause : clauses) {
-				newConstrs.add(addClauseInternal(solver, clause));
+				newConstrs.add(addClauseInternal(solver, clause.getLiterals(), 0 , clause.size()));
 			}
 		} catch (RuntimeContradictionException e) {
 			removeLastClauses(newConstrs.size());
@@ -61,8 +63,14 @@ public class ModifiableSatSolver extends AdvancedSatSolver {
 	}
 
 	@Override
-	protected IConstr addClauseInternal(Solver<?> solver, LiteralSet mainClause) throws RuntimeContradictionException {
-		final IConstr constr = super.addClauseInternal(solver, mainClause);
+	protected IConstr addClauseInternal(Solver<?> solver, int[] mainClause, int start, int end) throws RuntimeContradictionException {
+		final IConstr constr = super.addClauseInternal(solver, mainClause, start, end);
+		constrList.add(constr);
+		return constr;
+	}
+
+	protected IConstr addClauseInternal(Solver<?> solver, VecInt vec) throws RuntimeContradictionException {
+		final IConstr constr = super.addClauseInternal(solver, vec);
 		constrList.add(constr);
 		return constr;
 	}

@@ -227,11 +227,6 @@ public class FeatureModelManager extends FileManager<IFeatureModel> {
 		return (FeatureModelSnapshot) super.getSnapshot();
 	}
 
-	@Override
-	public boolean externalSave(Runnable externalSaveMethod) {
-		return true;
-	}
-
 	@Deprecated
 	public FeatureModelAnalyzer getVarAnalyzer() {
 		return new FeatureModelAnalyzer(new FeatureModelFormula(editObject()));

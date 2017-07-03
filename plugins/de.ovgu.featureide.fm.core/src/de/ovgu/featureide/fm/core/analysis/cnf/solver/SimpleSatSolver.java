@@ -63,14 +63,42 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 
 	@Override
 	public IConstr addClause(LiteralSet mainClause) throws RuntimeContradictionException {
-		return addClauseInternal(solver, mainClause);
+		return addClauseInternal(solver, mainClause.getLiterals(), 0, mainClause.size());
+	}
+	
+	@Override
+	public IConstr addClause(int[] mainClause, int start, int end) throws RuntimeContradictionException {
+		return addClauseInternal(solver, mainClause, start, end);
 	}
 
-	protected IConstr addClauseInternal(Solver<?> solver, LiteralSet mainClause) throws RuntimeContradictionException {
+	@Override
+	public IConstr addClause(VecInt vec) throws RuntimeContradictionException {
+		return addClauseInternal(solver, vec);
+	}
+
+//	protected IConstr addClauseInternal(Solver<?> solver, LiteralSet mainClause) throws RuntimeContradictionException {
+//		try {
+//			final int[] literals = internalMapping.convertToInternal(mainClause.getLiterals());
+//			assert checkClauseValidity(literals);
+//			return solver.addClause(new VecInt(Arrays.copyOf(literals, literals.length)));
+//		} catch (ContradictionException e) {
+//			throw new RuntimeContradictionException(e);
+//		}
+//	}
+
+	protected IConstr addClauseInternal(Solver<?> solver, int[] mainClause, int start, int end) throws RuntimeContradictionException {
 		try {
-			final int[] literals = internalMapping.convertToInternal(mainClause.getLiterals());
+			final int[] literals = internalMapping.convertToInternal(mainClause);
 			assert checkClauseValidity(literals);
-			return solver.addClause(new VecInt(Arrays.copyOf(literals, literals.length)));
+			return solver.addClause(new VecInt(Arrays.copyOfRange(literals, start, end)));
+		} catch (ContradictionException e) {
+			throw new RuntimeContradictionException(e);
+		}
+	}
+
+	protected IConstr addClauseInternal(Solver<?> solver, VecInt vec) throws RuntimeContradictionException {
+		try {
+			return solver.addClause(vec);
 		} catch (ContradictionException e) {
 			throw new RuntimeContradictionException(e);
 		}
@@ -84,7 +112,7 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 	protected List<IConstr> addClauses(Solver<?> solver, Iterable<? extends LiteralSet> clauses) throws RuntimeContradictionException {
 		final ArrayList<IConstr> constrList = new ArrayList<>();
 		for (LiteralSet clause : clauses) {
-			constrList.add(addClauseInternal(solver, clause));
+			constrList.add(addClauseInternal(solver, clause.getLiterals(), 0, clause.size()));
 		}
 		return constrList;
 	}
@@ -146,7 +174,7 @@ public class SimpleSatSolver implements ISimpleSatSolver {
 
 	@Override
 	public void removeLastClause() {
-		throw new UnsupportedOperationException();
+		removeLastClauses(1);
 	}
 
 	@Override

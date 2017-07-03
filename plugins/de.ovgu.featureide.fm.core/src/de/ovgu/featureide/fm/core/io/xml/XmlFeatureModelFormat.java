@@ -141,11 +141,11 @@ public class XmlFeatureModelFormat extends AXMLFormat<IFeatureModel> implements 
 
 		root.appendChild(calculations);
 		// TODO !!!
-//		calculations.setAttribute(CALCULATE_AUTO, "" + FeatureModelManager.getAnalyzer(object).isRunCalculationAutomatically());
-//		calculations.setAttribute(CALCULATE_FEATURES, "" + FeatureModelManager.getAnalyzer(object).isCalculateFeatures());
-//		calculations.setAttribute(CALCULATE_CONSTRAINTS, "" + FeatureModelManager.getAnalyzer(object).isCalculateConstraints());
-//		calculations.setAttribute(CALCULATE_REDUNDANT, "" + FeatureModelManager.getAnalyzer(object).isCalculateRedundantConstraints());
-//		calculations.setAttribute(CALCULATE_TAUTOLOGY, "" + FeatureModelManager.getAnalyzer(object).isCalculateTautologyConstraints());
+		//		calculations.setAttribute(CALCULATE_AUTO, "" + FeatureModelManager.getAnalyzer(object).isRunCalculationAutomatically());
+		//		calculations.setAttribute(CALCULATE_FEATURES, "" + FeatureModelManager.getAnalyzer(object).isCalculateFeatures());
+		//		calculations.setAttribute(CALCULATE_CONSTRAINTS, "" + FeatureModelManager.getAnalyzer(object).isCalculateConstraints());
+		//		calculations.setAttribute(CALCULATE_REDUNDANT, "" + FeatureModelManager.getAnalyzer(object).isCalculateRedundantConstraints());
+		//		calculations.setAttribute(CALCULATE_TAUTOLOGY, "" + FeatureModelManager.getAnalyzer(object).isCalculateTautologyConstraints());
 
 		root.appendChild(comments);
 		for (final String comment : object.getProperty().getComments()) {
@@ -353,19 +353,19 @@ public class XmlFeatureModelFormat extends AXMLFormat<IFeatureModel> implements 
 					final String nodeName = node.getNodeName();
 					final boolean value = node.getNodeValue().equals(TRUE);
 					// TODO !!!
-//					if (nodeName.equals(CALCULATE_AUTO)) {
-//						FeatureModelManager.getAnalyzer(object).setRunCalculationAutomatically(value);
-//					} else if (nodeName.equals(CALCULATE_CONSTRAINTS)) {
-//						FeatureModelManager.getAnalyzer(object).setCalculateConstraints(value);
-//					} else if (nodeName.equals(CALCULATE_REDUNDANT)) {
-//						FeatureModelManager.getAnalyzer(object).setCalculateRedundantConstraints(value);
-//					} else if (nodeName.equals(CALCULATE_FEATURES)) {
-//						FeatureModelManager.getAnalyzer(object).setCalculateFeatures(value);
-//					} else if (nodeName.equals(CALCULATE_TAUTOLOGY)) {
-//						FeatureModelManager.getAnalyzer(object).setCalculateTautologyConstraints(value);
-//					} else {
-//						throwError("Unknown calculations attribute: " + nodeName, e);
-//					}
+					//					if (nodeName.equals(CALCULATE_AUTO)) {
+					//						FeatureModelManager.getAnalyzer(object).setRunCalculationAutomatically(value);
+					//					} else if (nodeName.equals(CALCULATE_CONSTRAINTS)) {
+					//						FeatureModelManager.getAnalyzer(object).setCalculateConstraints(value);
+					//					} else if (nodeName.equals(CALCULATE_REDUNDANT)) {
+					//						FeatureModelManager.getAnalyzer(object).setCalculateRedundantConstraints(value);
+					//					} else if (nodeName.equals(CALCULATE_FEATURES)) {
+					//						FeatureModelManager.getAnalyzer(object).setCalculateFeatures(value);
+					//					} else if (nodeName.equals(CALCULATE_TAUTOLOGY)) {
+					//						FeatureModelManager.getAnalyzer(object).setCalculateTautologyConstraints(value);
+					//					} else {
+					//						throwError("Unknown calculations attribute: " + nodeName, e);
+					//					}
 
 				}
 			}
@@ -621,6 +621,11 @@ public class XmlFeatureModelFormat extends AXMLFormat<IFeatureModel> implements 
 	@Override
 	public boolean supportsContent(CharSequence content) {
 		return supportsRead() && CONTENT_REGEX.matcher(content).find();
+	}
+
+	@Override
+	public String getName() {
+		return "FeatureIDE";
 	}
 
 }

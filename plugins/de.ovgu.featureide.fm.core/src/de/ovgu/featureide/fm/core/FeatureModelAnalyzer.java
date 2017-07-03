@@ -299,6 +299,10 @@ public class FeatureModelAnalyzer {
 		featureModelProperties = new FeatureModelProperties(featureModel, featurePropertiesMap.values(), constraintPropertiesMap.values());
 	}
 
+	public FeatureModelAnalyzer(IFeatureModel featureModel) {
+		this(new FeatureModelFormula(featureModel));
+	}
+
 	public FeatureModelAnalyzer(FeatureModelFormula formula) {
 		this.formula = formula;
 		this.featureModel = formula.getFeatureModel();
@@ -320,10 +324,6 @@ public class FeatureModelAnalyzer {
 			clauseGroupSize[i++] = clauses.size();
 		}
 		return clauseGroupSize;
-	}
-
-	public FeatureModelAnalyzer(IFeatureModel featureModel) {
-		this(new FeatureModelFormula(featureModel));
 	}
 
 	public boolean isValid() {
@@ -508,8 +508,6 @@ public class FeatureModelAnalyzer {
 		return resultList;
 	}
 
-	//	private final AnalysisWrapper<List<Anomalies>, CauseAnalysis> constraintAnomaliesAnalysis = new AnalysisWrapper<>(CauseAnalysis.class);
-
 	public List<IConstraint> getAnomalyConstraints() {
 		final AnalysisCreator<List<Anomalies>, CauseAnalysis> analysisCreator = new AnalysisCreator<List<Anomalies>, CauseAnalysis>(CauseAnalysis.class) {
 			@Override
@@ -653,15 +651,26 @@ public class FeatureModelAnalyzer {
 	 */
 	public Map<IFeatureModelElement, Object> analyzeFeatureModel(IMonitor monitor) {
 		// TODO !!! use monitor
-		updateFeatures();
+		if (monitor == null) {
+			monitor = new NullMonitor();
+		}
 
-		updateConstraints();
+		updateFeatures(monitor);
+
+		updateConstraints(monitor);
 
 		return elementPropertiesMap;
 	}
 
 	public void updateConstraints() {
+		updateConstraints(null);
+	}
+
+	public void updateConstraints(IMonitor monitor) {
 		if (calculateConstraints) {
+			if (monitor == null) {
+				monitor = new NullMonitor();
+			}
 			// set default values for constraint properties
 			for (IConstraint constraint : featureModel.getConstraints()) {
 				if (constraintRedundancyAnalysis.isEnabled()) {
@@ -702,7 +711,14 @@ public class FeatureModelAnalyzer {
 	}
 
 	public void updateFeatures() {
+		updateFeatures(null);
+	}
+
+	public void updateFeatures(IMonitor monitor) {
 		if (calculateFeatures) {
+			if (monitor == null) {
+				monitor = new NullMonitor();
+			}
 			// set default values for feature properties
 			for (IFeature feature : featureModel.getFeatures()) {
 				featurePropertiesMap.get(feature).setFeatureSelectionStatus(FeatureSelectionStatus.COMMON);

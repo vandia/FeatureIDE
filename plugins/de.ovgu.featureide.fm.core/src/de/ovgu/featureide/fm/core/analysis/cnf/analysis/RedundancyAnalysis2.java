@@ -25,49 +25,39 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.sat4j.specs.IConstr;
-
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
 import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.analysis.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISatSolver;
-import de.ovgu.featureide.fm.core.analysis.cnf.solver.ModifiableSatSolver;
-import de.ovgu.featureide.fm.core.analysis.cnf.solver.RuntimeContradictionException;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISimpleSatSolver.SatResult;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
- * Finds redundancies by removing single constraints.
+ * Finds redundancies by incrementally adding constraints.<br/>
+ * <b>Note:</b> This analysis might be faster than {@link RedundancyAnalysis}, which uses removal of constraints.
+ * However, this analysis only checks the redundancy of each constraint at the time of adding it to the formula.
+ * Thus, it cannot detect constraints that become redundant by the adding another constraint later on.
  * 
  * @author Sebastian Krieter
  */
-public class RedundancyAnalysis extends AClauseAnalysis<List<LiteralSet>> {
+public class RedundancyAnalysis2 extends AClauseAnalysis<List<LiteralSet>> {
 
-	public RedundancyAnalysis(CNF satInstance) {
+	public RedundancyAnalysis2(CNF satInstance) {
 		super(satInstance);
 	}
 
-	public RedundancyAnalysis(ISatSolver solver) {
+	public RedundancyAnalysis2(ISatSolver solver) {
 		super(solver);
 	}
 
-	public RedundancyAnalysis(CNF satInstance, List<LiteralSet> clauseList) {
+	public RedundancyAnalysis2(CNF satInstance, List<LiteralSet> clauseList) {
 		super(satInstance);
 		this.clauseList = clauseList;
 	}
 
-	public RedundancyAnalysis(ISatSolver solver, List<LiteralSet> clauseList) {
+	public RedundancyAnalysis2(ISatSolver solver, List<LiteralSet> clauseList) {
 		super(solver);
 		this.clauseList = clauseList;
-	}
-
-	@Override
-	protected ISatSolver initSolver(CNF satInstance) {
-		try {
-			return new ModifiableSatSolver(satInstance);
-		} catch (RuntimeContradictionException e) {
-			return null;
-		}
 	}
 
 	public List<LiteralSet> analyze(IMonitor monitor) throws Exception {
@@ -78,18 +68,14 @@ public class RedundancyAnalysis extends AClauseAnalysis<List<LiteralSet>> {
 			clauseGroupSize = new int[clauseList.size()];
 			Arrays.fill(clauseGroupSize, 1);
 		}
-		monitor.setRemainingWork(clauseGroupSize.length + 1);
+		monitor.setRemainingWork(clauseList.size() + 1);
 
 		final List<LiteralSet> resultList = new ArrayList<>(clauseGroupSize.length);
 		for (int i = 0; i < clauseList.size(); i++) {
 			resultList.add(null);
 		}
-
-		final List<IConstr> constrs = new ArrayList<>(clauseList.size());
-		for (LiteralSet clause : clauseList) {
-			constrs.add(solver.addClause(clause));
-		}
-
+		// TODO Find a better way of sorting
+		//		final Integer[] index = Functional.getSortedIndex(resultList, new ClauseLengthComparatorDsc());
 		monitor.step();
 
 		int endIndex = 0;
@@ -97,41 +83,25 @@ public class RedundancyAnalysis extends AClauseAnalysis<List<LiteralSet>> {
 			int startIndex = endIndex;
 			endIndex += clauseGroupSize[i];
 			boolean completelyRedundant = true;
-			boolean removedAtLeastOne = false;
 			for (int j = startIndex; j < endIndex; j++) {
-				final IConstr cm = constrs.get(j);
-				if (cm != null) {
-					removedAtLeastOne = true;
-					solver.removeClause(cm);
+				final LiteralSet clause = clauseList.get(j);
+				final SatResult hasSolution = solver.hasSolution(SatUtils.negateSolution(clause.getLiterals()));
+				switch (hasSolution) {
+				case FALSE:
+					break;
+				case TIMEOUT:
+					reportTimeout();
+				case TRUE:
+					solver.addClause(clause);
+					completelyRedundant = false;
+					break;
+				default:
+					throw new AssertionError(hasSolution);
 				}
 			}
-
-			if (removedAtLeastOne) {
-				for (int j = startIndex; j < endIndex; j++) {
-					final LiteralSet clause = clauseList.get(j);
-					final int[] negateClause = SatUtils.negateSolution(clause.getLiterals());
-
-					final SatResult hasSolution = solver.hasSolution(negateClause);
-					switch (hasSolution) {
-					case FALSE:
-						break;
-					case TIMEOUT:
-						reportTimeout();
-						break;
-					case TRUE:
-						solver.addClause(clause);
-						completelyRedundant = false;
-						break;
-					default:
-						throw new AssertionError(hasSolution);
-					}
-				}
-			}
-
 			if (completelyRedundant) {
 				resultList.set(i, clauseList.get(startIndex));
 			}
-			monitor.step();
 		}
 
 		return resultList;

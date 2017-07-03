@@ -59,9 +59,11 @@ import de.ovgu.featureide.fm.core.ModelMarkerHandler;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 import de.ovgu.featureide.fm.core.base.event.FeatureIDEEvent;
 import de.ovgu.featureide.fm.core.base.event.IEventListener;
+import de.ovgu.featureide.fm.core.base.impl.FMFormatManager;
 import de.ovgu.featureide.fm.core.color.FeatureColorManager;
 import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.ConfigurationPropagator;
+import de.ovgu.featureide.fm.core.io.IFeatureModelFormat;
 import de.ovgu.featureide.fm.core.io.Problem;
 import de.ovgu.featureide.fm.core.io.ProblemList;
 import de.ovgu.featureide.fm.core.io.manager.ConfigurationManager;
@@ -214,7 +216,6 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 		}
 		final Path modelPath = Paths.get(res.getLocationURI());
 
-		
 		configurationManager = ConfigurationManager.getInstance(Paths.get(file.getLocationURI()), modelPath);
 		featureModelManager = configurationManager.getFeatureModelManager();
 		featureModelSnapshot = featureModelManager.getSnapshot();
@@ -261,13 +262,20 @@ public class ConfigurationEditor extends MultiPageEditorPart implements GUIDefau
 	 * @return a string describing the absolute path of the selected model file
 	 * @see FileDialog#open()
 	 */
-	// TODO add all model extensions
 	private String openFileDialog() {
 		FileDialog dialog = new FileDialog(getSite().getWorkbenchWindow().getShell(), SWT.MULTI);
 		dialog.setText(SELECT_THE_CORRESPONDING_FEATUREMODEL_);
 		dialog.setFileName("model.xml");
-		dialog.setFilterExtensions(new String[] { "*.xml", "*.velvet" });
-		dialog.setFilterNames(new String[] { "XML *.xml", "VELVET *.velvet" });
+		final ArrayList<String> suffixes = new ArrayList<>();
+		final ArrayList<String> names = new ArrayList<>();
+		for (IFeatureModelFormat extension : FMFormatManager.getInstance().getExtensions()) {
+			if (extension.supportsRead()) {
+				suffixes.add("*." + extension.getSuffix());
+				names.add(extension.getName() + " *." + extension.getSuffix());
+			}
+		}
+		dialog.setFilterExtensions(suffixes.toArray(new String[0]));
+		dialog.setFilterNames(names.toArray(new String[0]));
 		dialog.setFilterPath(file.getProject().getLocation().toOSString());
 		return dialog.open();
 	}

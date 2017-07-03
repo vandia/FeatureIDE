@@ -865,14 +865,7 @@ public class FeatureDiagramEditor extends ScrollingGraphicalViewer implements GU
 							return true;
 						}
 						final FeatureModelAnalyzer analyzer = FeatureModelManager.getAnalyzer(getFeatureModel());
-
-						// TODO could be combined with analysis results
-						for (IFeature f : featureModelEditor.getFeatureModel().getFeatures()) {
-							analyzer.getFeatureProperties(f).resetStatus();
-						}
-						for (IConstraint c : featureModelEditor.getFeatureModel().getConstraints()) {
-							analyzer.getConstraintProperties(c).resetStatus();
-						}
+						analyzer.reset(getFeatureModel());
 						refreshGraphics(null);
 
 						if (!runAnalysis) {

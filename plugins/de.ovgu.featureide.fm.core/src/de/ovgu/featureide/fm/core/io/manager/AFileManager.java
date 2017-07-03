@@ -80,6 +80,7 @@ public abstract class AFileManager<T> implements IFileManager<T>, IEventManager 
 		this.absolutePath = absolutePath;
 		this.variableObject = variableObject;
 		this.objectCreator = objectCreator;
+		this.persistentObject = objectCreator.createSnapshot(variableObject);
 	}
 
 	@Override
