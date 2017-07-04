@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.core.Solver;
-import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.IConstr;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;

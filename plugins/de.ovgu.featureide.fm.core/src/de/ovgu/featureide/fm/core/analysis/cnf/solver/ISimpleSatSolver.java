@@ -22,7 +22,6 @@ package de.ovgu.featureide.fm.core.analysis.cnf.solver;
 
 import java.util.List;
 
-import org.sat4j.core.VecInt;
 import org.sat4j.specs.IConstr;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
@@ -56,8 +55,6 @@ public interface ISimpleSatSolver extends Cloneable {
 	 * @see #addClauses(Iterable)
 	 */
 	IConstr addClause(LiteralSet mainClause) throws RuntimeContradictionException;
-	IConstr addClause(int[] mainClause, int start, int end) throws RuntimeContradictionException;
-	IConstr addClause(VecInt vec) throws RuntimeContradictionException;
 
 	/**
 	 * Adds multiple clauses.

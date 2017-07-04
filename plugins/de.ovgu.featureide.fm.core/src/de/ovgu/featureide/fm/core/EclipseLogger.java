@@ -40,7 +40,7 @@ public class EclipseLogger implements ILogger {
 	 *            A message that should be written to the eclipse log file
 	 */
 	public void logInfo(String message) {
-		log(IStatus.INFO, message, null);
+		log(IStatus.INFO, message, new Exception());
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class EclipseLogger implements ILogger {
 	 *            A message that should be written to the eclipse log file
 	 */
 	public void logWarning(String message) {
-		log(IStatus.WARNING, message, null);
+		log(IStatus.WARNING, message, new Exception());
 	}
 	
 	@Override

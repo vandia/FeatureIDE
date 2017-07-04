@@ -26,13 +26,12 @@ import org.sat4j.core.VecInt;
 import org.sat4j.specs.IteratorInt;
 
 import de.ovgu.featureide.fm.core.analysis.cnf.CNF;
-import de.ovgu.featureide.fm.core.analysis.cnf.IVariables;
 import de.ovgu.featureide.fm.core.analysis.cnf.LiteralSet;
 import de.ovgu.featureide.fm.core.analysis.cnf.SatUtils;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISatSolver;
+import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISatSolver.SelectionStrategy;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.ModifiableSatSolver;
 import de.ovgu.featureide.fm.core.analysis.cnf.solver.RuntimeContradictionException;
-import de.ovgu.featureide.fm.core.analysis.cnf.solver.ISatSolver.SelectionStrategy;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
 
 /**
@@ -61,41 +60,7 @@ public class CoreDeadAnalysis extends AVariableAnalysis<LiteralSet> {
 	}
 
 	public LiteralSet analyze(IMonitor monitor) throws Exception {
-		final LiteralSet analyze2 = analyze2(monitor);
-		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<");
-		final CNF satInstance = solver.getSatInstance();
-		final IVariables variables2 = satInstance.getVariables();
-		for (int i = 0; i < variables2.size(); i++) {
-			if (!analyze2.contains(i)) {
-				int countPC = 0;
-				int countNC = 0;
-				for (LiteralSet clause : satInstance.getClauses()) {
-					if (clause.containsLiteral(i)) {
-						countPC++;
-					} else if (clause.containsLiteral(-i)) {
-						countNC++;
-					}
-				}
-				System.out.println("\t\t" + i + ": " + "p = " + countPC + " | n = " + countNC);
-			}
-		}
-
-		System.out.println("\t=================");
-		
-		for (int literal : analyze2.getLiterals()) {
-			int countPC = 0;
-			int countNC = 0;
-			for (LiteralSet clause : satInstance.getClauses()) {
-				if (clause.containsLiteral(literal)) {
-					countPC++;
-				} else if (clause.containsLiteral(-literal)) {
-					countNC++;
-				}
-			}
-			System.out.println("\t\t" + literal + ": " + "p = " + countPC + " | n = " + countNC);
-		}
-		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>");
-		return analyze2;
+		return analyze2(monitor);
 	}
 
 	@Override

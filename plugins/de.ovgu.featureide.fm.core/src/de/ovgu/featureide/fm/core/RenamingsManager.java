@@ -120,7 +120,7 @@ public class RenamingsManager implements IEventManager {
 		}
 		final IFeatureModel projectModel = instance.getObject();
 		for (Renaming renaming : renamings) {
-			// TODO !!! check weather all these events are necessary 
+			// TODO check weather all these events are necessary 
 			final FeatureIDEEvent event = new FeatureIDEEvent(model, EventType.FEATURE_NAME_CHANGED, renaming.oldName, renaming.newName);
 			projectModel.fireEvent(event);
 			model.fireEvent(event);
