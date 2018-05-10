@@ -1,6 +1,8 @@
 package de.ovgu.featureide.oscar.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class Feature {
@@ -8,7 +10,7 @@ public class Feature {
 	public boolean value;
 	public FeatureType type;
 	public boolean isAbstract=false;
-	public Set<Feature> hierarchy= new HashSet<Feature>();
+	public HashSet<Feature> hierarchy= new HashSet<Feature>();
 	
 	public Feature(String name, boolean value, FeatureType type) {
 		super();
@@ -39,6 +41,9 @@ public class Feature {
 		this.type = type;
 	}
 	
+	public HashSet<Feature> getHierarchy() {
+		return hierarchy;
+	}
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {
@@ -92,12 +97,17 @@ public class Feature {
 	
 	public Feature getFeature(String name){
 		if (this.name.equals(name)) return this;
+		List <Feature> process = new ArrayList<Feature> ();
 		Feature res=null;
 		for (Feature f:hierarchy){
 			if (f.name.toLowerCase().equals(name.toLowerCase())) return f;
+			process.addAll(f.getHierarchy());
+		}
+		for (Feature f: process){
 			res=f.getFeature(name);
 			if ( res !=null) return res; 
 		}
+		
 		return null;
 		
 	}
