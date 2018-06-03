@@ -4,11 +4,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Pattern;
 
 import de.ovgu.featureide.oscar.IO.Console;
 import de.ovgu.featureide.oscar.model.Feature;
 import de.ovgu.featureide.oscar.model.FeatureType;
+import de.ovgu.featureide.oscar.model.Node;
 import oscar.OscarProperties;
 
 public class HierarchyReconstruction {
@@ -75,13 +77,43 @@ public class HierarchyReconstruction {
 					}
 				}
 				father.addHierarchy(current);
+				
 			} catch (Exception e) {
 				console.writeln("The property "+key+" could not be processed, error: "+ e.getMessage());
 			}
 			
 		}
+		base = cleanFDLHierarchy (base);
 		return base;
 		
+	}
+	
+	private static Feature cleanFDLHierarchy (Feature root) {
+		
+		Stack<Node> stack = new Stack<Node>();
+		Node init= new Node(null, root);
+		stack.push(init);
+		
+		while(!stack.isEmpty()) {
+			Node node = (Node)stack.pop();
+			Feature father=node.getFather();
+			Feature child=node.getChild();
+			Feature succ;
+			if ((father!=null) && (child!=null)	&& (child.getChildren().size()==1)){
+				succ=child.getChildren().toArray(new Feature[1])[0];
+				father.getChildren().remove(child);
+				father.getChildren().add(succ);
+				Node n=new Node(father, succ);
+				stack.push(n);
+				
+			}
+			for (Feature i:node.getSuccessors()){
+				stack.push(new Node(node.getChild(),i));
+			}
+		}
+
+		
+		return root;
 	}
 	
 	private static boolean isBooleanProperty(String val) {

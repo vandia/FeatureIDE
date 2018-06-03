@@ -8,7 +8,7 @@ public class Feature {
 	public boolean value;
 	public FeatureType type;
 	public boolean isAbstract=false;
-	public Set<Feature> hierarchy= new HashSet<Feature>();
+	public Set<Feature> children= new HashSet<Feature>();
 	
 	public Feature(String name, boolean value, FeatureType type) {
 		super();
@@ -18,11 +18,11 @@ public class Feature {
 
 	}
 	public void addHierarchy(Feature feat){
-		hierarchy.add(feat);
+		children.add(feat);
 	}
 	
 	public void addHierarchy(Set<Feature> feats){
-		hierarchy.addAll(feats);
+		children.addAll(feats);
 	}
 
 	public boolean isAbstract() {
@@ -39,6 +39,9 @@ public class Feature {
 		this.type = type;
 	}
 	
+	public Set<Feature> getChildren() {
+		return children;
+	}
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {
@@ -59,7 +62,7 @@ public class Feature {
 		
 			case ALL:
 				sb.append("	<and name=\""+this.name+"\""+(this.isAbstract?" abstract=\"true\"":"")+">\r");
-				for(Feature f:this.hierarchy){
+				for(Feature f:this.children){
 					sb.append(f.toString());
 				}
 				sb.append("	</and>\r");
@@ -69,14 +72,14 @@ public class Feature {
 				break;
 			case MORE_OF:
 				sb.append("	<alt name=\""+this.name+"\""+(this.isAbstract?" abstract=\"true\"":"")+">\r");
-				for(Feature f:this.hierarchy){
+				for(Feature f:this.children){
 					sb.append(f.toString());
 				}
 				sb.append("	</alt>\r");
 				break;
 			case ONE_OF:
 				sb.append("	<or name=\""+this.name+"\""+(this.isAbstract?" abstract=\"true\"":"")+">\r");
-				for(Feature f:this.hierarchy){
+				for(Feature f:this.children){
 					sb.append(f.toString());
 				}
 				sb.append("	</or>\r");
@@ -93,7 +96,7 @@ public class Feature {
 	public Feature getFeature(String name){
 		if (this.name.equals(name)) return this;
 		Feature res=null;
-		for (Feature f:hierarchy){
+		for (Feature f:children){
 			if (f.name.toLowerCase().equals(name.toLowerCase())) return f;
 			res=f.getFeature(name);
 			if ( res !=null) return res; 
