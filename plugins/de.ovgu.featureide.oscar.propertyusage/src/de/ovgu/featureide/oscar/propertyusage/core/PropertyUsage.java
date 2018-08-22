@@ -37,6 +37,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import de.ovgu.featureide.oscar.IO.Console;
 import de.ovgu.featureide.oscar.IO.ExportImport;
+import de.ovgu.featureide.oscar.IO.PropertiesLoader;
 import de.ovgu.featureide.oscar.model.Feature;
 import oscar.OscarProperties;
 import oscar.Startup;
@@ -99,17 +100,12 @@ public class PropertyUsage {
 		this.outputmode=om;
 		this.DEBUG=db;
 		this.reportProject=reportProj;
-		this.op=loadOscarProperties();
+		this.op=PropertiesLoader.loadOscarProperties(this.properties, this.project, this.reportProject);
 		this.oscarPropertyMethods = getOscarPropertiesMethods();
 		this.allPropMap = initializePropertyMap();
 	}
 
-	public OscarProperties loadOscarProperties() {
-		Startup start = new Startup(this.properties,this.project);
-		start.contextInitialized();
-		OscarProperties op = new OscarProperties(this.properties);	
-		return op;
-	}
+
 
 	// Initialization adds all properties found in the Oscar properties
 	// file. Needed to detect properties in the Oscar properties file

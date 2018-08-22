@@ -99,7 +99,7 @@ public class HierarchyReconstruction {
 			Feature father=node.getFather();
 			Feature child=node.getChild();
 			Feature succ;
-			if ((father!=null) && (child!=null)	&& (child.getChildren().size()==1)){
+			if ((father!=null) && (child!=null) && (child.isAbstract) && (child.getChildren().size()==1)){
 				succ=child.getChildren().toArray(new Feature[1])[0];
 				father.getChildren().remove(child);
 				father.getChildren().add(succ);

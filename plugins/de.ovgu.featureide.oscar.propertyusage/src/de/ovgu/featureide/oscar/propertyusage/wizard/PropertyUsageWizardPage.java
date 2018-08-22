@@ -126,7 +126,7 @@ public class PropertyUsageWizardPage extends WizardPage {
 		
 		output_format = new Combo(container, SWT.READ_ONLY);
 		output_format.setItems(new String[] {ExportImport.CSV, ExportImport.MOD, ExportImport.ALL});
-		output_format.setBounds(125, 104, 324, 36);
+		output_format.setBounds(133, 104, 324, 36);
 		output_format.select(0);
 		
 		debug = new Button(container, SWT.CHECK);
