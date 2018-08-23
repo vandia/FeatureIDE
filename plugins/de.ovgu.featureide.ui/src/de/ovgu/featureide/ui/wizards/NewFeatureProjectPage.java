@@ -153,8 +153,8 @@ public class NewFeatureProjectPage extends WizardPage {
 			}
 		});
 		toolCB.select(0);
-		
-		//Path Group
+
+		// Path Group
 		pathGroup = new Group(container, SWT.NONE);
 		layout.numColumns = 2;
 		layout.verticalSpacing = 9;
@@ -214,85 +214,95 @@ public class NewFeatureProjectPage extends WizardPage {
 		//End Mavis Project
 		
 		addListeners();
-	}	
-	
+	}
+
 	public IComposerExtensionBase getCompositionTool() {
 		return composerExtension;
 	}
-	
+
 	public boolean hasCompositionTool() {
 		return composerExtension != null;
 	}
-	
+
 	protected void addListeners() {
 		toolCB.addModifyListener(new ModifyListener() {
-			
+
 			@Override
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
 		});
-		
+
 		sourcePath.addModifyListener(new ModifyListener() {
-			
+
 			@Override
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
 		});
-		
+
 		buildPath.addModifyListener(new ModifyListener() {
-			
+
 			@Override
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
 		});
-		
+
 		configsPath.addModifyListener(new ModifyListener() {
-	
+
 			@Override
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
 		});
 	}
-	
+
 	protected void dialogChanged() {
-		IComposerExtensionBase compositionTool = getCompositionTool();
+		final IComposerExtensionBase compositionTool = getCompositionTool();
 		sourcePath.setEnabled(compositionTool.hasFeatureFolder());
 		buildPath.setEnabled(compositionTool.hasSourceFolder());
 		propertyManagerPath.setEnabled(compositionTool.hasPropertyManager());
 		propertyMethodPath.setEnabled(compositionTool.hasPropertyManager());
 		if (isEnabled(sourcePath) && isEnabled(configsPath) &&
-				getSourcePath().equals(getConfigPath())) {
+			getSourcePath().equals(getConfigPath())) {
 			updateStatus(SOURCE_PATH_EQUALS_CONFIGURATIONS_PATH_);
 			return;
 		}
-		if (isEnabled(sourcePath) && isEnabled(buildPath) &&
-				getSourcePath().equals(getBuildPath())) {
+		if (isEnabled(sourcePath) && isEnabled(buildPath) && getSourcePath().equals(getBuildPath())) {
 			updateStatus(SOURCE_PATH_EQUALS_BUILD_PATH_);
 			return;
 		}
-		if (isEnabled(buildPath) && isEnabled(configsPath) && 
-				getBuildPath().equals(getConfigPath())) {
+		if (isEnabled(buildPath) && isEnabled(configsPath) && getBuildPath().equals(getConfigPath())) {
 			updateStatus(BUILD_PATH_EQUALS_CONFIGURATIONS_PATH_);
 			return;
 		}
-		if (isEnabled(sourcePath) && isPathEmpty(getSourcePath(), SOURCE))return;
-		if (isEnabled(buildPath) && isPathEmpty(getBuildPath(), BUILD))return;
-		if (isEnabled(configsPath) && isPathEmpty(getConfigPath(), EQUATIONS))return;
-		
-		if (isEnabled(sourcePath) && isInvalidPath(getSourcePath(), SOURCE))return;
-		if (isEnabled(buildPath) && isInvalidPath(getBuildPath(), BUILD))return;
-		if (isEnabled(configsPath) && isInvalidPath(getConfigPath(), EQUATIONS))return;
-		
+		if (isEnabled(sourcePath) && isPathEmpty(getSourcePath(), SOURCE)) {
+			return;
+		}
+		if (isEnabled(buildPath) && isPathEmpty(getBuildPath(), BUILD)) {
+			return;
+		}
+		if (isEnabled(configsPath) && isPathEmpty(getConfigPath(), EQUATIONS)) {
+			return;
+		}
+
+		if (isEnabled(sourcePath) && isInvalidPath(getSourcePath(), SOURCE)) {
+			return;
+		}
+		if (isEnabled(buildPath) && isInvalidPath(getBuildPath(), BUILD)) {
+			return;
+		}
+		if (isEnabled(configsPath) && isInvalidPath(getConfigPath(), EQUATIONS)) {
+			return;
+		}
+
 		if (compositionTool.supportsAndroid()) {
-			
+
 			canFlipToNextPage = false;
 			setErrorMessage(null);
 			setPageComplete(true);
-			
+
 			if (getSourcePath().equals("src") || getSourcePath().equals("res")) {
 				updateStatus(SOURCE_PATH_RESTRICTION_ANDROID);
 				return;
@@ -322,37 +332,28 @@ public class NewFeatureProjectPage extends WizardPage {
 	protected boolean isPathEmpty(String path, String name) {
 		if (path.length() == 0) {
 			updateStatus(name + PATH_MUST_BE_SPECIFIED_);
-			canFlipToNextPage  = false;
+			canFlipToNextPage = false;
 			return true;
 		}
-		canFlipToNextPage  = true;
+		canFlipToNextPage = true;
 		return false;
 	}
+
 	protected boolean isInvalidPath(String path, String name) {
-		if (path.contains("*")
-				|| path.contains("?")
-				|| path.startsWith(".")
-				|| path.endsWith(".")
-				|| path.contains("//")
-				|| path.endsWith("/")
-				|| path.endsWith("/")
-				|| path.contains("/.")
-				|| path.contains("./")
-				|| path.contains("<")
-				|| path.contains(">")
-				|| path.contains("|")
-				|| path.contains(""+'"')) {
+		if (path.contains("*") || path.contains("?") || path.startsWith(".") || path.endsWith(".") || path.contains("//") || path.endsWith("/")
+			|| path.endsWith("/") || path.contains("/.") || path.contains("./") || path.contains("<") || path.contains(">") || path.contains("|")
+			|| path.contains("" + '"')) {
 			updateStatus(name + PATH_MUST_BE_VALID);
 			return true;
 		}
 		return false;
 	}
-	
+
 	protected void updateStatus(String message) {
 		setErrorMessage(message);
 		setPageComplete(message == null);
 	}
-	
+
 	public String getSourcePath() {
 		if (sourcePath.isEnabled()) {
 			return sourcePath.getText();
@@ -360,17 +361,18 @@ public class NewFeatureProjectPage extends WizardPage {
 			return getBuildPath();
 		}
 	}
-	
+
 	public String getConfigPath() {
 		return configsPath.isEnabled() ? configsPath.getText() : "";
 
 	}
-	
+
 	public String getBuildPath() {
 		return buildPath.getText();
 	}
 
+	@Override
 	public boolean canFlipToNextPage() {
-		return this.canFlipToNextPage;
+		return canFlipToNextPage;
 	}
 }
