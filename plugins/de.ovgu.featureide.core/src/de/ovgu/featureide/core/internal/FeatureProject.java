@@ -92,7 +92,6 @@ import de.ovgu.featureide.core.fstmodel.FSTModel;
 import de.ovgu.featureide.core.job.ModelScheduleRule;
 import de.ovgu.featureide.core.signature.ProjectSignatures;
 import de.ovgu.featureide.fm.core.FMComposerManager;
-import de.ovgu.featureide.fm.core.FMCorePlugin;
 import de.ovgu.featureide.fm.core.ModelMarkerHandler;
 import de.ovgu.featureide.fm.core.base.FeatureUtils;
 import de.ovgu.featureide.fm.core.base.IFeature;
@@ -107,6 +106,9 @@ import de.ovgu.featureide.fm.core.configuration.Configuration;
 import de.ovgu.featureide.fm.core.configuration.FeatureIDEFormat;
 import de.ovgu.featureide.fm.core.configuration.SelectableFeature;
 import de.ovgu.featureide.fm.core.configuration.Selection;
+import de.ovgu.featureide.fm.core.filter.HashSetFilter;
+import de.ovgu.featureide.fm.core.filter.base.InverseFilter;
+import de.ovgu.featureide.fm.core.functional.Functional;
 import de.ovgu.featureide.fm.core.io.FeatureOrderFormat;
 import de.ovgu.featureide.fm.core.io.Problem;
 import de.ovgu.featureide.fm.core.io.ProblemList;
@@ -117,7 +119,8 @@ import de.ovgu.featureide.fm.core.io.manager.IFileManager;
 import de.ovgu.featureide.fm.core.io.manager.SimpleFileHandler;
 import de.ovgu.featureide.fm.core.io.manager.VirtualFileManager;
 import de.ovgu.featureide.fm.core.io.xml.XmlFeatureModelFormat;
-import de.ovgu.featureide.fm.core.job.LongRunningJob;
+import de.ovgu.featureide.fm.core.job.JobStartingStrategy;
+import de.ovgu.featureide.fm.core.job.JobToken;
 import de.ovgu.featureide.fm.core.job.LongRunningMethod;
 import de.ovgu.featureide.fm.core.job.LongRunningWrapper;
 import de.ovgu.featureide.fm.core.job.monitor.IMonitor;
@@ -172,7 +175,7 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 	private FSTModel fstModel;
 
 	/**
-	 * a folder for the generated files (only needed if the Prject has only the FeatureIDE Nature)
+	 * a folder for the generated files (only needed if the project has only the FeatureIDE Nature)
 	 */
 	private IFolder binFolder;
 
@@ -220,6 +223,9 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 
 	private IFile currentConfiguration = null;
 
+	private final JobToken syncModulesToken = LongRunningWrapper.createToken(JobStartingStrategy.WAIT_ONE);
+	private final JobToken checkConfigurationToken = LongRunningWrapper.createToken(JobStartingStrategy.CANCEL_WAIT_ONE);
+
 	private final LongRunningMethod<Boolean> syncModulesJob = new LongRunningMethod<Boolean>() {
 
 		@Override
@@ -253,63 +259,62 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 		}
 	};
 
-	private final LongRunningJob<Boolean> configurationChecker =
-		new LongRunningJob<>(CHECKING_CONFIGURATIONS_FOR_UNUSED_FEATURES, new LongRunningMethod<Boolean>() {
+	private final LongRunningMethod<Boolean> configurationChecker = new LongRunningMethod<Boolean>() {
 
-			@Override
-			public Boolean execute(IMonitor workMonitor) throws Exception {
-				final IFolder folder = configFolder;
-				deleteConfigurationMarkers(folder, IResource.DEPTH_ZERO);
-				workMonitor.setRemainingWork(7);
-				next(CALCULATE_CORE_AND_DEAD_FEATURES, workMonitor);
-				final List<String> concreteFeatures = (List<String>) getOptionalConcreteFeatures();
-				next(GET_SELECTION_MATRIX, workMonitor);
-				final boolean[][] selectionMatrix = getSelectionMatrix(concreteFeatures);
-				next(GET_FALSE_OPTIONAL_FEATURES, workMonitor);
-				final Collection<String> falseOptionalFeatures = getFalseOptionalConfigurationFeatures(selectionMatrix, concreteFeatures);
-				next(GET_UNUSED_FEATURES, workMonitor);
-				workMonitor.checkCancel();
-				final Collection<String> deadFeatures = getUnusedConfigurationFeatures(selectionMatrix, concreteFeatures);
-				next("create marker: dead features", workMonitor);
-				if (!deadFeatures.isEmpty()) {
-					createConfigurationMarker(folder, MARKER_UNUSED + deadFeatures.size() + (deadFeatures.size() > 1 ? " features are " : " feature is ")
-						+ "not used: " + createShortMessage(deadFeatures), -1, IMarker.SEVERITY_INFO);
-				}
+		@Override
+		public Boolean execute(IMonitor workMonitor) throws Exception {
+			final IFolder folder = configFolder;
+			deleteConfigurationMarkers(folder, IResource.DEPTH_ZERO);
+			workMonitor.setRemainingWork(7);
+			next(CALCULATE_CORE_AND_DEAD_FEATURES, workMonitor);
+			final List<String> concreteFeatures = getOptionalConcreteFeatures();
+			next(GET_SELECTION_MATRIX, workMonitor);
+			final boolean[][] selectionMatrix = getSelectionMatrix(concreteFeatures);
+			next(GET_FALSE_OPTIONAL_FEATURES, workMonitor);
+			final Collection<String> falseOptionalFeatures = getFalseOptionalConfigurationFeatures(selectionMatrix, concreteFeatures);
+			next(GET_UNUSED_FEATURES, workMonitor);
+			workMonitor.checkCancel();
+			final Collection<String> deadFeatures = getUnusedConfigurationFeatures(selectionMatrix, concreteFeatures);
+			next("create marker: dead features", workMonitor);
+			if (!deadFeatures.isEmpty()) {
+				createConfigurationMarker(folder, MARKER_NEVER_SELECTED + deadFeatures.size() + (deadFeatures.size() > 1 ? " features are " : " feature is ")
+					+ "not used: " + createShortMessage(deadFeatures), -1, IMarker.SEVERITY_INFO);
 				next("create marker: false optional features", workMonitor);
-				if (!falseOptionalFeatures.isEmpty()) {
-					createConfigurationMarker(folder,
-							MARKER_FALSE_OPTIONAL + falseOptionalFeatures.size() + (falseOptionalFeatures.size() > 1 ? " features are " : " feature is ")
-								+ "optional but used in all configurations: " + createShortMessage(falseOptionalFeatures),
-							-1, IMarker.SEVERITY_INFO);
+			}
+			if (!falseOptionalFeatures.isEmpty()) {
+				createConfigurationMarker(folder,
+						MARKER_ALWAYS_SELECTED + falseOptionalFeatures.size() + (falseOptionalFeatures.size() > 1 ? " features are " : " feature is ")
+							+ "optional but used in all configurations: " + createShortMessage(falseOptionalFeatures),
+						-1, IMarker.SEVERITY_INFO);
+			}
+			next(REFESH_CONFIGURATION_FOLER, workMonitor);
+			workMonitor.done();
+			return true;
+		}
+
+		private void next(String subTaskName, IMonitor workMonitor) {
+			workMonitor.step();
+			workMonitor.setTaskName(subTaskName);
+		}
+
+		private String createShortMessage(Collection<String> features) {
+			final StringBuilder message = new StringBuilder();
+			int addedFeatures = 0;
+			for (final String feature : features) {
+				message.append(feature);
+				message.append(", ");
+				if (addedFeatures++ >= 10) {
+					message.append("...");
+					break;
 				}
-				next(REFESH_CONFIGURATION_FOLER, workMonitor);
-				workMonitor.done();
-				return true;
+			}
+			if ((addedFeatures < 10) && (addedFeatures > 0)) {
+				message.delete(message.lastIndexOf(", "), message.lastIndexOf(", ") + 2);
 			}
 
-			private void next(String subTaskName, IMonitor workMonitor) {
-				workMonitor.step();
-				workMonitor.setTaskName(subTaskName);
-			}
-
-			private String createShortMessage(Collection<String> features) {
-				final StringBuilder message = new StringBuilder();
-				int addedFeatures = 0;
-				for (final String feature : features) {
-					message.append(feature);
-					message.append(", ");
-					if (addedFeatures++ >= 10) {
-						message.append("...");
-						break;
-					}
-				}
-				if ((addedFeatures < 10) && (addedFeatures > 0)) {
-					message.delete(message.lastIndexOf(", "), message.lastIndexOf(", ") + 2);
-				}
-
-				return message.toString();
-			}
-		});
+			return message.toString();
+		}
+	};
 
 	/**
 	 * Creating a new ProjectData includes creating folders if they don't exist, registering workspace listeners and initialization of the wrapper object.
@@ -832,9 +837,9 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 	 * this is that a synchronization can't be executed unnecessarily multiple times.
 	 */
 	// TODO this should not be called if only markers are changed
-	private synchronized void setAllFeatureModuleMarkers() {
+	private void setAllFeatureModuleMarkers() {
 		if (composerExtension.createFolderForFeatures()) {
-			LongRunningWrapper.getRunner(syncModulesJob, SYNCHRONIZE_FEATURE_MODEL_AND_FEATURE_MODULES).schedule();
+			LongRunningWrapper.startJob(syncModulesToken, LongRunningWrapper.getRunner(syncModulesJob, SYNCHRONIZE_FEATURE_MODEL_AND_FEATURE_MODULES));
 		}
 	}
 
@@ -1125,8 +1130,7 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 	 */
 	// should also be called if a configuration file was removed
 	private void checkFeatureCoverage() {
-		configurationChecker.cancel();
-		configurationChecker.schedule();
+		LongRunningWrapper.startJob(checkConfigurationToken, LongRunningWrapper.getRunner(configurationChecker, CHECKING_CONFIGURATIONS_FOR_UNUSED_FEATURES));
 	}
 
 	@Override
@@ -1151,18 +1155,14 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 		if (selections.length == 0) {
 			return Collections.emptyList();
 		}
-		final List<String> falseOptionalFeatures = new LinkedList<String>();
-		for (int column = 0; column < concreteFeatures.size(); column++) {
-			boolean invalid = true;
+		final List<String> falseOptionalFeatures = new ArrayList<>();
+		columnLoop: for (int column = 0; column < concreteFeatures.size(); column++) {
 			for (int conf = 0; conf < selections.length; conf++) {
 				if (selections[conf][column] == selectionState) {
-					invalid = false;
-					break;
+					continue columnLoop;
 				}
 			}
-			if (invalid) {
-				falseOptionalFeatures.add(concreteFeatures.get(column));
-			}
+			falseOptionalFeatures.add(concreteFeatures.get(column));
 		}
 		return falseOptionalFeatures;
 	}
@@ -1175,16 +1175,12 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 		final List<IFile> configurations = getAllConfigurations();
 
 		final boolean[][] selections = new boolean[configurations.size()][concreteFeatures.size()];
-		final Configuration configuration = new Configuration(featureModelManager.getObject(), Configuration.PARAM_IGNOREABSTRACT);
+		final Configuration configuration = new Configuration(featureModelManager.getObject(), Configuration.PARAM_IGNOREABSTRACT | Configuration.PARAM_LAZY);
 
 		int row = 0;
 		for (final IFile file : configurations) {
 			final boolean[] currentRow = selections[row++];
-			try {
-				SimpleFileHandler.load(Paths.get(file.getLocationURI()), configuration, ConfigFormatManager.getInstance());
-			} catch (final Exception e) {
-				FMCorePlugin.getDefault().logError(e);
-			}
+			ConfigurationManager.load(Paths.get(file.getLocationURI()), configuration);
 
 			int column = 0;
 			for (final String feature : concreteFeatures) {
@@ -1198,17 +1194,18 @@ public class FeatureProject extends BuilderMarkerHandler implements IFeatureProj
 		return selections;
 	}
 
-	private Collection<String> getOptionalConcreteFeatures() {
+	private List<String> getOptionalConcreteFeatures() {
 		final IFeatureModel featureModel = featureModelManager.getObject();
-		final Collection<String> concreteFeatures = FeatureUtils.extractConcreteFeaturesAsStringList(featureModel);
+
 		final List<List<IFeature>> deadCoreList = featureModel.getAnalyser().analyzeFeatures();
-		for (final IFeature feature : deadCoreList.get(0)) {
-			concreteFeatures.remove(feature.getName());
-		}
-		for (final IFeature feature : deadCoreList.get(1)) {
-			concreteFeatures.remove(feature.getName());
-		}
-		return concreteFeatures;
+		final List<IFeature> coreList = deadCoreList.get(0);
+		final List<IFeature> deadList = deadCoreList.get(1);
+		final HashSetFilter<IFeature> deadCoreFilter = new HashSetFilter<>((coreList.size() + deadList.size()) << 1);
+		deadCoreFilter.addAll(coreList);
+		deadCoreFilter.addAll(deadList);
+
+		return Functional
+				.mapToStringList(Functional.filter(featureModel.getFeatures(), FeatureUtils.CONCRETE_FEATURE_FILTER, new InverseFilter<>(deadCoreFilter)));
 	}
 
 	@Override

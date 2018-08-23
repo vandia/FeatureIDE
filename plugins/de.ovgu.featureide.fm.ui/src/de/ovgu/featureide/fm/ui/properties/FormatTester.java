@@ -52,7 +52,7 @@ public class FormatTester extends PropertyTester {
 		return false;
 	}
 
-	private FormatManager<?> getFormatManager(String property) {
+	public FormatManager<?> getFormatManager(String property) {
 		switch (property) {
 		case "featuremodel":
 			return FMFormatManager.getInstance();
