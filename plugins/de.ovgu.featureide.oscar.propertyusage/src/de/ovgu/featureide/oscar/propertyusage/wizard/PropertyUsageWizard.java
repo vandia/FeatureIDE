@@ -44,7 +44,7 @@ public class PropertyUsageWizard extends Wizard {
 	public boolean performFinish() {
 		try{
 			console.writeln("Starting analysis....");
-			(new PropertyUsage(page.getDebug(),page.getSrc_oscar_path(),page.getProperties_path(),page.getOutput_format(),project)).findProject();			
+			(new PropertyUsage(page.getDebug(),page.getSrc_oscar_path(),page.getProperties_path(),page.getOutput_format(),project, page.getSep_format())).findProject();			
 		}catch (Exception e){
 			e.printStackTrace();
 			console.writeln(e.getMessage());
