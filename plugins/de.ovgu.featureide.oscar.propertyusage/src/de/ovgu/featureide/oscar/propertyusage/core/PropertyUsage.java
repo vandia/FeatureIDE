@@ -37,7 +37,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import de.ovgu.featureide.oscar.IO.Console;
 import de.ovgu.featureide.oscar.IO.ExportImport;
-import de.ovgu.featureide.oscar.IO.PropertiesLoader;
+import de.ovgu.featureide.oscar.IO.OscarPropertiesLoader;
 import de.ovgu.featureide.oscar.model.Feature;
 import oscar.OscarProperties;
 import oscar.Startup;
@@ -93,14 +93,14 @@ public class PropertyUsage {
 	
 	
 
-	public PropertyUsage(boolean db, IProject pj, IFile pr, String om, IProject reportProj) {
+	public PropertyUsage(boolean db, IProject pj, IFile pr, String om, IProject reportProj, String propSep) {
 		super();
 		this.project = pj;
 		this.properties=pr;
 		this.outputmode=om;
 		this.DEBUG=db;
 		this.reportProject=reportProj;
-		this.op=PropertiesLoader.loadOscarProperties(this.properties, this.project, this.reportProject);
+		this.op=OscarPropertiesLoader.loadOscarProperties(this.properties, this.project, this.reportProject, propSep);
 		this.oscarPropertyMethods = getOscarPropertiesMethods();
 		this.allPropMap = initializePropertyMap();
 	}

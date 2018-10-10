@@ -2,15 +2,13 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-   <extension
-         point="org.eclipse.ui.commands">
+   <extension point="org.eclipse.ui.commands">
       <category
             name="Find Usage Category"
             id="de.ovgu.featureide.core.oscar.propertyusage.commands.category">
       </category>
       <command
-            name="Find Property Usage"
-            categoryId="PropertyUsage.commands.category"
+            name="Find Property Usage"          
             id="de.ovgu.featureide.core.oscar.propertyusage.commands.findUsageCommand">
       </command>
    </extension>

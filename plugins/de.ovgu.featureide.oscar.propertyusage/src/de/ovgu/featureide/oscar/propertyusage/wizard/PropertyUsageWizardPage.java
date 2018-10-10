@@ -6,7 +6,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -24,10 +23,12 @@ import org.eclipse.ui.dialogs.FilteredResourcesSelectionDialog;
 import org.eclipse.ui.dialogs.ResourceListSelectionDialog;
 
 import de.ovgu.featureide.oscar.IO.ExportImport;
+import de.ovgu.featureide.oscar.IO.OscarPropertiesLoader;
 
 public class PropertyUsageWizardPage extends WizardPage {
 
 	private Button debug;
+	private Combo sep_format;
 	private Combo output_format;
 	private IContainer root = ResourcesPlugin.getWorkspace().getRoot();
 	private IProject src_oscar_path;
@@ -120,20 +121,30 @@ public class PropertyUsageWizardPage extends WizardPage {
             }
         });
 		
+		Label lblSepFormat = new Label(container, SWT.NONE);
+		lblSepFormat.setBounds(31, 108, 88, 14);
+		lblSepFormat.setText("Property format:");
+		
+		sep_format = new Combo(container, SWT.READ_ONLY);
+		sep_format.setItems(OscarPropertiesLoader.SEPS_LABELS);
+		sep_format.setBounds(133, 100, 324, 36);
+		sep_format.select(0);
+		
+		
 		Label lblOutputFormat = new Label(container, SWT.NONE);
-		lblOutputFormat.setBounds(31, 108, 82, 14);
+		lblOutputFormat.setBounds(31, 138, 82, 14);
 		lblOutputFormat.setText("Output format:");
 		
 		output_format = new Combo(container, SWT.READ_ONLY);
 		output_format.setItems(new String[] {ExportImport.CSV, ExportImport.MOD, ExportImport.ALL});
-		output_format.setBounds(133, 104, 324, 36);
-		output_format.select(0);
+		output_format.setBounds(133, 130, 324, 36);
+		output_format.select(2);
 		
 		debug = new Button(container, SWT.CHECK);
 		debug.setSelection(true);
-		debug.setBounds(31, 161, 112, 18);
+		debug.setBounds(31, 171, 112, 18);
 		debug.setText("Debug mode");
-		container.setTabList(new Control[]{src_oscar_path_t, lblNewLabel, properties_path_t, lblPropertiesFile, output_format});
+		container.setTabList(new Control[]{src_oscar_path_t, properties_path_t, sep_format, output_format});
 	}
 
 	public IProject getSrc_oscar_path() {
@@ -147,11 +158,18 @@ public class PropertyUsageWizardPage extends WizardPage {
 	public boolean getDebug() {
 		return debug.getSelection();
 	}
+	
 
 	public String getOutput_format() {
 		return output_format.getText();
 	}
 
+
+	public String getSep_format() {
+		return sep_format.getText();
+	}
+
+	
 	@Override
 	public boolean isPageComplete() {
 		return (src_oscar_path != null && properties_path !=null);

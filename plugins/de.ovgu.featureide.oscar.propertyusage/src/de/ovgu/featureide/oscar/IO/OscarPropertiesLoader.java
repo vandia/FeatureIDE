@@ -9,7 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -19,15 +18,21 @@ import org.apache.commons.lang.StringEscapeUtils;
 import oscar.OscarProperties;
 import oscar.Startup;
 
-public class PropertiesLoader {
+public class OscarPropertiesLoader {
 	
-	public static final String SEP="=";
-	public static final String COMMENT="^#+";
-	public static final String FILTER="^.+"+SEP+".+";
+	public static final String[] SEPS_LABELS={"key = value","key : value"};
+	public static final String[] SEPS={"=",":"};
 	
-	public static OscarProperties loadOscarProperties(IFile properties, IProject project, IProject reportProj){
+	
+	public static final String COMMENT="^[#|!]+";
+	
+	
+	public static OscarProperties loadOscarProperties(IFile properties, IProject project, IProject reportProj, String sep){
 		Startup start = new Startup(properties, project);
 		start.contextInitialized();
+		
+		final String SEP= getSep(sep);
+		final String FILTER="^.+"+SEP+".+";
 		
 		String propFileName = properties.getLocation().toOSString()/*+File.separator+properties.getName()*/;
 		final Pattern pattern = Pattern.compile(FILTER);
@@ -89,6 +94,20 @@ public class PropertiesLoader {
 		}
 	    
 	    return op;
+	}
+
+
+	private static String getSep(String sep) {
+		// TODO Auto-generated method stub
+		
+		for (int i=0; i<  SEPS_LABELS.length; i++){
+			if (SEPS_LABELS[i].equals(sep)) {
+				return SEPS[i];
+			}
+				
+		}
+		
+		return "";
 	}
 
 }
