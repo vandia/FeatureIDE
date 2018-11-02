@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-	<extension-point id="de.ovgu.featureide.ui.views.outline" name="Outline" schema="schema/de.ovgu.featureide.ui.views.outline.exsd"/>
 	<extension
 			point="org.eclipse.ui.newWizards">
 		<wizard
@@ -92,14 +91,6 @@
 				icon="icons/FeatureIconSmall.ico"
 				id="de.ovgu.featureide.ui.views.collaboration.Collaboration"
 				name="Collaboration Diagram"
-				restorable="true">
-		</view>
-		<view
-				category="FeatureIDE"
-				class="de.ovgu.featureide.ui.views.collaboration.outline.Outline"
-				icon="icons/FeatureIconSmall.ico"
-				id="de.ovgu.featureide.ui.views.collaboration.outline.CollaborationOutline"
-				name="FeatureIDE Outline"
 				restorable="true">
 		</view>
 		<view
@@ -1039,7 +1030,7 @@
 					<visibleWhen
 							checkEnabled="false">
 						<reference
-								definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+								definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
 						</reference>
 					</visibleWhen>
 				</command>
@@ -1051,7 +1042,7 @@
 					<visibleWhen
 							checkEnabled="false">
 						<reference
-								definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+								definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
 						</reference>
 					</visibleWhen>
 				</command>
@@ -1063,7 +1054,7 @@
 					<visibleWhen
 							checkEnabled="false">
 						<reference
-								definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+								definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
 						</reference>
 					</visibleWhen>
 				</command>
@@ -1075,7 +1066,7 @@
 					<visibleWhen
 							checkEnabled="false">
 						<reference
-								definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+								definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
 						</reference>
 					</visibleWhen>
 				</command>
@@ -1088,7 +1079,7 @@
 							checkEnabled="false">
 						<and>
 							<reference
-									definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+									definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
 							</reference>
 							<test
 									args="de.ovgu.featureide.core.mpl.MPLExperimentalNature"
@@ -1116,7 +1107,7 @@
 				<visibleWhen
 						checkEnabled="false">
 					<reference
-							definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+							definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
 					</reference>
 				</visibleWhen>
 			</command>
@@ -1130,7 +1121,7 @@
 				<visibleWhen
 						checkEnabled="false">
 					<reference
-							definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+							definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
 					</reference>
 				</visibleWhen>
 			</command>
@@ -1144,7 +1135,7 @@
 				<visibleWhen
 						checkEnabled="false">
 					<reference
-							definitionId="de.ovgu.featureide.ui.expressions.containsConfiguration">
+							definitionId="de.ovgu.featureide.fm.ui.expressions.containsOnlyConfiguration">
 					</reference>
 				</visibleWhen>
 			</command>   
@@ -1157,7 +1148,7 @@
 		         <visibleWhen
             checkEnabled="false">
          <reference
-               definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+			 	definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
          </reference>
       </visibleWhen>
 		   </command>
@@ -1167,7 +1158,7 @@
       <visibleWhen
             checkEnabled="false">
          <reference
-               definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+							definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
          </reference>
       </visibleWhen>
    </dynamic>
@@ -1220,7 +1211,7 @@
               checkEnabled="false">
            <and>
               <reference
-                    definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+								definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
               </reference>
               <with
                       variable="activeMenuSelection">
@@ -1247,7 +1238,7 @@
         <visibleWhen
               checkEnabled="false">
            <reference
-                 definitionId="de.ovgu.featureide.ui.expressions.onlyProjects">
+				   definitionId="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
            </reference>
         </visibleWhen>
         <command
@@ -1368,21 +1359,7 @@
 	<extension
 			point="org.eclipse.core.expressions.definitions">
 		<definition
-				id="de.ovgu.featureide.ui.expressions.containsResource">
-			<with
-					variable="activeMenuSelection">
-				<iterate
-						ifEmpty="false"
-						operator="or">
-					<test
-							property="de.ovgu.featureide.fm.ui.properties.class"
-							value="org.eclipse.core.resources.IResource">
-					</test>
-				</iterate>
-			</with>
-		</definition>
-		<definition
-				id="de.ovgu.featureide.ui.expressions.onlyProjects">
+				id="de.ovgu.featureide.ui.expressions.containsOnlyProjects">
 			<with
 					variable="activeMenuSelection">
 				<iterate
@@ -1391,20 +1368,6 @@
 					<test
 							property="de.ovgu.featureide.fm.ui.properties.class"
 							value="org.eclipse.core.resources.IProject">
-					</test>
-				</iterate>
-			</with>
-		</definition>
-		<definition
-				id="de.ovgu.featureide.ui.expressions.containsConfiguration">
-			<with
-					variable="activeMenuSelection">
-				<iterate
-						ifEmpty="false"
-						operator="or">
-					<test
-							args=".config,.equation,.expression"
-							property="de.ovgu.featureide.fm.ui.properties.file">
 					</test>
 				</iterate>
 			</with>
@@ -1493,7 +1456,65 @@
           </or>
        </triggerPoints>
     </navigatorContent>
+		<commonWizard
+				menuGroupId="de.ovgu.featureide.ui.wizards.groupProjectExplorer"
+				type="new"
+				wizardId="de.ovgu.featureide.ui.wizards.NewFeatureIDEFileWizard">
+			<enablement>
+				<with
+						variable="activeWorkbenchWindow.activePerspective">
+					<equals
+							value="de.ovgu.featureide.ui.FeatureIDEperspective">
+					</equals>
+				</with></enablement>
+		</commonWizard>
+		<commonWizard
+				menuGroupId="de.ovgu.featureide.ui.wizards.groupProjectExplorer"
+				type="new"
+				wizardId="de.ovgu.featureide.ui.wizards.NewConfigurationFileWizard">
+			<enablement>
+				<with
+						variable="activeWorkbenchWindow.activePerspective">
+					<equals
+							value="de.ovgu.featureide.ui.FeatureIDEperspective">
+					</equals>
+				</with></enablement>
+		</commonWizard>
+		<commonWizard
+				menuGroupId="de.ovgu.featureide.ui.wizards.groupProjectExplorer"
+				type="new"
+				wizardId="de.ovgu.featureide.fm.ui.wizard.NewFeatureModelWizard">
+			<enablement>
+				<with
+						variable="activeWorkbenchWindow.activePerspective">
+					<equals
+							value="de.ovgu.featureide.ui.FeatureIDEperspective">
+					</equals>
+				</with></enablement>
+		</commonWizard>
+		<commonWizard
+				menuGroupId="additions"
+				type="new"
+				wizardId="de.ovgu.featureide.ui.FeatureProjectWizard">
+			<enablement>
+				<with
+						variable="activeWorkbenchWindow.activePerspective">
+					<equals
+							value="de.ovgu.featureide.ui.FeatureIDEperspective">
+					</equals>
+				</with></enablement>
+		</commonWizard>
  </extension>
-	
-	
+	<extension
+			point="de.ovgu.featureide.fm.ui.Outline">
+		<Outline
+				OutlineProvider="de.ovgu.featureide.ui.views.collaboration.outline.CollaborationOutline">
+		</Outline>
+		<Outline
+				OutlineProvider="de.ovgu.featureide.ui.views.collaboration.outline.ContextOutline">
+		</Outline>
+		<Outline
+				OutlineProvider="de.ovgu.featureide.ui.views.collaboration.outline.ExtendedOutline">
+		</Outline>
+	</extension>
 </plugin>

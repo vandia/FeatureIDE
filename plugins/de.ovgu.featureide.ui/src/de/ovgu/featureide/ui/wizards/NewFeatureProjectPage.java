@@ -91,22 +91,23 @@ public class NewFeatureProjectPage extends WizardPage {
 		setDescription(CREATES_A_FEATUREIDE_PROJECT);
 	}
 	
+	@Override
 	public void createControl(Composite parent) {
-		Composite container = new Composite(parent, SWT.NULL);
+		final Composite container = new Composite(parent, SWT.NULL);
 	    final GridLayout gridLayout = new GridLayout();
 	    gridLayout.numColumns = 1;
 	    container.setLayout(gridLayout);
 	    setControl(container);
 	    
-	    Group toolGroup = new Group(container, SWT.NONE);
+		final Group toolGroup = new Group(container, SWT.NONE);
 		toolGroup.setText("Composer Selection:");
 		toolGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		GridLayout projGridLayout = new GridLayout();
+		final GridLayout projGridLayout = new GridLayout();
 		projGridLayout.numColumns = 2;
 		toolGroup.setLayout(projGridLayout);
 		
 		final Label helloLabel = new Label(toolGroup, SWT.NONE);
-		GridData gridData = new GridData(GridData.FILL_BOTH);
+		final GridData gridData = new GridData(GridData.FILL_BOTH);
 		gridData.horizontalSpan = 2;
 		helloLabel.setLayoutData(gridData);
 		helloLabel.setText(PLEASE_SELECT_A_COMPOSER_FROM_THE_SELECTION_BELOW_);
@@ -117,22 +118,24 @@ public class NewFeatureProjectPage extends WizardPage {
 	    toolCB.setLayoutData(new GridData(GridData.FILL_BOTH));
 	    
 	    final Label descriptionLabel = new Label(toolGroup, SWT.NONE);
-	    GridData gridData2 = new GridData(GridData.FILL_BOTH);
+		final GridData gridData2 = new GridData(GridData.FILL_BOTH);
 		gridData2.horizontalSpan = 2;
 	    descriptionLabel.setLayoutData(gridData2);
 	    
-	    StringBuilder descriptionStringBuilder = new StringBuilder();
+		final StringBuilder descriptionStringBuilder = new StringBuilder();
 	    descriptionStringBuilder.append("Possible choices are:\n\n");
-	    List<IComposerExtension> composerExtensions = ComposerExtensionManager.getInstance().getComposers();
+		final List<IComposerExtension> composerExtensions = ComposerExtensionManager.getInstance().getComposers();
 	    extensions = new IComposerExtensionBase[composerExtensions.size()]; 
 	    composerExtensions.toArray(extensions);
 	    Arrays.sort(extensions, new Comparator<IComposerExtensionBase> () {
+
+			@Override
 			public int compare(IComposerExtensionBase arg0, IComposerExtensionBase arg1) {
 				return arg0.getName().compareTo(arg1.getName());
 			}
 	    });
 	    
-		for (IComposerExtensionBase composerExtension : extensions) {
+		for (final IComposerExtensionBase composerExtension : extensions) {
 			descriptionStringBuilder.append(composerExtension.getName());
 			descriptionStringBuilder.append(": ");
 			descriptionStringBuilder.append(composerExtension.getDescription());
@@ -148,6 +151,8 @@ public class NewFeatureProjectPage extends WizardPage {
 		}
 		descriptionLabel.setText(descriptionString);
 		toolCB.addModifyListener(new ModifyListener() {
+
+			@Override
 			public void modifyText(ModifyEvent e) {
 				composerExtension = extensions[toolCB.getSelectionIndex()];
 			}
@@ -259,33 +264,42 @@ public class NewFeatureProjectPage extends WizardPage {
 	}
 	
 	protected void dialogChanged() {
-		IComposerExtensionBase compositionTool = getCompositionTool();
+		final IComposerExtensionBase compositionTool = getCompositionTool();
 		sourcePath.setEnabled(compositionTool.hasFeatureFolder());
 		buildPath.setEnabled(compositionTool.hasSourceFolder());
 		propertyManagerPath.setEnabled(compositionTool.hasPropertyManager());
 		propertyMethodPath.setEnabled(compositionTool.hasPropertyManager());
-		if (isEnabled(sourcePath) && isEnabled(configsPath) &&
-				getSourcePath().equals(getConfigPath())) {
+		if (isEnabled(sourcePath) && isEnabled(configsPath) && getSourcePath().equals(getConfigPath())) {
 			updateStatus(SOURCE_PATH_EQUALS_CONFIGURATIONS_PATH_);
 			return;
 		}
-		if (isEnabled(sourcePath) && isEnabled(buildPath) &&
-				getSourcePath().equals(getBuildPath())) {
+		if (isEnabled(sourcePath) && isEnabled(buildPath) && getSourcePath().equals(getBuildPath())) {
 			updateStatus(SOURCE_PATH_EQUALS_BUILD_PATH_);
 			return;
 		}
-		if (isEnabled(buildPath) && isEnabled(configsPath) && 
-				getBuildPath().equals(getConfigPath())) {
+		if (isEnabled(buildPath) && isEnabled(configsPath) && getBuildPath().equals(getConfigPath())) {
 			updateStatus(BUILD_PATH_EQUALS_CONFIGURATIONS_PATH_);
 			return;
 		}
-		if (isEnabled(sourcePath) && isPathEmpty(getSourcePath(), SOURCE))return;
-		if (isEnabled(buildPath) && isPathEmpty(getBuildPath(), BUILD))return;
-		if (isEnabled(configsPath) && isPathEmpty(getConfigPath(), EQUATIONS))return;
+		if (isEnabled(sourcePath) && isPathEmpty(getSourcePath(), SOURCE)) {
+			return;
+		}
+		if (isEnabled(buildPath) && isPathEmpty(getBuildPath(), BUILD)) {
+			return;
+		}
+		if (isEnabled(configsPath) && isPathEmpty(getConfigPath(), EQUATIONS)) {
+			return;
+		}
 		
-		if (isEnabled(sourcePath) && isInvalidPath(getSourcePath(), SOURCE))return;
-		if (isEnabled(buildPath) && isInvalidPath(getBuildPath(), BUILD))return;
-		if (isEnabled(configsPath) && isInvalidPath(getConfigPath(), EQUATIONS))return;
+		if (isEnabled(sourcePath) && isInvalidPath(getSourcePath(), SOURCE)) {
+			return;
+		}
+		if (isEnabled(buildPath) && isInvalidPath(getBuildPath(), BUILD)) {
+			return;
+		}
+		if (isEnabled(configsPath) && isInvalidPath(getConfigPath(), EQUATIONS)) {
+			return;
+		}
 		
 		if (compositionTool.supportsAndroid()) {
 			
@@ -329,18 +343,8 @@ public class NewFeatureProjectPage extends WizardPage {
 		return false;
 	}
 	protected boolean isInvalidPath(String path, String name) {
-		if (path.contains("*")
-				|| path.contains("?")
-				|| path.startsWith(".")
-				|| path.endsWith(".")
-				|| path.contains("//")
-				|| path.endsWith("/")
-				|| path.endsWith("/")
-				|| path.contains("/.")
-				|| path.contains("./")
-				|| path.contains("<")
-				|| path.contains(">")
-				|| path.contains("|")
+		if (path.contains("*") || path.contains("?") || path.startsWith(".") || path.endsWith(".") || path.contains("//") || path.endsWith("/")
+			|| path.endsWith("/") || path.contains("/.") || path.contains("./") || path.contains("<") || path.contains(">") || path.contains("|")
 				|| path.contains(""+'"')) {
 			updateStatus(name + PATH_MUST_BE_VALID);
 			return true;
@@ -370,7 +374,8 @@ public class NewFeatureProjectPage extends WizardPage {
 		return buildPath.getText();
 	}
 
+	@Override
 	public boolean canFlipToNextPage() {
-		return this.canFlipToNextPage;
+		return canFlipToNextPage;
 	}
 }

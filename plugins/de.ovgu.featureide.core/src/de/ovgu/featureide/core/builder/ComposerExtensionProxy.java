@@ -45,14 +45,14 @@ public class ComposerExtensionProxy implements IComposerExtension {
 	private IComposerExtensionClass defaultComposerExtensionClass;
 
 	public ComposerExtensionProxy(IConfigurationElement configurationElement) throws Exception {
-		this.configElement = configurationElement;
+		configElement = configurationElement;
 		name = configElement.getAttribute("name");
 		id = configElement.getAttribute("id");
 		description = configElement.getAttribute("description");
 		projectComposerMap = new WeakHashMap<IFeatureProject, IComposerExtensionClass>();
 		try {
 			defaultComposerExtensionClass = (IComposerExtensionClass) configElement.createExecutableExtension("class");
-		} catch (CoreException e) {
+		} catch (final CoreException e) {
 			CorePlugin.getDefault().logError(e);
 			throw e;
 		}
@@ -66,6 +66,11 @@ public class ComposerExtensionProxy implements IComposerExtension {
 	@Override
 	public String getId() {
 		return id;
+	}
+
+	@Override
+	public boolean initExtension() {
+		return true;
 	}
 
 	@Override
@@ -83,11 +88,11 @@ public class ComposerExtensionProxy implements IComposerExtension {
 		IComposerExtensionClass composer = projectComposerMap.get(featureProject);
 		if (composer == null) {
 			try {
-				ComposerExtensionClass tmpComposer = (ComposerExtensionClass) configElement.createExecutableExtension("class");
+				final ComposerExtensionClass tmpComposer = (ComposerExtensionClass) configElement.createExecutableExtension("class");
 				tmpComposer.setComposerExtension(this);
 				composer = tmpComposer;
 				projectComposerMap.put(featureProject, composer);
-			} catch (CoreException e) {
+			} catch (final CoreException e) {
 				CorePlugin.getDefault().logError(e);
 			}
 		}
@@ -102,6 +107,11 @@ public class ComposerExtensionProxy implements IComposerExtension {
 	@Override
 	public boolean hasSourceFolder() {
 		return defaultComposerExtensionClass.hasSourceFolder();
+	}
+
+	@Override
+	public boolean hasSource() {
+		return defaultComposerExtensionClass.hasSource();
 	}
 
 	@Override
@@ -143,9 +153,15 @@ public class ComposerExtensionProxy implements IComposerExtension {
 	public <T extends IComposerObject> T getComposerObjectInstance(Class<T> c) {
 		return defaultComposerExtensionClass.getComposerObjectInstance(c);
 	}
+	
+		@Override
+	public boolean hasBuildFolder() {
+		return defaultComposerExtensionClass.hasBuildFolder();
+	}
 
 	/* (non-Javadoc)
 	 * @see de.ovgu.featureide.core.builder.IComposerExtensionBase#hasPropertyManager()
+	 * Mavis Project
 	 */
 	@Override
 	public boolean hasPropertyManager() {
