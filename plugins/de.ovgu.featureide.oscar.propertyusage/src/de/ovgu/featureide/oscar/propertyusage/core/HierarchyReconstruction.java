@@ -18,12 +18,13 @@ public class HierarchyReconstruction {
 	
 	
 	private static final Set<String> activeMarkers = new HashSet<String>(
-			Arrays.asList(new String[] { "true", "yes", "on", "false", "no", "off" }));
+			Arrays.asList(new String[] { "true", "yes", "no", "false", "on", "off" }));
 	private static final String regx_split_list="[\\,\\|]";
 	private static final Pattern regx_sep_list=Pattern.compile("\\w+"+regx_split_list+"\\w+");
 	private static final String regx_split_key="[\\_\\-\\.]";
 	//private static final String regx_split_key="[\\-\\.]";
 	private static final Pattern regx_sep_key = Pattern.compile("\\w+"+regx_split_key+"\\w+");
+	private static final String name_sep = "_";
 	
 	public static Feature getFDLHierarchy(OscarProperties op, Map<String, Integer[]> allPropMap, double threshold){
 		
@@ -48,12 +49,12 @@ public class HierarchyReconstruction {
 					current= new Feature(key, true, FeatureType.MORE_OF);
 					current.setAbstract(true);
 					for (String s: value.split(regx_split_list)){
-						current.addHierarchy(new Feature(key+"."+s,true,FeatureType.ATOMIC));
+						current.addHierarchy(new Feature(key+name_sep+s,true,FeatureType.ATOMIC));
 					}					
 				}else {
 					current= new Feature(key, true, FeatureType.MORE_OF);
 					current.setAbstract(true);
-					current.addHierarchy(new Feature(key+"."+value,true,FeatureType.ATOMIC));
+					current.addHierarchy(new Feature(key+name_sep+value,true,FeatureType.ATOMIC));
 					//TO-DO: maybe mark this in red as to grab attention.
 				}
 				
