@@ -45,7 +45,7 @@ public class Feature {
 	
 	public String getFormatedName () {
 		String cleaned = name.replaceAll("\\s+","_").replaceAll("[\\\\#\\\\&\\\\;\\\\-\\\\.\\\\:\\\\/\\\\-]", "_");
-		return cleaned.replaceAll("\\\\_+", "_"); // remove the underscores repeated
+		return cleaned.replaceAll("\\\\_+", "_"); // remove the repeated underscores 
 	}
 	
 	
