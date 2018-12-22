@@ -17,7 +17,7 @@ public class PropertyUsageWizard extends Wizard {
 	private IProject project;
 
 	public PropertyUsageWizard() {
-		setWindowTitle("New Wizard");
+		setWindowTitle("Find Oscar Property Usage Wizard");
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 	    
 	    if (window != null)

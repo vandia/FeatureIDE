@@ -42,6 +42,13 @@ public class Feature {
 	public Set<Feature> getChildren() {
 		return children;
 	}
+	
+	public String getFormatedName () {
+		String cleaned = name.replaceAll("\\s+","_").replaceAll("[\\\\#\\\\&\\\\;\\\\-\\\\.\\\\:\\\\/\\\\-]", "_");
+		return cleaned.replaceAll("\\\\_+", "_"); // remove the underscores repeated
+	}
+	
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {
@@ -58,27 +65,27 @@ public class Feature {
 	public String toString() {
 		
 		StringBuilder sb = new StringBuilder ();
-		switch (this.type){
+		switch (getType()){
 		
 			case ALL:
-				sb.append("	<and name=\""+this.name+"\""+(this.isAbstract?" abstract=\"true\"":"")+">\r");
+				sb.append("	<and name=\""+getFormatedName()+"\""+(this.isAbstract?" abstract=\"true\"":"")+">\r");
 				for(Feature f:this.children){
 					sb.append(f.toString());
 				}
 				sb.append("	</and>\r");
 				break;
 			case ATOMIC:
-				sb.append("	<feature name=\""+this.name+(this.isAbstract?" abstract=\"true\"":"")+"\"/>\r");
+				sb.append("	<feature name=\""+getFormatedName()+(this.isAbstract?" abstract=\"true\"":"")+"\"/>\r");
 				break;
 			case MORE_OF:
-				sb.append("	<alt name=\""+this.name+"\""+(this.isAbstract?" abstract=\"true\"":"")+">\r");
+				sb.append("	<alt name=\""+getFormatedName()+"\""+(this.isAbstract?" abstract=\"true\"":"")+">\r");
 				for(Feature f:this.children){
 					sb.append(f.toString());
 				}
 				sb.append("	</alt>\r");
 				break;
 			case ONE_OF:
-				sb.append("	<or name=\""+this.name+"\""+(this.isAbstract?" abstract=\"true\"":"")+">\r");
+				sb.append("	<or name=\""+getFormatedName()+"\""+(this.isAbstract?" abstract=\"true\"":"")+">\r");
 				for(Feature f:this.children){
 					sb.append(f.toString());
 				}
